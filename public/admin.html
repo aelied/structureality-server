@@ -250,7 +250,7 @@
         .loading {
             text-align: center;
             padding: 50px;
-            color: white;
+            color: #667eea;
             font-size: 1.2em;
         }
 
@@ -322,11 +322,11 @@
                 <div class="value" id="activeUsers">-</div>
             </div>
             <div class="stat-card">
-                <h3>Average Score</h3>
-                <div class="value" id="avgScore">-</div>
+                <h3>Average Streak</h3>
+                <div class="value" id="avgStreak">-</div>
             </div>
             <div class="stat-card">
-                <h3>Avg Completion</h3>
+                <h3>Avg Topics Completed</h3>
                 <div class="value" id="avgCompletion">-</div>
             </div>
         </div>
@@ -346,9 +346,10 @@
     </div>
 
     <script>
+        // API Configuration - CHANGE THIS TO YOUR RENDER URL WHEN DEPLOYED
         const API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api'
-            : '/api';
+            : '/api';  // When on Render, use relative path
 
         let allUsers = [];
 
@@ -358,22 +359,34 @@
                 document.getElementById('loadingIndicator').style.display = 'block';
                 document.getElementById('errorContainer').innerHTML = '';
 
+                console.log('Fetching from:', API_URL);
+
                 // Fetch users
                 const usersResponse = await fetch(`${API_URL}/users`);
-                const usersData = await usersResponse.json();
+                console.log('Users response status:', usersResponse.status);
                 
-                if (!usersData.success) {
-                    throw new Error(usersData.error || 'Failed to load users');
+                if (!usersResponse.ok) {
+                    throw new Error(`HTTP error! status: ${usersResponse.status}`);
                 }
-
-                allUsers = usersData.users;
+                
+                const usersData = await usersResponse.json();
+                console.log('Users data:', usersData);
+                
+                // Handle both response formats
+                allUsers = Array.isArray(usersData) ? usersData : (usersData.users || []);
 
                 // Fetch statistics
-                const statsResponse = await fetch(`${API_URL}/statistics`);
-                const statsData = await statsResponse.json();
-
-                if (statsData.success) {
-                    updateStatistics(statsData.statistics);
+                try {
+                    const statsResponse = await fetch(`${API_URL}/stats`);
+                    if (statsResponse.ok) {
+                        const statsData = await statsResponse.json();
+                        console.log('Stats data:', statsData);
+                        updateStatistics(statsData);
+                    }
+                } catch (statsError) {
+                    console.log('Stats not available:', statsError);
+                    // Calculate basic stats from users if stats endpoint fails
+                    calculateBasicStats(allUsers);
                 }
 
                 displayUsers(allUsers);
@@ -383,25 +396,49 @@
                 console.error('Error loading data:', error);
                 document.getElementById('errorContainer').innerHTML = `
                     <div class="error">
-                        <strong>⚠️ Error:</strong> ${error.message}
+                        <strong>⚠️ Error:</strong> ${error.message}<br>
+                        <small>Check console (F12) for more details. Make sure server is running.</small>
                     </div>
                 `;
                 document.getElementById('loadingIndicator').style.display = 'none';
             }
         }
 
+        // Calculate basic stats from user data
+        function calculateBasicStats(users) {
+            const totalUsers = users.length;
+            
+            // Calculate active users (last 7 days)
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const activeUsers = users.filter(user => {
+                const lastActive = user.lastLogin || user.lastActive;
+                return lastActive && new Date(lastActive) > sevenDaysAgo;
+            }).length;
+
+            // Calculate average streak
+            const totalStreak = users.reduce((sum, user) => sum + (user.streak || 0), 0);
+            const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
+
+            // Calculate average completed topics
+            const totalCompleted = users.reduce((sum, user) => sum + (user.completedTopics || 0), 0);
+            const avgCompletion = totalUsers > 0 ? (totalCompleted / totalUsers).toFixed(1) : 0;
+
+            updateStatistics({
+                totalUsers,
+                activeUsers,
+                avgStreak,
+                avgCompletion
+            });
+        }
+
         // Update statistics cards
         function updateStatistics(stats) {
-            document.getElementById('totalUsers').textContent = stats.totalUsers;
-            document.getElementById('activeUsers').textContent = stats.activeUsers;
-            document.getElementById('avgScore').textContent = stats.avgScore;
-            
-            // Calculate average completion
-            const rates = Object.values(stats.completionRates);
-            const avgCompletion = rates.length > 0 
-                ? Math.round(rates.reduce((a, b) => a + b, 0) / rates.length)
-                : 0;
-            document.getElementById('avgCompletion').textContent = avgCompletion + '%';
+            document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+            document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
+            document.getElementById('avgStreak').textContent = stats.avgStreak || 0;
+            document.getElementById('avgCompletion').textContent = stats.avgCompletion || 0;
         }
 
         // Display users in table
@@ -427,8 +464,8 @@
                     <thead>
                         <tr>
                             <th>User Info</th>
-                            <th>Total Score</th>
-                            <th>Lessons Completed</th>
+                            <th>Streak</th>
+                            <th>Topics Completed</th>
                             <th>Progress Overview</th>
                             <th>Last Active</th>
                             <th>Actions</th>
@@ -439,18 +476,29 @@
 
             users.forEach(user => {
                 const progress = user.progress || {};
-                const stats = user.stats || {};
                 const topics = ['queues', 'stacks', 'linkedLists', 'trees', 'graphs'];
                 
-                // Calculate completion percentage
-                const completedTopics = topics.filter(t => progress[t]?.completed).length;
+                // Calculate completion
+                let completedTopics = user.completedTopics || 0;
+                if (!completedTopics) {
+                    completedTopics = topics.filter(t => {
+                        const topic = progress[t];
+                        return topic && topic.tutorialCompleted && topic.puzzleCompleted;
+                    }).length;
+                }
+                
                 const completionPercent = Math.round((completedTopics / topics.length) * 100);
 
                 // Format last active date
-                const lastActive = stats.lastActive || user.lastActive;
+                const lastActive = user.lastLogin || user.lastActive;
                 const lastActiveText = lastActive 
                     ? new Date(lastActive).toLocaleDateString()
                     : 'Never';
+
+                // Calculate total score
+                const totalScore = topics.reduce((sum, topic) => {
+                    return sum + (progress[topic]?.score || 0);
+                }, 0);
 
                 html += `
                     <tr>
@@ -459,10 +507,11 @@
                             <small style="color: #666;">@${user.username}</small>
                         </td>
                         <td>
-                            <span class="badge badge-info">${stats.totalScore || 0} pts</span>
+                            <span class="badge badge-warning">${user.streak || 0} days</span>
                         </td>
                         <td>
-                            <span class="badge badge-success">${stats.totalLessonsCompleted || 0} / 5</span>
+                            <span class="badge badge-success">${completedTopics} / 5</span>
+                            <br><small>${totalScore} points</small>
                         </td>
                         <td>
                             <div class="progress-bar">
@@ -472,7 +521,7 @@
                             <div class="topic-progress">
                                 ${topics.map(topic => {
                                     const topicData = progress[topic] || {};
-                                    const completed = topicData.completed;
+                                    const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
                                     const score = topicData.score || 0;
                                     return `
                                         <div class="topic-item ${completed ? 'completed' : ''}">
@@ -485,7 +534,7 @@
                         </td>
                         <td>${lastActiveText}</td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteUser('${user._id}', '${user.username}')">
+                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
                                 🗑️ Delete
                             </button>
                         </td>
@@ -510,13 +559,13 @@
         }
 
         // Delete user
-        async function deleteUser(userId, username) {
+        async function deleteUser(username) {
             if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
                 return;
             }
 
             try {
-                const response = await fetch(`${API_URL}/users/${userId}`, {
+                const response = await fetch(`${API_URL}/users/${username}`, {
                     method: 'DELETE'
                 });
 
@@ -526,7 +575,7 @@
                     alert(`✅ User "${username}" deleted successfully`);
                     loadData();
                 } else {
-                    throw new Error(data.error || 'Failed to delete user');
+                    throw new Error(data.message || 'Failed to delete user');
                 }
             } catch (error) {
                 alert(`❌ Error: ${error.message}`);
@@ -537,8 +586,8 @@
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filteredUsers = allUsers.filter(user => 
-                user.name?.toLowerCase().includes(searchTerm) ||
-                user.username?.toLowerCase().includes(searchTerm)
+                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                (user.username && user.username.toLowerCase().includes(searchTerm))
             );
             displayUsers(filteredUsers);
         });
