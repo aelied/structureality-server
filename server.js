@@ -48,7 +48,6 @@ async function connectDB() {
 
 // ==================== ROOT & HEALTH CHECK ROUTES ====================
 
-// Root endpoint - Server health check
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
@@ -66,34 +65,20 @@ app.get('/', (req, res) => {
     });
 });
 
-// API root endpoint - Show available endpoints
 app.get('/api', (req, res) => {
     res.json({
         status: '✅ API is running',
         version: '1.0.0',
         endpoints: {
-            // Progress endpoints (Unity)
             'GET  /api/progress': 'Get all users progress',
             'GET  /api/progress/:username': 'Get specific user progress',
             'PUT  /api/progress/:username': 'Sync user progress from Unity',
-            
-            // User management
             'POST /api/users': 'Register new user',
             'GET  /api/users': 'Get all users (admin)',
-            'GET  /api/users/:username': 'Get user by username',
-            'PUT  /api/users/:username': 'Update user',
-            'DELETE /api/users/:username': 'Delete user (admin)',
-            
-            // Authentication
             'POST /api/login': 'Login user',
-            
-            // Statistics
             'GET  /api/stats': 'Get server statistics',
-            
-            // Progress (legacy)
-            'PUT  /api/users/:username/progress': 'Update user progress (legacy)'
-        },
-        documentation: 'Visit /admin.html for the admin dashboard'
+            'DELETE /api/users/:username': 'Delete user (admin)'
+        }
     });
 });
 
@@ -104,23 +89,21 @@ app.post('/api/users', async (req, res) => {
     try {
         const userData = req.body;
         
-        // Add timestamp if not provided
         if (!userData.registerDate) {
             userData.registerDate = new Date().toISOString();
         }
         
-        // Initialize progress structure if not provided
+        // ✅ FIXED: Topic names now match Unity
         if (!userData.progress) {
             userData.progress = {
-                Queues: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                Queue: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
                 Stacks: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
-                "Linked Lists": { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                LinkedLists: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
                 Trees: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
                 Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0 }
             };
         }
         
-        // Check if username or email already exists
         const existingUser = await usersCollection.findOne({
             $or: [
                 { username: userData.username },
@@ -136,7 +119,6 @@ app.post('/api/users', async (req, res) => {
             });
         }
         
-        // Insert new user
         const result = await usersCollection.insertOne(userData);
         
         console.log(`✅ New user registered: ${userData.username} (${userData.name})`);
@@ -156,12 +138,11 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// 2. Login User (Verify credentials)
+// 2. Login User
 app.post('/api/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
         
-        // Find user by username or email
         const user = await usersCollection.findOne({
             $or: [
                 { username: username },
@@ -176,7 +157,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
         
-        // Verify password
         if (user.password !== password) {
             return res.status(401).json({ 
                 success: false,
@@ -184,7 +164,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
         
-        // Update last login
         await usersCollection.updateOne(
             { _id: user._id },
             { 
@@ -197,7 +176,6 @@ app.post('/api/login', async (req, res) => {
         
         console.log(`🔐 User logged in: ${user.username}`);
         
-        // Return user data (without password)
         const { password: _, ...userWithoutPassword } = user;
         res.json({ 
             success: true, 
@@ -215,121 +193,9 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 3. Get User by Username
-app.get('/api/users/:username', async (req, res) => {
-    try {
-        const user = await usersCollection.findOne({ username: req.params.username });
-        
-        if (!user) {
-            return res.status(404).json({ 
-                success: false,
-                error: 'User not found' 
-            });
-        }
-        
-        // Remove password from response
-        const { password, ...userWithoutPassword } = user;
-        res.json({
-            success: true,
-            user: userWithoutPassword
-        });
-        
-    } catch (error) {
-        console.error('Error fetching user:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to fetch user' 
-        });
-    }
-});
-
-// 4. Update User (Login, Progress, etc.)
-app.put('/api/users/:username', async (req, res) => {
-    try {
-        const updateData = req.body;
-        
-        const result = await usersCollection.updateOne(
-            { username: req.params.username },
-            { $set: updateData }
-        );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ 
-                success: false,
-                error: 'User not found' 
-            });
-        }
-        
-        console.log(`🔄 Updated user: ${req.params.username}`);
-        res.json({ success: true, message: 'User updated successfully' });
-        
-    } catch (error) {
-        console.error('Error updating user:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to update user' 
-        });
-    }
-});
-
-// 5. Update User Progress (Topic Completion) - Legacy endpoint
-app.put('/api/users/:username/progress', async (req, res) => {
-    try {
-        const { topic, tutorialCompleted, puzzleCompleted, score } = req.body;
-        
-        const updateField = {};
-        if (tutorialCompleted !== undefined) {
-            updateField[`progress.${topic}.tutorialCompleted`] = tutorialCompleted;
-        }
-        if (puzzleCompleted !== undefined) {
-            updateField[`progress.${topic}.puzzleCompleted`] = puzzleCompleted;
-        }
-        if (score !== undefined) {
-            updateField[`progress.${topic}.score`] = score;
-        }
-        
-        // Calculate completed topics
-        const user = await usersCollection.findOne({ username: req.params.username });
-        let completedTopics = 0;
-        
-        if (user && user.progress) {
-            Object.keys(user.progress).forEach(topic => {
-                if (user.progress[topic].tutorialCompleted && user.progress[topic].puzzleCompleted) {
-                    completedTopics++;
-                }
-            });
-        }
-        
-        updateField.completedTopics = completedTopics;
-        
-        const result = await usersCollection.updateOne(
-            { username: req.params.username },
-            { $set: updateField }
-        );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ 
-                success: false,
-                error: 'User not found' 
-            });
-        }
-        
-        console.log(`📊 Progress updated: ${req.params.username} - ${topic}`);
-        res.json({ success: true, message: 'Progress updated successfully' });
-        
-    } catch (error) {
-        console.error('Error updating progress:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to update progress' 
-        });
-    }
-});
-
 // ==================== UNITY PROGRESS SYNC ENDPOINTS ====================
 
-// 6. Unity Progress Sync - PUT /api/progress/:username
-// This is what Unity calls to sync progress
+// Unity Progress Sync - PUT /api/progress/:username
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
@@ -354,7 +220,6 @@ app.put('/api/progress/:username', async (req, res) => {
             });
         }
         
-        // Update user document
         const result = await usersCollection.updateOne(
             { username: username },
             { 
@@ -365,7 +230,7 @@ app.put('/api/progress/:username', async (req, res) => {
                     lastUpdated: progressData.lastUpdated || new Date().toISOString()
                 } 
             },
-            { upsert: false } // Don't create if doesn't exist
+            { upsert: false }
         );
         
         if (result.matchedCount === 0) {
@@ -392,7 +257,7 @@ app.put('/api/progress/:username', async (req, res) => {
     }
 });
 
-// 7. Get Progress for User - GET /api/progress/:username
+// Get Progress for User
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
@@ -404,7 +269,6 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
         
-        // Transform to Unity format
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
@@ -440,7 +304,7 @@ app.get('/api/progress/:username', async (req, res) => {
     }
 });
 
-// 8. Get All Users Progress - GET /api/progress
+// Get All Users Progress
 app.get('/api/progress', async (req, res) => {
     try {
         const users = await usersCollection.find({})
@@ -492,11 +356,10 @@ app.get('/api/progress', async (req, res) => {
 
 // ==================== ADMIN ENDPOINTS ====================
 
-// 9. Get All Users (Admin Panel)
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
-            .project({ password: 0 }) // Exclude passwords
+            .project({ password: 0 })
             .toArray();
         
         res.json({
@@ -514,7 +377,6 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// 10. Get Statistics (Admin Dashboard)
 app.get('/api/stats', async (req, res) => {
     try {
         const totalUsers = await usersCollection.countDocuments();
@@ -556,7 +418,6 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// 11. Delete User (Admin)
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
@@ -580,7 +441,6 @@ app.delete('/api/users/:username', async (req, res) => {
     }
 });
 
-// Helper function: Calculate streak
 function calculateStreak(lastLogin, currentStreak) {
     if (!lastLogin) return 1;
     
@@ -607,18 +467,11 @@ connectDB().then(() => {
         console.log(`🎛️ Admin Panel: http://localhost:${PORT}/admin.html`);
         console.log(`💾 Database: MongoDB Atlas (${DB_NAME})`);
         console.log('==================================================');
-        console.log('📍 Available Endpoints:');
-        console.log(`   GET  /              - Health check`);
-        console.log(`   GET  /api           - API documentation`);
-        console.log(`   PUT  /api/progress/:username`);
-        console.log(`   GET  /api/progress/:username`);
-        console.log(`   GET  /api/progress`);
-        console.log('==================================================');
-        console.log('⏳ Waiting for Unity connections...\n');
+        console.log('📍 Topic Names: Queue, Stacks, LinkedLists, Trees, Graphs');
+        console.log('==================================================\n');
     });
 });
 
-// Graceful shutdown
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down server...');
     await client.close();
