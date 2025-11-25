@@ -263,6 +263,15 @@
             border-left: 4px solid #f56565;
         }
 
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #48bb78;
+        }
+
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -274,6 +283,16 @@
             height: 100px;
             margin-bottom: 20px;
             opacity: 0.5;
+        }
+
+        .sync-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            background: #e6fffa;
+            color: #047857;
+            margin-left: 10px;
         }
 
         @media (max-width: 768px) {
@@ -300,6 +319,10 @@
             th, td {
                 padding: 10px;
             }
+
+            .topic-progress {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -307,7 +330,7 @@
     <div class="container">
         <div class="header">
             <h1>📊 StructuReality Admin Dashboard</h1>
-            <p>Monitor user progress and learning statistics</p>
+            <p>Monitor user progress and learning statistics <span id="syncIndicator" class="sync-indicator">●</span></p>
         </div>
 
         <div id="errorContainer"></div>
@@ -346,34 +369,36 @@
     </div>
 
     <script>
-        // API Configuration - CHANGE THIS TO YOUR RENDER URL WHEN DEPLOYED
+        // API Configuration - Uses the new /api/progress endpoints
         const API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api'
-            : '/api';  // When on Render, use relative path
+            : 'https://structureality-admin.onrender.com/api';
 
         let allUsers = [];
+        let autoRefreshInterval;
 
-        // Load all data
+        // Load all data using the new progress endpoint
         async function loadData() {
             try {
                 document.getElementById('loadingIndicator').style.display = 'block';
                 document.getElementById('errorContainer').innerHTML = '';
+                updateSyncIndicator('syncing');
 
-                console.log('Fetching from:', API_URL);
+                console.log('Fetching progress from:', `${API_URL}/progress`);
 
-                // Fetch users
-                const usersResponse = await fetch(`${API_URL}/users`);
-                console.log('Users response status:', usersResponse.status);
+                // Fetch progress data (includes user info and progress)
+                const progressResponse = await fetch(`${API_URL}/progress`);
+                console.log('Progress response status:', progressResponse.status);
                 
-                if (!usersResponse.ok) {
-                    throw new Error(`HTTP error! status: ${usersResponse.status}`);
+                if (!progressResponse.ok) {
+                    throw new Error(`HTTP error! status: ${progressResponse.status}`);
                 }
                 
-                const usersData = await usersResponse.json();
-                console.log('Users data:', usersData);
+                const progressData = await progressResponse.json();
+                console.log('Progress data:', progressData);
                 
-                // Handle both response formats
-                allUsers = Array.isArray(usersData) ? usersData : (usersData.users || []);
+                // Handle response format from new endpoint
+                allUsers = progressData.data || [];
 
                 // Fetch statistics
                 try {
@@ -384,28 +409,32 @@
                         updateStatistics(statsData);
                     }
                 } catch (statsError) {
-                    console.log('Stats not available:', statsError);
-                    // Calculate basic stats from users if stats endpoint fails
-                    calculateBasicStats(allUsers);
+                    console.log('Stats not available, calculating from progress data:', statsError);
+                    calculateStatsFromProgress(allUsers);
                 }
 
                 displayUsers(allUsers);
                 document.getElementById('loadingIndicator').style.display = 'none';
+                updateSyncIndicator('synced');
+
+                // Show success message
+                showSuccessMessage(`✅ Loaded ${allUsers.length} users successfully`);
 
             } catch (error) {
                 console.error('Error loading data:', error);
                 document.getElementById('errorContainer').innerHTML = `
                     <div class="error">
                         <strong>⚠️ Error:</strong> ${error.message}<br>
-                        <small>Check console (F12) for more details. Make sure server is running.</small>
+                        <small>Check console (F12) for more details. Make sure server is running at: ${API_URL}</small>
                     </div>
                 `;
                 document.getElementById('loadingIndicator').style.display = 'none';
+                updateSyncIndicator('error');
             }
         }
 
-        // Calculate basic stats from user data
-        function calculateBasicStats(users) {
+        // Calculate stats from progress data
+        function calculateStatsFromProgress(users) {
             const totalUsers = users.length;
             
             // Calculate active users (last 7 days)
@@ -413,8 +442,12 @@
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
             
             const activeUsers = users.filter(user => {
-                const lastActive = user.lastLogin || user.lastActive;
-                return lastActive && new Date(lastActive) > sevenDaysAgo;
+                if (!user.topics || user.topics.length === 0) return false;
+                const mostRecent = user.topics.reduce((latest, topic) => {
+                    const topicDate = new Date(topic.lastAccessed);
+                    return topicDate > latest ? topicDate : latest;
+                }, new Date(0));
+                return mostRecent > sevenDaysAgo;
             }).length;
 
             // Calculate average streak
@@ -441,6 +474,29 @@
             document.getElementById('avgCompletion').textContent = stats.avgCompletion || 0;
         }
 
+        // Update sync indicator
+        function updateSyncIndicator(status) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusMap = {
+                'synced': { text: '● Synced', color: '#047857' },
+                'syncing': { text: '⟳ Syncing...', color: '#ed8936' },
+                'error': { text: '● Error', color: '#c53030' }
+            };
+            
+            const config = statusMap[status] || statusMap['synced'];
+            indicator.textContent = config.text;
+            indicator.style.color = config.color;
+        }
+
+        // Show success message
+        function showSuccessMessage(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="success">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
+        }
+
         // Display users in table
         function displayUsers(users) {
             const container = document.getElementById('tableContainer');
@@ -453,7 +509,7 @@
                                   d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                         </svg>
                         <h3>No users found</h3>
-                        <p>Start by adding users to your database</p>
+                        <p>Users will appear here when they complete activities in Unity</p>
                     </div>
                 `;
                 return;
@@ -468,6 +524,7 @@
                             <th>Topics Completed</th>
                             <th>Progress Overview</th>
                             <th>Last Active</th>
+                            <th>Total Time</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -475,30 +532,35 @@
             `;
 
             users.forEach(user => {
-                const progress = user.progress || {};
-                const topics = ['queues', 'stacks', 'linkedLists', 'trees', 'graphs'];
-                
-                // Calculate completion
-                let completedTopics = user.completedTopics || 0;
-                if (!completedTopics) {
-                    completedTopics = topics.filter(t => {
-                        const topic = progress[t];
-                        return topic && topic.tutorialCompleted && topic.puzzleCompleted;
-                    }).length;
+                const topics = user.topics || [];
+                const completedTopics = user.completedTopics || 0;
+                const totalTopics = 5; // Queues, Stacks, Linked Lists, Trees, Graphs
+                const completionPercent = Math.round((completedTopics / totalTopics) * 100);
+
+                // Calculate total time spent and score
+                let totalTime = 0;
+                let totalScore = 0;
+                topics.forEach(topic => {
+                    totalTime += topic.timeSpent || 0;
+                    totalScore += topic.puzzleScore || 0;
+                });
+
+                // Format time (seconds to minutes)
+                const timeMinutes = Math.round(totalTime / 60);
+
+                // Find most recent activity
+                let lastActive = 'Never';
+                if (topics.length > 0) {
+                    const mostRecent = topics.reduce((latest, topic) => {
+                        if (!topic.lastAccessed) return latest;
+                        const topicDate = new Date(topic.lastAccessed);
+                        return !latest || topicDate > latest ? topicDate : latest;
+                    }, null);
+                    
+                    if (mostRecent) {
+                        lastActive = mostRecent.toLocaleDateString();
+                    }
                 }
-                
-                const completionPercent = Math.round((completedTopics / topics.length) * 100);
-
-                // Format last active date
-                const lastActive = user.lastLogin || user.lastActive;
-                const lastActiveText = lastActive 
-                    ? new Date(lastActive).toLocaleDateString()
-                    : 'Never';
-
-                // Calculate total score
-                const totalScore = topics.reduce((sum, topic) => {
-                    return sum + (progress[topic]?.score || 0);
-                }, 0);
 
                 html += `
                     <tr>
@@ -507,32 +569,25 @@
                             <small style="color: #666;">@${user.username}</small>
                         </td>
                         <td>
-                            <span class="badge badge-warning">${user.streak || 0} days</span>
+                            <span class="badge badge-warning">🔥 ${user.streak || 0} days</span>
                         </td>
                         <td>
-                            <span class="badge badge-success">${completedTopics} / 5</span>
-                            <br><small>${totalScore} points</small>
+                            <span class="badge badge-success">${completedTopics} / ${totalTopics}</span>
+                            <br><small>Avg Score: ${Math.round(totalScore / (topics.length || 1))}%</small>
                         </td>
-                        <td>
+                        <td style="min-width: 350px;">
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: ${completionPercent}%"></div>
                             </div>
                             <small>${completionPercent}% Complete</small>
                             <div class="topic-progress">
-                                ${topics.map(topic => {
-                                    const topicData = progress[topic] || {};
-                                    const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
-                                    const score = topicData.score || 0;
-                                    return `
-                                        <div class="topic-item ${completed ? 'completed' : ''}">
-                                            <div class="topic-name">${formatTopicName(topic)}</div>
-                                            <div class="topic-score">${completed ? '✓ ' + score : '✗'}</div>
-                                        </div>
-                                    `;
-                                }).join('')}
+                                ${generateTopicCards(topics)}
                             </div>
                         </td>
-                        <td>${lastActiveText}</td>
+                        <td>${lastActive}</td>
+                        <td>
+                            <span class="badge badge-info">⏱ ${timeMinutes} min</span>
+                        </td>
                         <td>
                             <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
                                 🗑️ Delete
@@ -546,16 +601,35 @@
             container.innerHTML = html;
         }
 
-        // Format topic names
-        function formatTopicName(topic) {
-            const names = {
-                'queues': 'Queues',
-                'stacks': 'Stacks',
-                'linkedLists': 'Lists',
-                'trees': 'Trees',
-                'graphs': 'Graphs'
-            };
-            return names[topic] || topic;
+        // Generate topic progress cards
+        function generateTopicCards(userTopics) {
+            const allTopics = ['Queues', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
+            
+            return allTopics.map(topicName => {
+                const topicData = userTopics.find(t => t.topicName === topicName);
+                
+                if (topicData) {
+                    const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
+                    const score = topicData.puzzleScore || 0;
+                    const tutorialOnly = topicData.tutorialCompleted && !topicData.puzzleCompleted;
+                    
+                    return `
+                        <div class="topic-item ${completed ? 'completed' : ''}">
+                            <div class="topic-name">${topicName}</div>
+                            <div class="topic-score">
+                                ${completed ? '✓ ' + score + '%' : (tutorialOnly ? '📖 Tutorial' : '✗ Not Started')}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="topic-item">
+                            <div class="topic-name">${topicName}</div>
+                            <div class="topic-score">✗ Not Started</div>
+                        </div>
+                    `;
+                }
+            }).join('');
         }
 
         // Delete user
@@ -572,10 +646,10 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    alert(`✅ User "${username}" deleted successfully`);
+                    showSuccessMessage(`✅ User "${username}" deleted successfully`);
                     loadData();
                 } else {
-                    throw new Error(data.message || 'Failed to delete user');
+                    throw new Error(data.error || 'Failed to delete user');
                 }
             } catch (error) {
                 alert(`❌ Error: ${error.message}`);
@@ -592,8 +666,36 @@
             displayUsers(filteredUsers);
         });
 
+        // Auto-refresh every 30 seconds
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                console.log('Auto-refreshing data...');
+                loadData();
+            }, 30000); // 30 seconds
+        }
+
+        // Stop auto-refresh
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
         // Load data on page load
-        window.addEventListener('load', loadData);
+        window.addEventListener('load', () => {
+            loadData();
+            startAutoRefresh();
+        });
+
+        // Stop auto-refresh when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+                loadData();
+            }
+        });
     </script>
 </body>
 </html>

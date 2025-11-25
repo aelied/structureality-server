@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('public'));
 
-// ⚠️ REPLACE THIS WITH YOUR MONGODB CONNECTION STRING
+// MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_admin:oG4qBQnbGLLyBF4f@structureality-cluster.chm4r6c.mongodb.net/?appName=StructuReality-Cluster";
 const DB_NAME = "structureality_db";
 const COLLECTION_NAME = "users";
@@ -56,6 +56,17 @@ app.post('/api/users', async (req, res) => {
         // Add timestamp if not provided
         if (!userData.registerDate) {
             userData.registerDate = new Date().toISOString();
+        }
+        
+        // Initialize progress structure if not provided
+        if (!userData.progress) {
+            userData.progress = {
+                Queues: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                Stacks: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                "Linked Lists": { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                Trees: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
+                Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0 }
+            };
         }
         
         // Check if username or email already exists
@@ -227,7 +238,173 @@ app.put('/api/users/:username/progress', async (req, res) => {
     }
 });
 
-// 6. Get All Users (Admin Panel)
+// ==================== NEW: UNITY PROGRESS SYNC ENDPOINTS ====================
+
+// 6. Unity Progress Sync - PUT /api/progress/:username
+// This is what Unity calls to sync progress
+app.put('/api/progress/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const progressData = req.body;
+        
+        console.log('📥 Unity progress sync received:', username);
+        console.log('Data:', JSON.stringify(progressData, null, 2));
+        
+        // Transform Unity progress format to database format
+        const dbProgress = {};
+        
+        if (progressData.topics && Array.isArray(progressData.topics)) {
+            progressData.topics.forEach(topic => {
+                dbProgress[topic.topicName] = {
+                    tutorialCompleted: topic.tutorialCompleted || false,
+                    puzzleCompleted: topic.puzzleCompleted || false,
+                    score: topic.puzzleScore || 0,
+                    progressPercentage: topic.progressPercentage || 0,
+                    lastAccessed: topic.lastAccessed || new Date().toISOString(),
+                    timeSpent: topic.timeSpent || 0
+                };
+            });
+        }
+        
+        // Update user document
+        const result = await usersCollection.updateOne(
+            { username: username },
+            { 
+                $set: { 
+                    progress: dbProgress,
+                    streak: progressData.streak || 0,
+                    completedTopics: progressData.completedTopics || 0,
+                    lastUpdated: progressData.lastUpdated || new Date().toISOString()
+                } 
+            },
+            { upsert: false } // Don't create if doesn't exist
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found. Please register first.' 
+            });
+        }
+        
+        console.log(`✅ Progress synced for: ${username}`);
+        res.json({ 
+            success: true, 
+            message: 'Progress synced successfully',
+            syncedTopics: Object.keys(dbProgress).length
+        });
+        
+    } catch (error) {
+        console.error('❌ Error syncing Unity progress:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to sync progress',
+            details: error.message 
+        });
+    }
+});
+
+// 7. Get Progress for User - GET /api/progress/:username
+app.get('/api/progress/:username', async (req, res) => {
+    try {
+        const user = await usersCollection.findOne({ username: req.params.username });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        // Transform to Unity format
+        const topics = [];
+        if (user.progress) {
+            Object.keys(user.progress).forEach(topicName => {
+                const topic = user.progress[topicName];
+                topics.push({
+                    topicName: topicName,
+                    tutorialCompleted: topic.tutorialCompleted || false,
+                    puzzleCompleted: topic.puzzleCompleted || false,
+                    puzzleScore: topic.score || 0,
+                    progressPercentage: topic.progressPercentage || 0,
+                    lastAccessed: topic.lastAccessed || '',
+                    timeSpent: topic.timeSpent || 0
+                });
+            });
+        }
+        
+        res.json({
+            success: true,
+            username: user.username,
+            name: user.name || '',
+            streak: user.streak || 0,
+            completedTopics: user.completedTopics || 0,
+            lastUpdated: user.lastUpdated || '',
+            topics: topics
+        });
+        
+    } catch (error) {
+        console.error('Error fetching progress:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch progress' 
+        });
+    }
+});
+
+// 8. Get All Users Progress - GET /api/progress
+app.get('/api/progress', async (req, res) => {
+    try {
+        const users = await usersCollection.find({})
+            .project({ password: 0 })
+            .toArray();
+        
+        const progressData = users.map(user => {
+            const topics = [];
+            if (user.progress) {
+                Object.keys(user.progress).forEach(topicName => {
+                    const topic = user.progress[topicName];
+                    topics.push({
+                        topicName: topicName,
+                        tutorialCompleted: topic.tutorialCompleted || false,
+                        puzzleCompleted: topic.puzzleCompleted || false,
+                        puzzleScore: topic.score || 0,
+                        progressPercentage: topic.progressPercentage || 0,
+                        lastAccessed: topic.lastAccessed || '',
+                        timeSpent: topic.timeSpent || 0
+                    });
+                });
+            }
+            
+            return {
+                username: user.username,
+                name: user.name || '',
+                email: user.email || '',
+                streak: user.streak || 0,
+                completedTopics: user.completedTopics || 0,
+                lastUpdated: user.lastUpdated || '',
+                topics: topics
+            };
+        });
+        
+        res.json({
+            success: true,
+            count: progressData.length,
+            data: progressData
+        });
+        
+    } catch (error) {
+        console.error('Error fetching all progress:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch progress data' 
+        });
+    }
+});
+
+// ==================== EXISTING ENDPOINTS ====================
+
+// 9. Get All Users (Admin Panel)
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
@@ -242,7 +419,7 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// 7. Get Statistics (Admin Dashboard)
+// 10. Get Statistics (Admin Dashboard)
 app.get('/api/stats', async (req, res) => {
     try {
         const totalUsers = await usersCollection.countDocuments();
@@ -280,7 +457,7 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-// 8. Delete User (Admin)
+// 11. Delete User (Admin)
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
@@ -324,6 +501,11 @@ connectDB().then(() => {
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🎛️ Admin Panel: http://localhost:${PORT}/admin.html`);
         console.log(`💾 Database: MongoDB Atlas (${DB_NAME})`);
+        console.log('==================================================');
+        console.log('📍 Unity Progress Endpoints:');
+        console.log(`   PUT  /api/progress/:username`);
+        console.log(`   GET  /api/progress/:username`);
+        console.log(`   GET  /api/progress`);
         console.log('==================================================');
         console.log('⏳ Waiting for Unity connections...\n');
     });
