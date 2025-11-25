@@ -603,6 +603,7 @@
 
         // Generate topic progress cards
         function generateTopicCards(userTopics) {
+            // ✅ FIXED: Use standardized topic names matching Unity and server
             const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
             
             return allTopics.map(topicName => {
@@ -615,7 +616,7 @@
                     
                     return `
                         <div class="topic-item ${completed ? 'completed' : ''}">
-                            <div class="topic-name">${topicName}</div>
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
                             <div class="topic-score">
                                 ${completed ? '✓ ' + score + '%' : (tutorialOnly ? '📖 Tutorial' : '✗ Not Started')}
                             </div>
@@ -624,13 +625,25 @@
                 } else {
                     return `
                         <div class="topic-item">
-                            <div class="topic-name">${topicName}</div>
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
                             <div class="topic-score">✗ Not Started</div>
                         </div>
                     `;
                 }
             }).join('');
         }
+        
+        function getDisplayName(topicName) {
+        const displayNames = {
+            'Queue': 'Queue',
+            'Stacks': 'Stacks',
+            'LinkedLists': 'Linked Lists',
+            'Trees': 'Trees',
+            'Graphs': 'Graphs'
+        };
+        return displayNames[topicName] || topicName;
+    }
+
 
         // Delete user
         async function deleteUser(username) {
