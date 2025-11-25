@@ -237,6 +237,11 @@
             color: #22543d;
         }
 
+        .topic-item.in-progress {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
         .topic-item .topic-name {
             font-weight: 600;
             margin-bottom: 3px;
@@ -369,7 +374,7 @@
     </div>
 
     <script>
-        // API Configuration - Uses the new /api/progress endpoints
+        // API Configuration
         const API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api'
             : 'https://structureality-admin.onrender.com/api';
@@ -377,7 +382,6 @@
         let allUsers = [];
         let autoRefreshInterval;
 
-        // Load all data using the new progress endpoint
         async function loadData() {
             try {
                 document.getElementById('loadingIndicator').style.display = 'block';
@@ -386,7 +390,6 @@
 
                 console.log('Fetching progress from:', `${API_URL}/progress`);
 
-                // Fetch progress data (includes user info and progress)
                 const progressResponse = await fetch(`${API_URL}/progress`);
                 console.log('Progress response status:', progressResponse.status);
                 
@@ -397,10 +400,8 @@
                 const progressData = await progressResponse.json();
                 console.log('Progress data:', progressData);
                 
-                // Handle response format from new endpoint
                 allUsers = progressData.data || [];
 
-                // Fetch statistics
                 try {
                     const statsResponse = await fetch(`${API_URL}/stats`);
                     if (statsResponse.ok) {
@@ -417,7 +418,6 @@
                 document.getElementById('loadingIndicator').style.display = 'none';
                 updateSyncIndicator('synced');
 
-                // Show success message
                 showSuccessMessage(`✅ Loaded ${allUsers.length} users successfully`);
 
             } catch (error) {
@@ -433,11 +433,9 @@
             }
         }
 
-        // Calculate stats from progress data
         function calculateStatsFromProgress(users) {
             const totalUsers = users.length;
             
-            // Calculate active users (last 7 days)
             const sevenDaysAgo = new Date();
             sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
             
@@ -450,11 +448,9 @@
                 return mostRecent > sevenDaysAgo;
             }).length;
 
-            // Calculate average streak
             const totalStreak = users.reduce((sum, user) => sum + (user.streak || 0), 0);
             const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
 
-            // Calculate average completed topics
             const totalCompleted = users.reduce((sum, user) => sum + (user.completedTopics || 0), 0);
             const avgCompletion = totalUsers > 0 ? (totalCompleted / totalUsers).toFixed(1) : 0;
 
@@ -466,7 +462,6 @@
             });
         }
 
-        // Update statistics cards
         function updateStatistics(stats) {
             document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
             document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
@@ -474,7 +469,6 @@
             document.getElementById('avgCompletion').textContent = stats.avgCompletion || 0;
         }
 
-        // Update sync indicator
         function updateSyncIndicator(status) {
             const indicator = document.getElementById('syncIndicator');
             const statusMap = {
@@ -488,7 +482,6 @@
             indicator.style.color = config.color;
         }
 
-        // Show success message
         function showSuccessMessage(message) {
             const container = document.getElementById('errorContainer');
             container.innerHTML = `<div class="success">${message}</div>`;
@@ -497,7 +490,6 @@
             }, 3000);
         }
 
-        // Display users in table
         function displayUsers(users) {
             const container = document.getElementById('tableContainer');
 
@@ -533,22 +525,27 @@
 
             users.forEach(user => {
                 const topics = user.topics || [];
-                const completedTopics = user.completedTopics || 0;
-                const totalTopics = 5; // Queues, Stacks, Linked Lists, Trees, Graphs
-                const completionPercent = Math.round((completedTopics / totalTopics) * 100);
+                
+                // ✅ FIXED: Calculate actual completion based on puzzle completion
+                const actualCompletedTopics = topics.filter(t => t.puzzleCompleted).length;
+                const totalTopics = 5;
+                const completionPercent = Math.round((actualCompletedTopics / totalTopics) * 100);
 
-                // Calculate total time spent and score
                 let totalTime = 0;
                 let totalScore = 0;
+                let scoredTopics = 0;
+                
                 topics.forEach(topic => {
                     totalTime += topic.timeSpent || 0;
-                    totalScore += topic.puzzleScore || 0;
+                    if (topic.puzzleCompleted && topic.puzzleScore > 0) {
+                        totalScore += topic.puzzleScore;
+                        scoredTopics++;
+                    }
                 });
 
-                // Format time (seconds to minutes)
                 const timeMinutes = Math.round(totalTime / 60);
+                const avgScore = scoredTopics > 0 ? Math.round(totalScore / scoredTopics) : 0;
 
-                // Find most recent activity
                 let lastActive = 'Never';
                 if (topics.length > 0) {
                     const mostRecent = topics.reduce((latest, topic) => {
@@ -572,8 +569,8 @@
                             <span class="badge badge-warning">🔥 ${user.streak || 0} days</span>
                         </td>
                         <td>
-                            <span class="badge badge-success">${completedTopics} / ${totalTopics}</span>
-                            <br><small>Avg Score: ${Math.round(totalScore / (topics.length || 1))}%</small>
+                            <span class="badge badge-success">${actualCompletedTopics} / ${totalTopics}</span>
+                            <br><small>Avg Score: ${avgScore}%</small>
                         </td>
                         <td style="min-width: 350px;">
                             <div class="progress-bar">
@@ -601,53 +598,59 @@
             container.innerHTML = html;
         }
 
-        // Generate topic progress cards
         function generateTopicCards(userTopics) {
-    const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
-    
-    return allTopics.map(topicName => {
-        const topicData = userTopics.find(t => t.topicName === topicName);
-        
-        if (topicData) {
-            const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
-            const score = topicData.puzzleScore || 0;  // ✅ Use puzzleScore
-            const tutorialOnly = topicData.tutorialCompleted && !topicData.puzzleCompleted;
+            const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
             
-            console.log(`Topic: ${topicName}, Score: ${score}, Data:`, topicData); // Debug log
-            
-            return `
-                <div class="topic-item ${completed ? 'completed' : ''}">
-                    <div class="topic-name">${getDisplayName(topicName)}</div>
-                    <div class="topic-score">
-                        ${completed ? '✓ ' + score + '%' : (tutorialOnly ? '📖 Tutorial' : '✗ Not Started')}
-                    </div>
-                </div>
-            `;
-        } else {
-            return `
-                <div class="topic-item">
-                    <div class="topic-name">${getDisplayName(topicName)}</div>
-                    <div class="topic-score">✗ Not Started</div>
-                </div>
-            `;
+            return allTopics.map(topicName => {
+                const topicData = userTopics.find(t => t.topicName === topicName);
+                
+                if (topicData) {
+                    // ✅ FIXED: Show completion based on puzzle completion
+                    const puzzleCompleted = topicData.puzzleCompleted;
+                    const tutorialCompleted = topicData.tutorialCompleted;
+                    const score = topicData.puzzleScore || 0;
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    
+                    if (puzzleCompleted) {
+                        statusClass = 'completed';
+                        statusText = `✓ ${score}%`;
+                    } else if (tutorialCompleted) {
+                        statusClass = 'in-progress';
+                        statusText = '📖 Tutorial';
+                    } else {
+                        statusText = '✗ Not Started';
+                    }
+                    
+                    return `
+                        <div class="topic-item ${statusClass}">
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
+                            <div class="topic-score">${statusText}</div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="topic-item">
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
+                            <div class="topic-score">✗ Not Started</div>
+                        </div>
+                    `;
+                }
+            }).join('');
         }
-    }).join('');
-}
-
 
         function getDisplayName(topicName) {
-        const displayNames = {
-            'Queue': 'Queue',
-            'Stacks': 'Stacks',
-            'LinkedLists': 'Linked Lists',
-            'Trees': 'Trees',
-            'Graphs': 'Graphs'
-        };
-        return displayNames[topicName] || topicName;
-    }
+            const displayNames = {
+                'Queue': 'Queue',
+                'Stacks': 'Stacks',
+                'LinkedLists': 'Linked Lists',
+                'Trees': 'Trees',
+                'Graphs': 'Graphs'
+            };
+            return displayNames[topicName] || topicName;
+        }
 
-
-        // Delete user
         async function deleteUser(username) {
             if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
                 return;
@@ -671,7 +674,6 @@
             }
         }
 
-        // Search functionality
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
             const filteredUsers = allUsers.filter(user => 
@@ -681,28 +683,24 @@
             displayUsers(filteredUsers);
         });
 
-        // Auto-refresh every 30 seconds
         function startAutoRefresh() {
             autoRefreshInterval = setInterval(() => {
                 console.log('Auto-refreshing data...');
                 loadData();
-            }, 30000); // 30 seconds
+            }, 30000);
         }
 
-        // Stop auto-refresh
         function stopAutoRefresh() {
             if (autoRefreshInterval) {
                 clearInterval(autoRefreshInterval);
             }
         }
 
-        // Load data on page load
         window.addEventListener('load', () => {
             loadData();
             startAutoRefresh();
         });
 
-        // Stop auto-refresh when page is hidden
         document.addEventListener('visibilitychange', () => {
             if (document.hidden) {
                 stopAutoRefresh();
