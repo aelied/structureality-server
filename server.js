@@ -333,7 +333,7 @@ app.get('/api/progress', async (req, res) => {
                         topicName: topicName,
                         tutorialCompleted: topic.tutorialCompleted || false,
                         puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,
+                        puzzleScore: topic.score || 0,  // ✅ Map 'score' → 'puzzleScore'
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
                         timeSpent: topic.timeSpent || 0
@@ -352,6 +352,9 @@ app.get('/api/progress', async (req, res) => {
             };
         });
         
+        console.log('✅ Sending progress data for', progressData.length, 'users');
+        console.log('Sample data:', JSON.stringify(progressData[0], null, 2));
+        
         res.json({
             success: true,
             count: progressData.length,
@@ -364,6 +367,42 @@ app.get('/api/progress', async (req, res) => {
             success: false,
             error: 'Failed to fetch progress data' 
         });
+    }
+});
+
+app.get('/api/debug/user/:username', async (req, res) => {
+    try {
+        const user = await usersCollection.findOne({ username: req.params.username });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        const topics = [];
+        if (user.progress) {
+            Object.keys(user.progress).forEach(topicName => {
+                const topic = user.progress[topicName];
+                topics.push({
+                    topicName: topicName,
+                    tutorialCompleted: topic.tutorialCompleted || false,
+                    puzzleCompleted: topic.puzzleCompleted || false,
+                    puzzleScore: topic.score || 0,  // Database has 'score'
+                    score_in_db: topic.score,       // Show what's in DB
+                    progressPercentage: topic.progressPercentage || 0,
+                    lastAccessed: topic.lastAccessed || '',
+                    timeSpent: topic.timeSpent || 0
+                });
+            });
+        }
+        
+        res.json({
+            username: user.username,
+            raw_progress: user.progress,  // Show raw data
+            transformed_topics: topics     // Show transformed data
+        });
+        
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

@@ -603,36 +603,38 @@
 
         // Generate topic progress cards
         function generateTopicCards(userTopics) {
-            // ✅ FIXED: Use standardized topic names matching Unity and server
-            const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
-            
-            return allTopics.map(topicName => {
-                const topicData = userTopics.find(t => t.topicName === topicName);
-                
-                if (topicData) {
-                    const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
-                    const score = topicData.puzzleScore || 0;
-                    const tutorialOnly = topicData.tutorialCompleted && !topicData.puzzleCompleted;
-                    
-                    return `
-                        <div class="topic-item ${completed ? 'completed' : ''}">
-                            <div class="topic-name">${getDisplayName(topicName)}</div>
-                            <div class="topic-score">
-                                ${completed ? '✓ ' + score + '%' : (tutorialOnly ? '📖 Tutorial' : '✗ Not Started')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="topic-item">
-                            <div class="topic-name">${getDisplayName(topicName)}</div>
-                            <div class="topic-score">✗ Not Started</div>
-                        </div>
-                    `;
-                }
-            }).join('');
-        }
+    const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+    
+    return allTopics.map(topicName => {
+        const topicData = userTopics.find(t => t.topicName === topicName);
         
+        if (topicData) {
+            const completed = topicData.tutorialCompleted && topicData.puzzleCompleted;
+            const score = topicData.puzzleScore || 0;  // ✅ Use puzzleScore
+            const tutorialOnly = topicData.tutorialCompleted && !topicData.puzzleCompleted;
+            
+            console.log(`Topic: ${topicName}, Score: ${score}, Data:`, topicData); // Debug log
+            
+            return `
+                <div class="topic-item ${completed ? 'completed' : ''}">
+                    <div class="topic-name">${getDisplayName(topicName)}</div>
+                    <div class="topic-score">
+                        ${completed ? '✓ ' + score + '%' : (tutorialOnly ? '📖 Tutorial' : '✗ Not Started')}
+                    </div>
+                </div>
+            `;
+        } else {
+            return `
+                <div class="topic-item">
+                    <div class="topic-name">${getDisplayName(topicName)}</div>
+                    <div class="topic-score">✗ Not Started</div>
+                </div>
+            `;
+        }
+    }).join('');
+}
+
+
         function getDisplayName(topicName) {
         const displayNames = {
             'Queue': 'Queue',
