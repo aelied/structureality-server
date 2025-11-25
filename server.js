@@ -204,15 +204,16 @@ app.put('/api/progress/:username', async (req, res) => {
         console.log('📥 Unity progress sync received:', username);
         console.log('Data:', JSON.stringify(progressData, null, 2));
         
-        // Transform Unity progress format to database format
+        // ✅ FIXED: Transform Unity progress format to database format
         const dbProgress = {};
         
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
+                // Store with the EXACT same structure as before
                 dbProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    score: topic.puzzleScore || 0,
+                    score: topic.puzzleScore || 0,  // ✅ This is the key field!
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: topic.timeSpent || 0
@@ -220,17 +221,23 @@ app.put('/api/progress/:username', async (req, res) => {
             });
         }
         
+        // ✅ CRITICAL: Update the entire user document with all fields
+        const updateData = {
+            progress: dbProgress,
+            streak: progressData.streak || 0,
+            completedTopics: progressData.completedTopics || 0,
+            lastUpdated: progressData.lastUpdated || new Date().toISOString(),
+            // Keep existing user info
+            name: progressData.name,
+            email: progressData.email
+        };
+        
         const result = await usersCollection.updateOne(
             { username: username },
             { 
-                $set: { 
-                    progress: dbProgress,
-                    streak: progressData.streak || 0,
-                    completedTopics: progressData.completedTopics || 0,
-                    lastUpdated: progressData.lastUpdated || new Date().toISOString()
-                } 
+                $set: updateData
             },
-            { upsert: false }
+            { upsert: false }  // Don't create if doesn't exist
         );
         
         if (result.matchedCount === 0) {
@@ -240,11 +247,16 @@ app.put('/api/progress/:username', async (req, res) => {
             });
         }
         
+        // Verify the update worked
+        const updatedUser = await usersCollection.findOne({ username: username });
         console.log(`✅ Progress synced for: ${username}`);
+        console.log('Updated document:', JSON.stringify(updatedUser.progress, null, 2));
+        
         res.json({ 
             success: true, 
             message: 'Progress synced successfully',
-            syncedTopics: Object.keys(dbProgress).length
+            syncedTopics: Object.keys(dbProgress).length,
+            verification: updatedUser.progress
         });
         
     } catch (error) {
@@ -269,6 +281,7 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
         
+        // Transform database format back to Unity format
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
@@ -277,7 +290,7 @@ app.get('/api/progress/:username', async (req, res) => {
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    puzzleScore: topic.score || 0,
+                    puzzleScore: topic.score || 0,  // ✅ Map 'score' to 'puzzleScore'
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0
