@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,7 +14,8 @@ app.use(express.static('public'));
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_admin:oG4qBQnbGLLyBF4f@structureality-cluster.chm4r6c.mongodb.net/?appName=StructuReality-Cluster";
 const DB_NAME = "structureality_db";
-const COLLECTION_NAME = "users";
+const USERS_COLLECTION = "users";
+const LESSONS_COLLECTION = "lessons";
 
 // MongoDB Client
 const client = new MongoClient(MONGODB_URI, {
@@ -27,17 +28,20 @@ const client = new MongoClient(MONGODB_URI, {
 
 let db;
 let usersCollection;
+let lessonsCollection;
 
 // Connect to MongoDB
 async function connectDB() {
     try {
         await client.connect();
         db = client.db(DB_NAME);
-        usersCollection = db.collection(COLLECTION_NAME);
+        usersCollection = db.collection(USERS_COLLECTION);
+        lessonsCollection = db.collection(LESSONS_COLLECTION);
         
-        // Create indexes for better performance
+        // Create indexes
         await usersCollection.createIndex({ username: 1 }, { unique: true });
         await usersCollection.createIndex({ email: 1 }, { unique: true });
+        await lessonsCollection.createIndex({ topicName: 1, order: 1 });
         
         console.log("✅ Connected to MongoDB Atlas!");
     } catch (error) {
@@ -46,45 +50,20 @@ async function connectDB() {
     }
 }
 
-// ==================== ROOT & HEALTH CHECK ROUTES ====================
+// ==================== ROOT & HEALTH CHECK ====================
 
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
-        version: '1.0.0',
+        version: '2.0.0',
         database: db ? 'Connected' : 'Disconnected',
-        endpoints: {
-            health: '/',
-            api: '/api',
-            progress: '/api/progress',
-            users: '/api/users',
-            stats: '/api/stats',
-            admin: '/admin.html'
-        },
-        message: 'Server is ready to accept Unity connections'
+        collections: ['users', 'lessons'],
+        message: 'Server ready for Unity and admin connections'
     });
 });
 
-app.get('/api', (req, res) => {
-    res.json({
-        status: '✅ API is running',
-        version: '1.0.0',
-        endpoints: {
-            'GET  /api/progress': 'Get all users progress',
-            'GET  /api/progress/:username': 'Get specific user progress',
-            'PUT  /api/progress/:username': 'Sync user progress from Unity',
-            'POST /api/users': 'Register new user',
-            'GET  /api/users': 'Get all users (admin)',
-            'POST /api/login': 'Login user',
-            'GET  /api/stats': 'Get server statistics',
-            'DELETE /api/users/:username': 'Delete user (admin)'
-        }
-    });
-});
+// ==================== USER ENDPOINTS ====================
 
-// ==================== API ENDPOINTS ====================
-
-// 1. Register New User
 app.post('/api/users', async (req, res) => {
     try {
         const userData = req.body;
@@ -93,7 +72,6 @@ app.post('/api/users', async (req, res) => {
             userData.registerDate = new Date().toISOString();
         }
         
-        // ✅ FIXED: Topic names now match Unity
         if (!userData.progress) {
             userData.progress = {
                 Queue: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
@@ -121,7 +99,7 @@ app.post('/api/users', async (req, res) => {
         
         const result = await usersCollection.insertOne(userData);
         
-        console.log(`✅ New user registered: ${userData.username} (${userData.name})`);
+        console.log(`✅ New user registered: ${userData.username}`);
         res.status(201).json({ 
             success: true, 
             message: 'User registered successfully',
@@ -129,7 +107,7 @@ app.post('/api/users', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error registering user:', error);
+        console.error('Error:', error);
         res.status(500).json({ 
             success: false,
             error: 'Failed to register user',
@@ -138,7 +116,6 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// 2. Login User
 app.post('/api/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -168,8 +145,7 @@ app.post('/api/login', async (req, res) => {
             { _id: user._id },
             { 
                 $set: { 
-                    lastLogin: new Date().toISOString(),
-                    streak: calculateStreak(user.lastLogin, user.streak)
+                    lastLogin: new Date().toISOString()
                 } 
             }
         );
@@ -184,7 +160,7 @@ app.post('/api/login', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error logging in:', error);
+        console.error('Error:', error);
         res.status(500).json({ 
             success: false,
             error: 'Login failed',
@@ -193,27 +169,65 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// ==================== UNITY PROGRESS SYNC ENDPOINTS ====================
+app.get('/api/users', async (req, res) => {
+    try {
+        const users = await usersCollection.find({})
+            .project({ password: 0 })
+            .toArray();
+        
+        res.json({
+            success: true,
+            count: users.length,
+            users: users
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch users' 
+        });
+    }
+});
 
-// Unity Progress Sync - PUT /api/progress/:username
+app.delete('/api/users/:username', async (req, res) => {
+    try {
+        const result = await usersCollection.deleteOne({ username: req.params.username });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        console.log(`🗑️ User deleted: ${req.params.username}`);
+        res.json({ success: true, message: 'User deleted successfully' });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to delete user' 
+        });
+    }
+});
+
+// ==================== PROGRESS SYNC ====================
+
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const progressData = req.body;
         
-        console.log('📥 Unity progress sync received:', username);
-        console.log('Data:', JSON.stringify(progressData, null, 2));
+        console.log('📥 Progress sync:', username);
         
-        // ✅ FIXED: Transform Unity progress format to database format
         const dbProgress = {};
         
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // Store with the EXACT same structure as before
                 dbProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    score: topic.puzzleScore || 0,  // ✅ This is the key field!
+                    score: topic.puzzleScore || 0,
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: topic.timeSpent || 0
@@ -221,46 +235,38 @@ app.put('/api/progress/:username', async (req, res) => {
             });
         }
         
-        // ✅ CRITICAL: Update the entire user document with all fields
         const updateData = {
             progress: dbProgress,
             streak: progressData.streak || 0,
             completedTopics: progressData.completedTopics || 0,
             lastUpdated: progressData.lastUpdated || new Date().toISOString(),
-            // Keep existing user info
             name: progressData.name,
             email: progressData.email
         };
         
         const result = await usersCollection.updateOne(
             { username: username },
-            { 
-                $set: updateData
-            },
-            { upsert: false }  // Don't create if doesn't exist
+            { $set: updateData },
+            { upsert: false }
         );
         
         if (result.matchedCount === 0) {
             return res.status(404).json({ 
                 success: false,
-                error: 'User not found. Please register first.' 
+                error: 'User not found' 
             });
         }
         
-        // Verify the update worked
-        const updatedUser = await usersCollection.findOne({ username: username });
-        console.log(`✅ Progress synced for: ${username}`);
-        console.log('Updated document:', JSON.stringify(updatedUser.progress, null, 2));
+        console.log(`✅ Progress synced: ${username}`);
         
         res.json({ 
             success: true, 
             message: 'Progress synced successfully',
-            syncedTopics: Object.keys(dbProgress).length,
-            verification: updatedUser.progress
+            syncedTopics: Object.keys(dbProgress).length
         });
         
     } catch (error) {
-        console.error('❌ Error syncing Unity progress:', error);
+        console.error('Error:', error);
         res.status(500).json({ 
             success: false,
             error: 'Failed to sync progress',
@@ -269,7 +275,6 @@ app.put('/api/progress/:username', async (req, res) => {
     }
 });
 
-// Get Progress for User
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
@@ -281,7 +286,6 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
         
-        // Transform database format back to Unity format
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
@@ -290,7 +294,7 @@ app.get('/api/progress/:username', async (req, res) => {
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    puzzleScore: topic.score || 0,  // ✅ Map 'score' to 'puzzleScore'
+                    puzzleScore: topic.score || 0,
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0
@@ -309,7 +313,6 @@ app.get('/api/progress/:username', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error fetching progress:', error);
         res.status(500).json({ 
             success: false,
             error: 'Failed to fetch progress' 
@@ -317,7 +320,6 @@ app.get('/api/progress/:username', async (req, res) => {
     }
 });
 
-// Get All Users Progress
 app.get('/api/progress', async (req, res) => {
     try {
         const users = await usersCollection.find({})
@@ -333,7 +335,7 @@ app.get('/api/progress', async (req, res) => {
                         topicName: topicName,
                         tutorialCompleted: topic.tutorialCompleted || false,
                         puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,  // ✅ Map 'score' → 'puzzleScore'
+                        puzzleScore: topic.score || 0,
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
                         timeSpent: topic.timeSpent || 0
@@ -352,9 +354,6 @@ app.get('/api/progress', async (req, res) => {
             };
         });
         
-        console.log('✅ Sending progress data for', progressData.length, 'users');
-        console.log('Sample data:', JSON.stringify(progressData[0], null, 2));
-        
         res.json({
             success: true,
             count: progressData.length,
@@ -362,7 +361,6 @@ app.get('/api/progress', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error fetching all progress:', error);
         res.status(500).json({ 
             success: false,
             error: 'Failed to fetch progress data' 
@@ -370,64 +368,165 @@ app.get('/api/progress', async (req, res) => {
     }
 });
 
-app.get('/api/debug/user/:username', async (req, res) => {
-    try {
-        const user = await usersCollection.findOne({ username: req.params.username });
-        
-        if (!user) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        const topics = [];
-        if (user.progress) {
-            Object.keys(user.progress).forEach(topicName => {
-                const topic = user.progress[topicName];
-                topics.push({
-                    topicName: topicName,
-                    tutorialCompleted: topic.tutorialCompleted || false,
-                    puzzleCompleted: topic.puzzleCompleted || false,
-                    puzzleScore: topic.score || 0,  // Database has 'score'
-                    score_in_db: topic.score,       // Show what's in DB
-                    progressPercentage: topic.progressPercentage || 0,
-                    lastAccessed: topic.lastAccessed || '',
-                    timeSpent: topic.timeSpent || 0
-                });
-            });
-        }
-        
-        res.json({
-            username: user.username,
-            raw_progress: user.progress,  // Show raw data
-            transformed_topics: topics     // Show transformed data
-        });
-        
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
+// ==================== LESSON MANAGEMENT ====================
 
-// ==================== ADMIN ENDPOINTS ====================
-
-app.get('/api/users', async (req, res) => {
+// Get all lessons
+app.get('/api/lessons', async (req, res) => {
     try {
-        const users = await usersCollection.find({})
-            .project({ password: 0 })
+        const lessons = await lessonsCollection.find({})
+            .sort({ topicName: 1, order: 1 })
             .toArray();
         
         res.json({
             success: true,
-            count: users.length,
-            users: users
+            count: lessons.length,
+            lessons: lessons
         });
         
     } catch (error) {
-        console.error('Error fetching users:', error);
+        console.error('Error:', error);
         res.status(500).json({ 
             success: false,
-            error: 'Failed to fetch users' 
+            error: 'Failed to fetch lessons' 
         });
     }
 });
+
+// Get lessons by topic
+app.get('/api/lessons/:topicName', async (req, res) => {
+    try {
+        const lessons = await lessonsCollection.find({ 
+            topicName: req.params.topicName 
+        })
+        .sort({ order: 1 })
+        .toArray();
+        
+        res.json({
+            success: true,
+            topicName: req.params.topicName,
+            count: lessons.length,
+            lessons: lessons
+        });
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch lessons' 
+        });
+    }
+});
+
+// Add new lesson
+app.post('/api/lessons', async (req, res) => {
+    try {
+        const lessonData = {
+            topicName: req.body.topicName,
+            title: req.body.title,
+            description: req.body.description,
+            order: req.body.order || 1,
+            createdAt: new Date().toISOString()
+        };
+        
+        // Validate
+        if (!lessonData.topicName || !lessonData.title || !lessonData.description) {
+            return res.status(400).json({
+                success: false,
+                error: 'Topic name, title, and description are required'
+            });
+        }
+        
+        const result = await lessonsCollection.insertOne(lessonData);
+        
+        console.log(`✅ New lesson added: ${lessonData.title} (${lessonData.topicName})`);
+        
+        res.status(201).json({
+            success: true,
+            message: 'Lesson added successfully',
+            lessonId: result.insertedId
+        });
+        
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to add lesson',
+            details: error.message
+        });
+    }
+});
+
+// Update lesson
+app.put('/api/lessons/:lessonId', async (req, res) => {
+    try {
+        const updateData = {
+            title: req.body.title,
+            description: req.body.description,
+            order: req.body.order,
+            updatedAt: new Date().toISOString()
+        };
+        
+        // Remove undefined fields
+        Object.keys(updateData).forEach(key => 
+            updateData[key] === undefined && delete updateData[key]
+        );
+        
+        const result = await lessonsCollection.updateOne(
+            { _id: new ObjectId(req.params.lessonId) },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Lesson not found'
+            });
+        }
+        
+        console.log(`✅ Lesson updated: ${req.params.lessonId}`);
+        
+        res.json({
+            success: true,
+            message: 'Lesson updated successfully'
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update lesson'
+        });
+    }
+});
+
+// Delete lesson
+app.delete('/api/lessons/:lessonId', async (req, res) => {
+    try {
+        const result = await lessonsCollection.deleteOne({ 
+            _id: new ObjectId(req.params.lessonId) 
+        });
+        
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Lesson not found'
+            });
+        }
+        
+        console.log(`🗑️ Lesson deleted: ${req.params.lessonId}`);
+        
+        res.json({
+            success: true,
+            message: 'Lesson deleted successfully'
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete lesson'
+        });
+    }
+});
+
+// ==================== STATS ====================
 
 app.get('/api/stats', async (req, res) => {
     try {
@@ -462,7 +561,6 @@ app.get('/api/stats', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('Error fetching stats:', error);
         res.status(500).json({ 
             success: false,
             error: 'Failed to fetch statistics' 
@@ -470,62 +568,23 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
-app.delete('/api/users/:username', async (req, res) => {
-    try {
-        const result = await usersCollection.deleteOne({ username: req.params.username });
-        
-        if (result.deletedCount === 0) {
-            return res.status(404).json({ 
-                success: false,
-                error: 'User not found' 
-            });
-        }
-        
-        console.log(`🗑️ User deleted: ${req.params.username}`);
-        res.json({ success: true, message: 'User deleted successfully' });
-        
-    } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ 
-            success: false,
-            error: 'Failed to delete user' 
-        });
-    }
-});
-
-function calculateStreak(lastLogin, currentStreak) {
-    if (!lastLogin) return 1;
-    
-    const lastLoginDate = new Date(lastLogin);
-    const now = new Date();
-    const diffDays = Math.floor((now - lastLoginDate) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 1) {
-        return (currentStreak || 0) + 1;
-    } else if (diffDays > 1) {
-        return 1;
-    }
-    return currentStreak || 1;
-}
-
 // ==================== START SERVER ====================
 
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server Running with MongoDB!');
+        console.log('🚀 StructuReality Server v2.0 - MongoDB + Lessons');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
-        console.log(`🎛️ Admin Panel: http://localhost:${PORT}/admin.html`);
-        console.log(`💾 Database: MongoDB Atlas (${DB_NAME})`);
-        console.log('==================================================');
-        console.log('📍 Topic Names: Queue, Stacks, LinkedLists, Trees, Graphs');
+        console.log(`🎛️ Admin: http://localhost:${PORT}/admin.html`);
+        console.log(`💾 Database: ${DB_NAME}`);
+        console.log(`📚 Collections: users, lessons`);
         console.log('==================================================\n');
     });
 });
 
 process.on('SIGINT', async () => {
-    console.log('\n🛑 Shutting down server...');
+    console.log('\n🛑 Shutting down...');
     await client.close();
     process.exit(0);
 });

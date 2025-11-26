@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StructuReality Admin - User Progress</title>
+    <title>StructuReality Admin - Full Management</title>
     <style>
         * {
             margin: 0;
@@ -37,9 +37,42 @@
             margin-bottom: 10px;
         }
 
-        .header p {
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1em;
+            cursor: pointer;
+            background: #e0e0e0;
             color: #666;
-            font-size: 1.1em;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-btn:hover:not(.active) {
+            background: #d0d0d0;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         .stats-grid {
@@ -74,36 +107,17 @@
             color: #667eea;
         }
 
-        .controls {
+        .card {
             background: white;
             border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 30px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
+            margin-bottom: 30px;
         }
 
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #e0e0e0;
-            border-radius: 25px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        .search-box input:focus {
-            outline: none;
-            border-color: #667eea;
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
         }
 
         .btn {
@@ -127,6 +141,15 @@
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
+        .btn-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #38a169;
+        }
+
         .btn-danger {
             background: #f56565;
             color: white;
@@ -138,12 +161,38 @@
             background: #e53e3e;
         }
 
-        .users-table {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            overflow-x: auto;
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
         }
 
         table {
@@ -162,7 +211,6 @@
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.85em;
-            letter-spacing: 1px;
         }
 
         td {
@@ -178,20 +226,46 @@
             background-color: #f7fafc;
         }
 
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
+        .lesson-card {
+            background: #f7fafc;
             border-radius: 10px;
-            overflow: hidden;
-            margin: 5px 0;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
         }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
+        .lesson-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .lesson-card p {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .lesson-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px 20px;
             border-radius: 10px;
-            transition: width 0.5s ease;
+            margin-bottom: 20px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f56565;
         }
 
         .badge {
@@ -217,87 +291,20 @@
             color: white;
         }
 
-        .topic-progress {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .topic-item {
-            text-align: center;
-            padding: 8px;
-            background: #f7fafc;
-            border-radius: 8px;
-            font-size: 0.8em;
-        }
-
-        .topic-item.completed {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .topic-item.in-progress {
-            background: #fef3c7;
-            color: #78350f;
-        }
-
-        .topic-item .topic-name {
-            font-weight: 600;
-            margin-bottom: 3px;
-        }
-
-        .topic-item .topic-score {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-            color: #667eea;
-            font-size: 1.2em;
-        }
-
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 15px 20px;
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
             border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #f56565;
+            overflow: hidden;
+            margin: 5px 0;
         }
 
-        .success {
-            background: #c6f6d5;
-            color: #22543d;
-            padding: 15px 20px;
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
             border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #48bb78;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #a0aec0;
-        }
-
-        .empty-state svg {
-            width: 100px;
-            height: 100px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
-
-        .sync-indicator {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 0.75em;
-            background: #e6fffa;
-            color: #047857;
-            margin-left: 10px;
+            transition: width 0.5s ease;
         }
 
         @media (max-width: 768px) {
@@ -309,24 +316,16 @@
                 grid-template-columns: 1fr;
             }
 
-            .controls {
+            .tabs {
                 flex-direction: column;
             }
 
-            .search-box {
+            .tab-btn {
                 width: 100%;
             }
 
             table {
                 font-size: 0.9em;
-            }
-
-            th, td {
-                padding: 10px;
-            }
-
-            .topic-progress {
-                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -335,175 +334,171 @@
     <div class="container">
         <div class="header">
             <h1>📊 StructuReality Admin Dashboard</h1>
-            <p>Monitor user progress and learning statistics <span id="syncIndicator" class="sync-indicator">●</span></p>
-        </div>
-
-        <div id="errorContainer"></div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3>Total Users</h3>
-                <div class="value" id="totalUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Active Users (7 Days)</h3>
-                <div class="value" id="activeUsers">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Average Streak</h3>
-                <div class="value" id="avgStreak">-</div>
-            </div>
-            <div class="stat-card">
-                <h3>Avg Topics Completed</h3>
-                <div class="value" id="avgCompletion">-</div>
+            <p>Manage users, lessons, and monitor progress</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('users')">👥 Users</button>
+                <button class="tab-btn" onclick="showTab('lessons')">📚 Lessons</button>
+                <button class="tab-btn" onclick="showTab('stats')">📈 Statistics</button>
             </div>
         </div>
 
-        <div class="controls">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="🔍 Search by name or username...">
+        <div id="messageContainer"></div>
+
+        <!-- Users Tab -->
+        <div id="usersTab" class="tab-content active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <div class="value" id="totalUsers">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Users (7 Days)</h3>
+                    <div class="value" id="activeUsers">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Streak</h3>
+                    <div class="value" id="avgStreak">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Topics Completed</h3>
+                    <div class="value" id="avgCompletion">-</div>
+                </div>
             </div>
-            <button class="btn btn-primary" onclick="loadData()">🔄 Refresh Data</button>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>👥 All Users</h2>
+                    <button class="btn btn-primary" onclick="loadUsers()">🔄 Refresh</button>
+                </div>
+                <div id="usersTable">Loading...</div>
+            </div>
         </div>
 
-        <div class="users-table">
-            <h2 style="margin-bottom: 20px; color: #667eea;">👥 All Users & Progress</h2>
-            <div id="loadingIndicator" class="loading">Loading users...</div>
-            <div id="tableContainer"></div>
+        <!-- Lessons Tab -->
+        <div id="lessonsTab" class="tab-content">
+            <div class="card">
+                <h2>➕ Add New Lesson</h2>
+                <form id="lessonForm" onsubmit="addLesson(event)">
+                    <div class="form-group">
+                        <label for="topicName">Topic *</label>
+                        <select id="topicName" required>
+                            <option value="">Select Topic</option>
+                            <option value="Queue">Queue</option>
+                            <option value="Stacks">Stacks</option>
+                            <option value="LinkedLists">Linked Lists</option>
+                            <option value="Trees">Trees</option>
+                            <option value="Graphs">Graphs</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="lessonTitle">Lesson Title *</label>
+                        <input type="text" id="lessonTitle" placeholder="e.g., Introduction to Queues" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lessonDescription">Description *</label>
+                        <textarea id="lessonDescription" placeholder="Brief description of the lesson content" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="lessonOrder">Display Order</label>
+                        <input type="number" id="lessonOrder" value="1" min="1">
+                    </div>
+                    <button type="submit" class="btn btn-success">➕ Add Lesson</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>📚 All Lessons</h2>
+                    <button class="btn btn-primary" onclick="loadLessons()">🔄 Refresh</button>
+                </div>
+                <div id="lessonsContainer">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="statsTab" class="tab-content">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Lessons</h3>
+                    <div class="value" id="totalLessons">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Topics with Content</h3>
+                    <div class="value" id="topicsWithContent">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Database Size</h3>
+                    <div class="value" id="dbSize">-</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Server Status</h3>
+                    <div class="value" id="serverStatus">✅</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Topic Statistics</h2>
+                <canvas id="topicChart" style="max-height: 400px;"></canvas>
+            </div>
         </div>
     </div>
 
     <script>
-        // API Configuration
         const API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api'
             : 'https://structureality-admin.onrender.com/api';
 
         let allUsers = [];
-        let autoRefreshInterval;
+        let allLessons = [];
 
-        async function loadData() {
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'users') loadUsers();
+            if (tabName === 'lessons') loadLessons();
+            if (tabName === 'stats') loadStats();
+        }
+
+        // Show message
+        function showMessage(message, isError = false) {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `
+                <div class="${isError ? 'error' : 'success'}">
+                    ${message}
+                </div>
+            `;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 4000);
+        }
+
+        // Load Users
+        async function loadUsers() {
             try {
-                document.getElementById('loadingIndicator').style.display = 'block';
-                document.getElementById('errorContainer').innerHTML = '';
-                updateSyncIndicator('syncing');
-
-                console.log('Fetching progress from:', `${API_URL}/progress`);
-
-                const progressResponse = await fetch(`${API_URL}/progress`);
-                console.log('Progress response status:', progressResponse.status);
+                const response = await fetch(`${API_URL}/progress`);
+                const data = await response.json();
                 
-                if (!progressResponse.ok) {
-                    throw new Error(`HTTP error! status: ${progressResponse.status}`);
-                }
-                
-                const progressData = await progressResponse.json();
-                console.log('Progress data:', progressData);
-                
-                allUsers = progressData.data || [];
-
-                try {
-                    const statsResponse = await fetch(`${API_URL}/stats`);
-                    if (statsResponse.ok) {
-                        const statsData = await statsResponse.json();
-                        console.log('Stats data:', statsData);
-                        updateStatistics(statsData);
-                    }
-                } catch (statsError) {
-                    console.log('Stats not available, calculating from progress data:', statsError);
-                    calculateStatsFromProgress(allUsers);
-                }
-
+                allUsers = data.data || [];
                 displayUsers(allUsers);
-                document.getElementById('loadingIndicator').style.display = 'none';
-                updateSyncIndicator('synced');
-
-                showSuccessMessage(`✅ Loaded ${allUsers.length} users successfully`);
-
+                updateStats(allUsers);
+                
             } catch (error) {
-                console.error('Error loading data:', error);
-                document.getElementById('errorContainer').innerHTML = `
-                    <div class="error">
-                        <strong>⚠️ Error:</strong> ${error.message}<br>
-                        <small>Check console (F12) for more details. Make sure server is running at: ${API_URL}</small>
-                    </div>
-                `;
-                document.getElementById('loadingIndicator').style.display = 'none';
-                updateSyncIndicator('error');
+                console.error('Error:', error);
+                showMessage('Failed to load users: ' + error.message, true);
             }
         }
 
-        function calculateStatsFromProgress(users) {
-            const totalUsers = users.length;
-            
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
-            const activeUsers = users.filter(user => {
-                if (!user.topics || user.topics.length === 0) return false;
-                const mostRecent = user.topics.reduce((latest, topic) => {
-                    const topicDate = new Date(topic.lastAccessed);
-                    return topicDate > latest ? topicDate : latest;
-                }, new Date(0));
-                return mostRecent > sevenDaysAgo;
-            }).length;
-
-            const totalStreak = users.reduce((sum, user) => sum + (user.streak || 0), 0);
-            const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
-
-            const totalCompleted = users.reduce((sum, user) => sum + (user.completedTopics || 0), 0);
-            const avgCompletion = totalUsers > 0 ? (totalCompleted / totalUsers).toFixed(1) : 0;
-
-            updateStatistics({
-                totalUsers,
-                activeUsers,
-                avgStreak,
-                avgCompletion
-            });
-        }
-
-        function updateStatistics(stats) {
-            document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
-            document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
-            document.getElementById('avgStreak').textContent = stats.avgStreak || 0;
-            document.getElementById('avgCompletion').textContent = stats.avgCompletion || 0;
-        }
-
-        function updateSyncIndicator(status) {
-            const indicator = document.getElementById('syncIndicator');
-            const statusMap = {
-                'synced': { text: '● Synced', color: '#047857' },
-                'syncing': { text: '⟳ Syncing...', color: '#ed8936' },
-                'error': { text: '● Error', color: '#c53030' }
-            };
-            
-            const config = statusMap[status] || statusMap['synced'];
-            indicator.textContent = config.text;
-            indicator.style.color = config.color;
-        }
-
-        function showSuccessMessage(message) {
-            const container = document.getElementById('errorContainer');
-            container.innerHTML = `<div class="success">${message}</div>`;
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 3000);
-        }
-
         function displayUsers(users) {
-            const container = document.getElementById('tableContainer');
+            const container = document.getElementById('usersTable');
 
             if (users.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                        </svg>
-                        <h3>No users found</h3>
-                        <p>Users will appear here when they complete activities in Unity</p>
-                    </div>
-                `;
+                container.innerHTML = '<p style="text-align: center; color: #999;">No users found</p>';
                 return;
             }
 
@@ -511,12 +506,10 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>User Info</th>
+                            <th>User</th>
                             <th>Streak</th>
-                            <th>Topics Completed</th>
-                            <th>Progress Overview</th>
-                            <th>Last Active</th>
-                            <th>Total Time</th>
+                            <th>Completed</th>
+                            <th>Progress</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -524,71 +517,26 @@
             `;
 
             users.forEach(user => {
-                const topics = user.topics || [];
-                
-                // ✅ FIXED: Calculate actual completion based on puzzle completion
-                const actualCompletedTopics = topics.filter(t => t.puzzleCompleted).length;
+                const completedTopics = user.topics ? user.topics.filter(t => t.puzzleCompleted).length : 0;
                 const totalTopics = 5;
-                const completionPercent = Math.round((actualCompletedTopics / totalTopics) * 100);
-
-                let totalTime = 0;
-                let totalScore = 0;
-                let scoredTopics = 0;
-                
-                topics.forEach(topic => {
-                    totalTime += topic.timeSpent || 0;
-                    if (topic.puzzleCompleted && topic.puzzleScore > 0) {
-                        totalScore += topic.puzzleScore;
-                        scoredTopics++;
-                    }
-                });
-
-                const timeMinutes = Math.round(totalTime / 60);
-                const avgScore = scoredTopics > 0 ? Math.round(totalScore / scoredTopics) : 0;
-
-                let lastActive = 'Never';
-                if (topics.length > 0) {
-                    const mostRecent = topics.reduce((latest, topic) => {
-                        if (!topic.lastAccessed) return latest;
-                        const topicDate = new Date(topic.lastAccessed);
-                        return !latest || topicDate > latest ? topicDate : latest;
-                    }, null);
-                    
-                    if (mostRecent) {
-                        lastActive = mostRecent.toLocaleDateString();
-                    }
-                }
+                const percent = Math.round((completedTopics / totalTopics) * 100);
 
                 html += `
                     <tr>
                         <td>
                             <strong>${user.name || user.username}</strong><br>
-                            <small style="color: #666;">@${user.username}</small>
+                            <small>@${user.username}</small>
                         </td>
+                        <td><span class="badge badge-warning">🔥 ${user.streak || 0}</span></td>
+                        <td><span class="badge badge-success">${completedTopics}/${totalTopics}</span></td>
                         <td>
-                            <span class="badge badge-warning">🔥 ${user.streak || 0} days</span>
-                        </td>
-                        <td>
-                            <span class="badge badge-success">${actualCompletedTopics} / ${totalTopics}</span>
-                            <br><small>Avg Score: ${avgScore}%</small>
-                        </td>
-                        <td style="min-width: 350px;">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${completionPercent}%"></div>
+                                <div class="progress-fill" style="width: ${percent}%"></div>
                             </div>
-                            <small>${completionPercent}% Complete</small>
-                            <div class="topic-progress">
-                                ${generateTopicCards(topics)}
-                            </div>
-                        </td>
-                        <td>${lastActive}</td>
-                        <td>
-                            <span class="badge badge-info">⏱ ${timeMinutes} min</span>
+                            <small>${percent}%</small>
                         </td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
-                                🗑️ Delete
-                            </button>
+                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Delete</button>
                         </td>
                     </tr>
                 `;
@@ -598,116 +546,173 @@
             container.innerHTML = html;
         }
 
-        function generateTopicCards(userTopics) {
-            const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+        function updateStats(users) {
+            document.getElementById('totalUsers').textContent = users.length;
             
-            return allTopics.map(topicName => {
-                const topicData = userTopics.find(t => t.topicName === topicName);
-                
-                if (topicData) {
-                    // ✅ FIXED: Show completion based on puzzle completion
-                    const puzzleCompleted = topicData.puzzleCompleted;
-                    const tutorialCompleted = topicData.tutorialCompleted;
-                    const score = topicData.puzzleScore || 0;
-                    
-                    let statusClass = '';
-                    let statusText = '';
-                    
-                    if (puzzleCompleted) {
-                        statusClass = 'completed';
-                        statusText = `✓ ${score}%`;
-                    } else if (tutorialCompleted) {
-                        statusClass = 'in-progress';
-                        statusText = '📖 Tutorial';
-                    } else {
-                        statusText = '✗ Not Started';
-                    }
-                    
-                    return `
-                        <div class="topic-item ${statusClass}">
-                            <div class="topic-name">${getDisplayName(topicName)}</div>
-                            <div class="topic-score">${statusText}</div>
-                        </div>
-                    `;
-                } else {
-                    return `
-                        <div class="topic-item">
-                            <div class="topic-name">${getDisplayName(topicName)}</div>
-                            <div class="topic-score">✗ Not Started</div>
-                        </div>
-                    `;
-                }
-            }).join('');
-        }
-
-        function getDisplayName(topicName) {
-            const displayNames = {
-                'Queue': 'Queue',
-                'Stacks': 'Stacks',
-                'LinkedLists': 'Linked Lists',
-                'Trees': 'Trees',
-                'Graphs': 'Graphs'
-            };
-            return displayNames[topicName] || topicName;
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const active = users.filter(u => {
+                if (!u.topics || u.topics.length === 0) return false;
+                const mostRecent = u.topics.reduce((latest, topic) => {
+                    const date = new Date(topic.lastAccessed);
+                    return date > latest ? date : latest;
+                }, new Date(0));
+                return mostRecent > sevenDaysAgo;
+            }).length;
+            
+            document.getElementById('activeUsers').textContent = active;
+            
+            const avgStreak = users.length > 0 
+                ? (users.reduce((sum, u) => sum + (u.streak || 0), 0) / users.length).toFixed(1)
+                : 0;
+            document.getElementById('avgStreak').textContent = avgStreak;
+            
+            const avgCompleted = users.length > 0
+                ? (users.reduce((sum, u) => sum + (u.completedTopics || 0), 0) / users.length).toFixed(1)
+                : 0;
+            document.getElementById('avgCompletion').textContent = avgCompleted;
         }
 
         async function deleteUser(username) {
-            if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
-                return;
-            }
+            if (!confirm(`Delete user "${username}"?`)) return;
 
             try {
                 const response = await fetch(`${API_URL}/users/${username}`, {
                     method: 'DELETE'
                 });
+                const data = await response.json();
+
+                if (data.success) {
+                    showMessage('User deleted successfully');
+                    loadUsers();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showMessage('Failed to delete user: ' + error.message, true);
+            }
+        }
+
+        // Load Lessons
+        async function loadLessons() {
+            try {
+                const response = await fetch(`${API_URL}/lessons`);
+                const data = await response.json();
+                
+                allLessons = data.lessons || [];
+                displayLessons(allLessons);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('lessonsContainer').innerHTML = 
+                    '<p style="color: #999;">No lessons found. Add your first lesson above!</p>';
+            }
+        }
+
+        function displayLessons(lessons) {
+            const container = document.getElementById('lessonsContainer');
+
+            if (lessons.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">No lessons yet. Add your first lesson above!</p>';
+                return;
+            }
+
+            const groupedLessons = {};
+            lessons.forEach(lesson => {
+                if (!groupedLessons[lesson.topicName]) {
+                    groupedLessons[lesson.topicName] = [];
+                }
+                groupedLessons[lesson.topicName].push(lesson);
+            });
+
+            let html = '';
+            Object.keys(groupedLessons).sort().forEach(topic => {
+                html += `<h3 style="color: #667eea; margin-top: 30px; margin-bottom: 15px;">${topic}</h3>`;
+                
+                groupedLessons[topic]
+                    .sort((a, b) => a.order - b.order)
+                    .forEach(lesson => {
+                        html += `
+                            <div class="lesson-card">
+                                <h3>${lesson.title}</h3>
+                                <p>${lesson.description}</p>
+                                <p><small>Order: ${lesson.order}</small></p>
+                                <div class="lesson-actions">
+                                    <button class="btn btn-danger" onclick="deleteLesson('${lesson._id}')">🗑️ Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+            });
+
+            container.innerHTML = html;
+        }
+
+        async function addLesson(event) {
+            event.preventDefault();
+
+            const lessonData = {
+                topicName: document.getElementById('topicName').value,
+                title: document.getElementById('lessonTitle').value,
+                description: document.getElementById('lessonDescription').value,
+                order: parseInt(document.getElementById('lessonOrder').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/lessons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lessonData)
+                });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    showSuccessMessage(`✅ User "${username}" deleted successfully`);
-                    loadData();
+                    showMessage('✅ Lesson added successfully!');
+                    document.getElementById('lessonForm').reset();
+                    loadLessons();
                 } else {
-                    throw new Error(data.error || 'Failed to delete user');
+                    throw new Error(data.error);
                 }
             } catch (error) {
-                alert(`❌ Error: ${error.message}`);
+                showMessage('Failed to add lesson: ' + error.message, true);
             }
         }
 
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredUsers = allUsers.filter(user => 
-                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
-                (user.username && user.username.toLowerCase().includes(searchTerm))
-            );
-            displayUsers(filteredUsers);
-        });
+        async function deleteLesson(lessonId) {
+            if (!confirm('Delete this lesson?')) return;
 
-        function startAutoRefresh() {
-            autoRefreshInterval = setInterval(() => {
-                console.log('Auto-refreshing data...');
-                loadData();
-            }, 30000);
-        }
+            try {
+                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
 
-        function stopAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
+                if (data.success) {
+                    showMessage('Lesson deleted successfully');
+                    loadLessons();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showMessage('Failed to delete lesson: ' + error.message, true);
             }
         }
 
+        async function loadStats() {
+            document.getElementById('totalLessons').textContent = allLessons.length;
+            
+            const topics = new Set(allLessons.map(l => l.topicName));
+            document.getElementById('topicsWithContent').textContent = topics.size;
+            
+            document.getElementById('dbSize').textContent = (allUsers.length + allLessons.length) + ' docs';
+            document.getElementById('serverStatus').textContent = '✅ Online';
+        }
+
+        // Initialize
         window.addEventListener('load', () => {
-            loadData();
-            startAutoRefresh();
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                stopAutoRefresh();
-            } else {
-                startAutoRefresh();
-                loadData();
-            }
+            loadUsers();
         });
     </script>
 </body>
