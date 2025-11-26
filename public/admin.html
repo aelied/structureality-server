@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StructuReality Admin - Full Management</title>
+    <title>StructuReality Admin - User Progress</title>
     <style>
         * {
             margin: 0;
@@ -35,6 +35,11 @@
             color: #667eea;
             font-size: 2.5em;
             margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
         }
 
         .tabs {
@@ -107,17 +112,36 @@
             color: #667eea;
         }
 
-        .card {
+        .controls {
             background: white;
             border-radius: 15px;
-            padding: 30px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .card h2 {
-            color: #667eea;
-            margin-bottom: 20px;
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
         }
 
         .btn {
@@ -159,6 +183,27 @@
 
         .btn-danger:hover {
             background: #e53e3e;
+        }
+
+        .users-table {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            overflow-x: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
         }
 
         .form-group {
@@ -211,6 +256,7 @@
             font-weight: 600;
             text-transform: uppercase;
             font-size: 0.85em;
+            letter-spacing: 1px;
         }
 
         td {
@@ -224,6 +270,80 @@
 
         tbody tr:hover {
             background-color: #f7fafc;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .badge-warning {
+            background: #ed8936;
+            color: white;
+        }
+
+        .badge-info {
+            background: #4299e1;
+            color: white;
+        }
+
+        .topic-progress {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .topic-item {
+            text-align: center;
+            padding: 8px;
+            background: #f7fafc;
+            border-radius: 8px;
+            font-size: 0.8em;
+        }
+
+        .topic-item.completed {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .topic-item.in-progress {
+            background: #fef3c7;
+            color: #78350f;
+        }
+
+        .topic-item .topic-name {
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .topic-item .topic-score {
+            font-size: 0.9em;
+            color: #666;
         }
 
         .lesson-card {
@@ -250,13 +370,11 @@
             margin-top: 15px;
         }
 
-        .success {
-            background: #c6f6d5;
-            color: #22543d;
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border-left: 4px solid #48bb78;
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #667eea;
+            font-size: 1.2em;
         }
 
         .error {
@@ -268,43 +386,36 @@
             border-left: 4px solid #f56565;
         }
 
-        .badge {
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #48bb78;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a0aec0;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .sync-indicator {
             display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
-
-        .badge-success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .badge-warning {
-            background: #ed8936;
-            color: white;
-        }
-
-        .badge-info {
-            background: #4299e1;
-            color: white;
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 5px 0;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            border-radius: 10px;
-            transition: width 0.5s ease;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.75em;
+            background: #e6fffa;
+            color: #047857;
+            margin-left: 10px;
         }
 
         @media (max-width: 768px) {
@@ -314,6 +425,14 @@
 
             .stats-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
             }
 
             .tabs {
@@ -327,6 +446,14 @@
             table {
                 font-size: 0.9em;
             }
+
+            th, td {
+                padding: 10px;
+            }
+
+            .topic-progress {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
 </head>
@@ -334,18 +461,18 @@
     <div class="container">
         <div class="header">
             <h1>📊 StructuReality Admin Dashboard</h1>
-            <p>Manage users, lessons, and monitor progress</p>
+            <p>Monitor user progress and learning statistics <span id="syncIndicator" class="sync-indicator">●</span></p>
             
             <div class="tabs">
-                <button class="tab-btn active" onclick="showTab('users')">👥 Users</button>
-                <button class="tab-btn" onclick="showTab('lessons')">📚 Lessons</button>
+                <button class="tab-btn active" onclick="showTab('users')">👥 User Progress</button>
+                <button class="tab-btn" onclick="showTab('lessons')">📚 Lesson Management</button>
                 <button class="tab-btn" onclick="showTab('stats')">📈 Statistics</button>
             </div>
         </div>
 
-        <div id="messageContainer"></div>
+        <div id="errorContainer"></div>
 
-        <!-- Users Tab -->
+        <!-- User Progress Tab -->
         <div id="usersTab" class="tab-content active">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -366,16 +493,21 @@
                 </div>
             </div>
 
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2>👥 All Users</h2>
-                    <button class="btn btn-primary" onclick="loadUsers()">🔄 Refresh</button>
+            <div class="controls">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="🔍 Search by name or username...">
                 </div>
-                <div id="usersTable">Loading...</div>
+                <button class="btn btn-primary" onclick="loadData()">🔄 Refresh Data</button>
+            </div>
+
+            <div class="users-table">
+                <h2 style="margin-bottom: 20px; color: #667eea;">👥 All Users & Progress</h2>
+                <div id="loadingIndicator" class="loading">Loading users...</div>
+                <div id="tableContainer"></div>
             </div>
         </div>
 
-        <!-- Lessons Tab -->
+        <!-- Lesson Management Tab -->
         <div id="lessonsTab" class="tab-content">
             <div class="card">
                 <h2>➕ Add New Lesson</h2>
@@ -416,7 +548,7 @@
             </div>
         </div>
 
-        <!-- Stats Tab -->
+        <!-- Statistics Tab -->
         <div id="statsTab" class="tab-content">
             <div class="stats-grid">
                 <div class="stat-card">
@@ -428,8 +560,8 @@
                     <div class="value" id="topicsWithContent">-</div>
                 </div>
                 <div class="stat-card">
-                    <h3>Database Size</h3>
-                    <div class="value" id="dbSize">-</div>
+                    <h3>Total Progress Records</h3>
+                    <div class="value" id="totalRecords">-</div>
                 </div>
                 <div class="stat-card">
                     <h3>Server Status</h3>
@@ -438,19 +570,48 @@
             </div>
 
             <div class="card">
-                <h2>📊 Topic Statistics</h2>
-                <canvas id="topicChart" style="max-height: 400px;"></canvas>
+                <h2>📊 User Engagement Overview</h2>
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Total Study Time</h3>
+                        <div style="font-size: 2em; font-weight: bold; color: #667eea;" id="totalStudyTime">-</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Avg Time per User</h3>
+                        <div style="font-size: 2em; font-weight: bold; color: #667eea;" id="avgTimePerUser">-</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Highest Streak</h3>
+                        <div style="font-size: 2em; font-weight: bold; color: #667eea;" id="highestStreak">-</div>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3 style="color: #666; font-size: 0.9em; margin-bottom: 10px;">Completion Rate</h3>
+                        <div style="font-size: 2em; font-weight: bold; color: #667eea;" id="completionRate">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📚 Topic Performance Breakdown</h2>
+                <div id="topicBreakdown">Loading...</div>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Top Performers</h2>
+                <div id="topPerformers">Loading...</div>
             </div>
         </div>
     </div>
 
     <script>
+        // API Configuration
         const API_URL = window.location.hostname === 'localhost' 
             ? 'http://localhost:3000/api'
             : 'https://structureality-admin.onrender.com/api';
 
         let allUsers = [];
         let allLessons = [];
+        let autoRefreshInterval;
 
         // Tab switching
         function showTab(tabName) {
@@ -460,45 +621,137 @@
             document.getElementById(tabName + 'Tab').classList.add('active');
             event.target.classList.add('active');
 
-            if (tabName === 'users') loadUsers();
-            if (tabName === 'lessons') loadLessons();
-            if (tabName === 'stats') loadStats();
-        }
-
-        // Show message
-        function showMessage(message, isError = false) {
-            const container = document.getElementById('messageContainer');
-            container.innerHTML = `
-                <div class="${isError ? 'error' : 'success'}">
-                    ${message}
-                </div>
-            `;
-            setTimeout(() => {
-                container.innerHTML = '';
-            }, 4000);
-        }
-
-        // Load Users
-        async function loadUsers() {
-            try {
-                const response = await fetch(`${API_URL}/progress`);
-                const data = await response.json();
-                
-                allUsers = data.data || [];
-                displayUsers(allUsers);
-                updateStats(allUsers);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Failed to load users: ' + error.message, true);
+            if (tabName === 'users') {
+                loadData();
+            } else if (tabName === 'lessons') {
+                loadLessons();
+            } else if (tabName === 'stats') {
+                loadStats();
             }
         }
 
+        async function loadData() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('errorContainer').innerHTML = '';
+                updateSyncIndicator('syncing');
+
+                console.log('Fetching progress from:', `${API_URL}/progress`);
+
+                const progressResponse = await fetch(`${API_URL}/progress`);
+                console.log('Progress response status:', progressResponse.status);
+                
+                if (!progressResponse.ok) {
+                    throw new Error(`HTTP error! status: ${progressResponse.status}`);
+                }
+                
+                const progressData = await progressResponse.json();
+                console.log('Progress data:', progressData);
+                
+                allUsers = progressData.data || [];
+
+                try {
+                    const statsResponse = await fetch(`${API_URL}/stats`);
+                    if (statsResponse.ok) {
+                        const statsData = await statsResponse.json();
+                        console.log('Stats data:', statsData);
+                        updateStatistics(statsData);
+                    }
+                } catch (statsError) {
+                    console.log('Stats not available, calculating from progress data:', statsError);
+                    calculateStatsFromProgress(allUsers);
+                }
+
+                displayUsers(allUsers);
+                document.getElementById('loadingIndicator').style.display = 'none';
+                updateSyncIndicator('synced');
+
+                showSuccessMessage(`✅ Loaded ${allUsers.length} users successfully`);
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('errorContainer').innerHTML = `
+                    <div class="error">
+                        <strong>⚠️ Error:</strong> ${error.message}<br>
+                        <small>Check console (F12) for more details. Make sure server is running at: ${API_URL}</small>
+                    </div>
+                `;
+                document.getElementById('loadingIndicator').style.display = 'none';
+                updateSyncIndicator('error');
+            }
+        }
+
+        function calculateStatsFromProgress(users) {
+            const totalUsers = users.length;
+            
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            
+            const activeUsers = users.filter(user => {
+                if (!user.topics || user.topics.length === 0) return false;
+                const mostRecent = user.topics.reduce((latest, topic) => {
+                    const topicDate = new Date(topic.lastAccessed);
+                    return topicDate > latest ? topicDate : latest;
+                }, new Date(0));
+                return mostRecent > sevenDaysAgo;
+            }).length;
+
+            const totalStreak = users.reduce((sum, user) => sum + (user.streak || 0), 0);
+            const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
+
+            const totalCompleted = users.reduce((sum, user) => sum + (user.completedTopics || 0), 0);
+            const avgCompletion = totalUsers > 0 ? (totalCompleted / totalUsers).toFixed(1) : 0;
+
+            updateStatistics({
+                totalUsers,
+                activeUsers,
+                avgStreak,
+                avgCompletion
+            });
+        }
+
+        function updateStatistics(stats) {
+            document.getElementById('totalUsers').textContent = stats.totalUsers || 0;
+            document.getElementById('activeUsers').textContent = stats.activeUsers || 0;
+            document.getElementById('avgStreak').textContent = stats.avgStreak || 0;
+            document.getElementById('avgCompletion').textContent = stats.avgCompletion || 0;
+        }
+
+        function updateSyncIndicator(status) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusMap = {
+                'synced': { text: '● Synced', color: '#047857' },
+                'syncing': { text: '⟳ Syncing...', color: '#ed8936' },
+                'error': { text: '● Error', color: '#c53030' }
+            };
+            
+            const config = statusMap[status] || statusMap['synced'];
+            indicator.textContent = config.text;
+            indicator.style.color = config.color;
+        }
+
+        function showSuccessMessage(message) {
+            const container = document.getElementById('errorContainer');
+            container.innerHTML = `<div class="success">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 3000);
+        }
+
         function displayUsers(users) {
-            const container = document.getElementById('usersTable');
+            const container = document.getElementById('tableContainer');
 
             if (users.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #999;">No users found</p>';
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                        </svg>
+                        <h3>No users found</h3>
+                        <p>Users will appear here when they complete activities in Unity</p>
+                    </div>
+                `;
                 return;
             }
 
@@ -506,10 +759,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>User</th>
+                            <th>User Info</th>
                             <th>Streak</th>
-                            <th>Completed</th>
-                            <th>Progress</th>
+                            <th>Topics Completed</th>
+                            <th>Progress Overview</th>
+                            <th>Last Active</th>
+                            <th>Total Time</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -517,26 +772,71 @@
             `;
 
             users.forEach(user => {
-                const completedTopics = user.topics ? user.topics.filter(t => t.puzzleCompleted).length : 0;
+                const topics = user.topics || [];
+                
+                // ✅ FIXED: Calculate actual completion based on puzzle completion
+                const actualCompletedTopics = topics.filter(t => t.puzzleCompleted).length;
                 const totalTopics = 5;
-                const percent = Math.round((completedTopics / totalTopics) * 100);
+                const completionPercent = Math.round((actualCompletedTopics / totalTopics) * 100);
+
+                let totalTime = 0;
+                let totalScore = 0;
+                let scoredTopics = 0;
+                
+                topics.forEach(topic => {
+                    totalTime += topic.timeSpent || 0;
+                    if (topic.puzzleCompleted && topic.puzzleScore > 0) {
+                        totalScore += topic.puzzleScore;
+                        scoredTopics++;
+                    }
+                });
+
+                const timeMinutes = Math.round(totalTime / 60);
+                const avgScore = scoredTopics > 0 ? Math.round(totalScore / scoredTopics) : 0;
+
+                let lastActive = 'Never';
+                if (topics.length > 0) {
+                    const mostRecent = topics.reduce((latest, topic) => {
+                        if (!topic.lastAccessed) return latest;
+                        const topicDate = new Date(topic.lastAccessed);
+                        return !latest || topicDate > latest ? topicDate : latest;
+                    }, null);
+                    
+                    if (mostRecent) {
+                        lastActive = mostRecent.toLocaleDateString();
+                    }
+                }
 
                 html += `
                     <tr>
                         <td>
                             <strong>${user.name || user.username}</strong><br>
-                            <small>@${user.username}</small>
+                            <small style="color: #666;">@${user.username}</small>
                         </td>
-                        <td><span class="badge badge-warning">🔥 ${user.streak || 0}</span></td>
-                        <td><span class="badge badge-success">${completedTopics}/${totalTopics}</span></td>
                         <td>
+                            <span class="badge badge-warning">🔥 ${user.streak || 0} days</span>
+                        </td>
+                        <td>
+                            <span class="badge badge-success">${actualCompletedTopics} / ${totalTopics}</span>
+                            <br><small>Avg Score: ${avgScore}%</small>
+                        </td>
+                        <td style="min-width: 350px;">
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: ${percent}%"></div>
+                                <div class="progress-fill" style="width: ${completionPercent}%"></div>
                             </div>
-                            <small>${percent}%</small>
+                            <small>${completionPercent}% Complete</small>
+                            <div class="topic-progress">
+                                ${generateTopicCards(topics)}
+                            </div>
+                        </td>
+                        <td>${lastActive}</td>
+                        <td>
+                            <span class="badge badge-info">⏱ ${timeMinutes} min</span>
                         </td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">Delete</button>
+                            <button class="btn btn-danger" onclick="deleteUser('${user.username}')">
+                                🗑️ Delete
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -546,55 +846,309 @@
             container.innerHTML = html;
         }
 
-        function updateStats(users) {
-            document.getElementById('totalUsers').textContent = users.length;
-            
-            const sevenDaysAgo = new Date();
-            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-            
-            const active = users.filter(u => {
-                if (!u.topics || u.topics.length === 0) return false;
-                const mostRecent = u.topics.reduce((latest, topic) => {
-                    const date = new Date(topic.lastAccessed);
-                    return date > latest ? date : latest;
-                }, new Date(0));
-                return mostRecent > sevenDaysAgo;
-            }).length;
-            
-            document.getElementById('activeUsers').textContent = active;
-            
-            const avgStreak = users.length > 0 
-                ? (users.reduce((sum, u) => sum + (u.streak || 0), 0) / users.length).toFixed(1)
-                : 0;
-            document.getElementById('avgStreak').textContent = avgStreak;
-            
-            const avgCompleted = users.length > 0
-                ? (users.reduce((sum, u) => sum + (u.completedTopics || 0), 0) / users.length).toFixed(1)
-                : 0;
-            document.getElementById('avgCompletion').textContent = avgCompleted;
-        }
+        async function addLesson(event) {
+            event.preventDefault();
 
-        async function deleteUser(username) {
-            if (!confirm(`Delete user "${username}"?`)) return;
+            const lessonData = {
+                topicName: document.getElementById('topicName').value,
+                title: document.getElementById('lessonTitle').value,
+                description: document.getElementById('lessonDescription').value,
+                order: parseInt(document.getElementById('lessonOrder').value)
+            };
 
             try {
-                const response = await fetch(`${API_URL}/users/${username}`, {
+                const response = await fetch(`${API_URL}/lessons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lessonData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccessMessage('✅ Lesson added successfully!');
+                    document.getElementById('lessonForm').reset();
+                    loadLessons();
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (error) {
+                showSuccessMessage('Failed to add lesson: ' + error.message);
+            }
+        }
+
+        async function deleteLesson(lessonId) {
+            if (!confirm('Delete this lesson?')) return;
+
+            try {
+                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
                     method: 'DELETE'
                 });
                 const data = await response.json();
 
                 if (data.success) {
-                    showMessage('User deleted successfully');
-                    loadUsers();
+                    showSuccessMessage('Lesson deleted successfully');
+                    loadLessons();
                 } else {
                     throw new Error(data.error);
                 }
             } catch (error) {
-                showMessage('Failed to delete user: ' + error.message, true);
+                showSuccessMessage('Failed to delete lesson: ' + error.message);
             }
         }
 
-        // Load Lessons
+        // Statistics Functions
+        async function loadStats() {
+            try {
+                // Calculate lesson stats
+                document.getElementById('totalLessons').textContent = allLessons.length;
+                
+                const topics = new Set(allLessons.map(l => l.topicName));
+                document.getElementById('topicsWithContent').textContent = topics.size;
+                
+                document.getElementById('totalRecords').textContent = allUsers.length + allLessons.length;
+                document.getElementById('serverStatus').textContent = '✅';
+
+                // Calculate engagement stats
+                let totalTime = 0;
+                let highestStreak = 0;
+                let totalCompleted = 0;
+                const totalPossible = allUsers.length * 5; // 5 topics per user
+
+                allUsers.forEach(user => {
+                    if (user.topics) {
+                        user.topics.forEach(topic => {
+                            totalTime += topic.timeSpent || 0;
+                            if (topic.puzzleCompleted) totalCompleted++;
+                        });
+                    }
+                    if (user.streak > highestStreak) {
+                        highestStreak = user.streak;
+                    }
+                });
+
+                const totalHours = Math.round(totalTime / 3600);
+                const avgMinutes = allUsers.length > 0 ? Math.round((totalTime / 60) / allUsers.length) : 0;
+                const completionPercent = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+
+                document.getElementById('totalStudyTime').textContent = totalHours + ' hrs';
+                document.getElementById('avgTimePerUser').textContent = avgMinutes + ' min';
+                document.getElementById('highestStreak').textContent = highestStreak + ' 🔥';
+                document.getElementById('completionRate').textContent = completionPercent + '%';
+
+                // Topic breakdown
+                displayTopicBreakdown();
+
+                // Top performers
+                displayTopPerformers();
+
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        function displayTopicBreakdown() {
+            const topics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+            const topicStats = {};
+
+            topics.forEach(topic => {
+                topicStats[topic] = {
+                    completed: 0,
+                    total: allUsers.length,
+                    totalScore: 0,
+                    scoreCount: 0
+                };
+            });
+
+            allUsers.forEach(user => {
+                if (user.topics) {
+                    user.topics.forEach(topic => {
+                        if (topicStats[topic.topicName]) {
+                            if (topic.puzzleCompleted) {
+                                topicStats[topic.topicName].completed++;
+                                topicStats[topic.topicName].totalScore += topic.puzzleScore || 0;
+                                topicStats[topic.topicName].scoreCount++;
+                            }
+                        }
+                    });
+                }
+            });
+
+            let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">';
+
+            topics.forEach(topic => {
+                const stats = topicStats[topic];
+                const completionRate = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
+                const avgScore = stats.scoreCount > 0 ? Math.round(stats.totalScore / stats.scoreCount) : 0;
+
+                html += `
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                        <h3 style="color: #667eea; margin-bottom: 10px;">${getDisplayName(topic)}</h3>
+                        <div style="margin-bottom: 10px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${completionRate}%"></div>
+                            </div>
+                            <small>${completionRate}% completion</small>
+                        </div>
+                        <p style="color: #666; font-size: 0.9em;">
+                            <strong>${stats.completed}</strong> / ${stats.total} users<br>
+                            Avg Score: <strong>${avgScore}%</strong>
+                        </p>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            document.getElementById('topicBreakdown').innerHTML = html;
+        }
+
+        function displayTopPerformers() {
+            const performers = allUsers
+                .map(user => {
+                    let totalScore = 0;
+                    let completedCount = 0;
+                    
+                    if (user.topics) {
+                        user.topics.forEach(topic => {
+                            if (topic.puzzleCompleted && topic.puzzleScore > 0) {
+                                totalScore += topic.puzzleScore;
+                                completedCount++;
+                            }
+                        });
+                    }
+
+                    return {
+                        name: user.name || user.username,
+                        username: user.username,
+                        avgScore: completedCount > 0 ? Math.round(totalScore / completedCount) : 0,
+                        completed: completedCount,
+                        streak: user.streak || 0
+                    };
+                })
+                .filter(p => p.completed > 0)
+                .sort((a, b) => {
+                    if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore;
+                    if (b.completed !== a.completed) return b.completed - a.completed;
+                    return b.streak - a.streak;
+                })
+                .slice(0, 10);
+
+            if (performers.length === 0) {
+                document.getElementById('topPerformers').innerHTML = '<p style="text-align: center; color: #999;">No completed topics yet</p>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>User</th>
+                            <th>Avg Score</th>
+                            <th>Topics Completed</th>
+                            <th>Streak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            performers.forEach((performer, index) => {
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                html += `
+                    <tr>
+                        <td><strong>${medal} ${index + 1}</strong></td>
+                        <td>
+                            <strong>${performer.name}</strong><br>
+                            <small>@${performer.username}</small>
+                        </td>
+                        <td><span class="badge badge-success">${performer.avgScore}%</span></td>
+                        <td><span class="badge badge-info">${performer.completed} / 5</span></td>
+                        <td><span class="badge badge-warning">🔥 ${performer.streak}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('topPerformers').innerHTML = html;
+        }
+
+        function generateTopicCards(userTopics) {
+            const allTopics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+            
+            return allTopics.map(topicName => {
+                const topicData = userTopics.find(t => t.topicName === topicName);
+                
+                if (topicData) {
+                    // ✅ FIXED: Show completion based on puzzle completion
+                    const puzzleCompleted = topicData.puzzleCompleted;
+                    const tutorialCompleted = topicData.tutorialCompleted;
+                    const score = topicData.puzzleScore || 0;
+                    
+                    let statusClass = '';
+                    let statusText = '';
+                    
+                    if (puzzleCompleted) {
+                        statusClass = 'completed';
+                        statusText = `✓ ${score}%`;
+                    } else if (tutorialCompleted) {
+                        statusClass = 'in-progress';
+                        statusText = '📖 Tutorial';
+                    } else {
+                        statusText = '✗ Not Started';
+                    }
+                    
+                    return `
+                        <div class="topic-item ${statusClass}">
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
+                            <div class="topic-score">${statusText}</div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="topic-item">
+                            <div class="topic-name">${getDisplayName(topicName)}</div>
+                            <div class="topic-score">✗ Not Started</div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function getDisplayName(topicName) {
+            const displayNames = {
+                'Queue': 'Queue',
+                'Stacks': 'Stacks',
+                'LinkedLists': 'Linked Lists',
+                'Trees': 'Trees',
+                'Graphs': 'Graphs'
+            };
+            return displayNames[topicName] || topicName;
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/users/${username}`, {
+                    method: 'DELETE'
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccessMessage(`✅ User "${username}" deleted successfully`);
+                    loadData();
+                } else {
+                    throw new Error(data.error || 'Failed to delete user');
+                }
+            } catch (error) {
+                alert(`❌ Error: ${error.message}`);
+            }
+        }
+
+        // Lesson Management Functions
         async function loadLessons() {
             try {
                 const response = await fetch(`${API_URL}/lessons`);
@@ -648,72 +1202,3 @@
 
             container.innerHTML = html;
         }
-
-        async function addLesson(event) {
-            event.preventDefault();
-
-            const lessonData = {
-                topicName: document.getElementById('topicName').value,
-                title: document.getElementById('lessonTitle').value,
-                description: document.getElementById('lessonDescription').value,
-                order: parseInt(document.getElementById('lessonOrder').value)
-            };
-
-            try {
-                const response = await fetch(`${API_URL}/lessons`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(lessonData)
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage('✅ Lesson added successfully!');
-                    document.getElementById('lessonForm').reset();
-                    loadLessons();
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                showMessage('Failed to add lesson: ' + error.message, true);
-            }
-        }
-
-        async function deleteLesson(lessonId) {
-            if (!confirm('Delete this lesson?')) return;
-
-            try {
-                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
-                    method: 'DELETE'
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    showMessage('Lesson deleted successfully');
-                    loadLessons();
-                } else {
-                    throw new Error(data.error);
-                }
-            } catch (error) {
-                showMessage('Failed to delete lesson: ' + error.message, true);
-            }
-        }
-
-        async function loadStats() {
-            document.getElementById('totalLessons').textContent = allLessons.length;
-            
-            const topics = new Set(allLessons.map(l => l.topicName));
-            document.getElementById('topicsWithContent').textContent = topics.size;
-            
-            document.getElementById('dbSize').textContent = (allUsers.length + allLessons.length) + ' docs';
-            document.getElementById('serverStatus').textContent = '✅ Online';
-        }
-
-        // Initialize
-        window.addEventListener('load', () => {
-            loadUsers();
-        });
-    </script>
-</body>
-</html>
