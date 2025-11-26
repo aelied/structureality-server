@@ -438,6 +438,14 @@
                         <label for="lessonDescription">Description *</label>
                         <textarea id="lessonDescription" placeholder="Brief description of the lesson content" required></textarea>
                     </div>
+                    <!-- NEW CONTENT FIELD -->
+                    <div class="form-group">
+                        <label for="lessonContent">Lesson Content (Full Text)</label>
+                        <textarea id="lessonContent" placeholder="Enter the full lesson content here. You can use TextMeshPro rich text tags like <b>bold</b>, <i>italic</i>, <size=20>size</size>" style="min-height: 400px; font-family: monospace;"></textarea>
+                        <small style="color: #666; display: block; margin-top: 5px;">
+                            💡 Tip: Use TextMeshPro tags: &lt;b&gt;bold&lt;/b&gt;, &lt;i&gt;italic&lt;/i&gt;, &lt;size=24&gt;large text&lt;/size&gt;
+                        </small>
+                    </div>
                     <div class="form-group">
                         <label for="lessonOrder">Display Order</label>
                         <input type="number" id="lessonOrder" value="1" min="1">
@@ -771,10 +779,15 @@
                 groupedLessons[topic]
                     .sort((a, b) => a.order - b.order)
                     .forEach(lesson => {
+                        const contentPreview = lesson.content 
+                            ? (lesson.content.substring(0, 100) + (lesson.content.length > 100 ? '...' : ''))
+                            : 'No content added yet';
+                        
                         html += `
                             <div class="lesson-card">
                                 <h3>${lesson.title}</h3>
-                                <p>${lesson.description}</p>
+                                <p><strong>Description:</strong> ${lesson.description}</p>
+                                <p><strong>Content Preview:</strong> <small style="color: #888;">${contentPreview}</small></p>
                                 <p><small>Order: ${lesson.order}</small></p>
                                 <div class="lesson-actions">
                                     <button class="btn btn-danger" onclick="deleteLesson('${lesson._id}')">🗑️ Delete</button>
@@ -786,7 +799,6 @@
 
             container.innerHTML = html;
         }
-
         async function addLesson(event) {
             event.preventDefault();
 
@@ -794,6 +806,7 @@
                 topicName: document.getElementById('topicName').value,
                 title: document.getElementById('lessonTitle').value,
                 description: document.getElementById('lessonDescription').value,
+                content: document.getElementById('lessonContent').value, // ADD THIS LINE
                 order: parseInt(document.getElementById('lessonOrder').value)
             };
 

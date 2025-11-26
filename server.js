@@ -423,6 +423,7 @@ app.post('/api/lessons', async (req, res) => {
             topicName: req.body.topicName,
             title: req.body.title,
             description: req.body.description,
+            content: req.body.content || '', // ADD THIS LINE
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
@@ -461,6 +462,7 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
         const updateData = {
             title: req.body.title,
             description: req.body.description,
+            content: req.body.content, // ADD THIS LINE
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
