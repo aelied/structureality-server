@@ -55,9 +55,10 @@ async function connectDB() {
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
-        version: '2.0.0',
+        version: '2.1.0',
         database: db ? 'Connected' : 'Disconnected',
         collections: ['users', 'lessons'],
+        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking'],
         message: 'Server ready for Unity and admin connections'
     });
 });
@@ -74,11 +75,51 @@ app.post('/api/users', async (req, res) => {
         
         if (!userData.progress) {
             userData.progress = {
-                Queue: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
-                Stacks: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
-                LinkedLists: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
-                Trees: { tutorialCompleted: false, puzzleCompleted: false, score: 0 },
-                Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0 }
+                Queue: { 
+                    tutorialCompleted: false, 
+                    puzzleCompleted: false, 
+                    score: 0,
+                    lessonsCompleted: 0, // NEW
+                    progressPercentage: 0,
+                    lastAccessed: '',
+                    timeSpent: 0
+                },
+                Stacks: { 
+                    tutorialCompleted: false, 
+                    puzzleCompleted: false, 
+                    score: 0,
+                    lessonsCompleted: 0, // NEW
+                    progressPercentage: 0,
+                    lastAccessed: '',
+                    timeSpent: 0
+                },
+                LinkedLists: { 
+                    tutorialCompleted: false, 
+                    puzzleCompleted: false, 
+                    score: 0,
+                    lessonsCompleted: 0, // NEW
+                    progressPercentage: 0,
+                    lastAccessed: '',
+                    timeSpent: 0
+                },
+                Trees: { 
+                    tutorialCompleted: false, 
+                    puzzleCompleted: false, 
+                    score: 0,
+                    lessonsCompleted: 0, // NEW
+                    progressPercentage: 0,
+                    lastAccessed: '',
+                    timeSpent: 0
+                },
+                Graphs: { 
+                    tutorialCompleted: false, 
+                    puzzleCompleted: false, 
+                    score: 0,
+                    lessonsCompleted: 0, // NEW
+                    progressPercentage: 0,
+                    lastAccessed: '',
+                    timeSpent: 0
+                }
             };
         }
         
@@ -230,7 +271,8 @@ app.put('/api/progress/:username', async (req, res) => {
                     score: topic.puzzleScore || 0,
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
-                    timeSpent: topic.timeSpent || 0
+                    timeSpent: topic.timeSpent || 0,
+                    lessonsCompleted: topic.lessonsCompleted || 0 // NEW: Preserve lessons completed
                 };
             });
         }
@@ -275,6 +317,80 @@ app.put('/api/progress/:username', async (req, res) => {
     }
 });
 
+// NEW: Update lesson completion for a specific topic
+app.put('/api/progress/:username/lessons', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, lessonsCompleted } = req.body;
+        
+        console.log(`📚 Updating lessons for ${username}: ${topicName} - ${lessonsCompleted} lessons`);
+        
+        if (!topicName || lessonsCompleted === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'topicName and lessonsCompleted are required'
+            });
+        }
+        
+        const user = await usersCollection.findOne({ username });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        // Initialize progress object if it doesn't exist
+        if (!user.progress) {
+            user.progress = {};
+        }
+        
+        if (!user.progress[topicName]) {
+            user.progress[topicName] = {
+                tutorialCompleted: false,
+                puzzleCompleted: false,
+                score: 0,
+                progressPercentage: 0,
+                lastAccessed: new Date().toISOString(),
+                timeSpent: 0
+            };
+        }
+        
+        // Update lessons completed
+        user.progress[topicName].lessonsCompleted = lessonsCompleted;
+        user.progress[topicName].lastAccessed = new Date().toISOString();
+        
+        // Update in database
+        const result = await usersCollection.updateOne(
+            { username },
+            { 
+                $set: { 
+                    [`progress.${topicName}.lessonsCompleted`]: lessonsCompleted,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                } 
+            }
+        );
+        
+        console.log(`✅ Lessons updated for ${username}: ${topicName} = ${lessonsCompleted}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Lesson completion updated',
+            topicName,
+            lessonsCompleted 
+        });
+        
+    } catch (error) {
+        console.error('Error updating lessons:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to update lesson completion',
+            details: error.message 
+        });
+    }
+});
+
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
@@ -297,19 +413,23 @@ app.get('/api/progress/:username', async (req, res) => {
                     puzzleScore: topic.score || 0,
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
-                    timeSpent: topic.timeSpent || 0
+                    timeSpent: topic.timeSpent || 0,
+                    lessonsCompleted: topic.lessonsCompleted || 0 // NEW: Include lessons completed
                 });
             });
         }
         
         res.json({
             success: true,
-            username: user.username,
-            name: user.name || '',
-            streak: user.streak || 0,
-            completedTopics: user.completedTopics || 0,
-            lastUpdated: user.lastUpdated || '',
-            topics: topics
+            data: {
+                username: user.username,
+                name: user.name || '',
+                email: user.email || '',
+                streak: user.streak || 0,
+                completedTopics: user.completedTopics || 0,
+                lastUpdated: user.lastUpdated || '',
+                topics: topics
+            }
         });
         
     } catch (error) {
@@ -338,7 +458,8 @@ app.get('/api/progress', async (req, res) => {
                         puzzleScore: topic.score || 0,
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
-                        timeSpent: topic.timeSpent || 0
+                        timeSpent: topic.timeSpent || 0,
+                        lessonsCompleted: topic.lessonsCompleted || 0 // NEW
                     });
                 });
             }
@@ -370,7 +491,6 @@ app.get('/api/progress', async (req, res) => {
 
 // ==================== LESSON MANAGEMENT ====================
 
-// Get all lessons
 app.get('/api/lessons', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({})
@@ -392,7 +512,6 @@ app.get('/api/lessons', async (req, res) => {
     }
 });
 
-// Get lessons by topic
 app.get('/api/lessons/:topicName', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({ 
@@ -416,19 +535,17 @@ app.get('/api/lessons/:topicName', async (req, res) => {
     }
 });
 
-// Add new lesson
 app.post('/api/lessons', async (req, res) => {
     try {
         const lessonData = {
             topicName: req.body.topicName,
             title: req.body.title,
             description: req.body.description,
-            content: req.body.content || '', // ADD THIS LINE
+            content: req.body.content || '',
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
         
-        // Validate
         if (!lessonData.topicName || !lessonData.title || !lessonData.description) {
             return res.status(400).json({
                 success: false,
@@ -456,18 +573,16 @@ app.post('/api/lessons', async (req, res) => {
     }
 });
 
-// Update lesson
 app.put('/api/lessons/:lessonId', async (req, res) => {
     try {
         const updateData = {
             title: req.body.title,
             description: req.body.description,
-            content: req.body.content, // ADD THIS LINE
+            content: req.body.content,
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
         
-        // Remove undefined fields
         Object.keys(updateData).forEach(key => 
             updateData[key] === undefined && delete updateData[key]
         );
@@ -499,7 +614,6 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
     }
 });
 
-// Delete lesson
 app.delete('/api/lessons/:lessonId', async (req, res) => {
     try {
         const result = await lessonsCollection.deleteOne({ 
@@ -575,12 +689,13 @@ app.get('/api/stats', async (req, res) => {
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server v2.0 - MongoDB + Lessons');
+        console.log('🚀 StructuReality Server v2.1 - With Lesson Tracking');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🎛️ Admin: http://localhost:${PORT}/admin.html`);
         console.log(`💾 Database: ${DB_NAME}`);
         console.log(`📚 Collections: users, lessons`);
+        console.log(`✨ New Feature: Lesson completion tracking`);
         console.log('==================================================\n');
     });
 });
