@@ -614,6 +614,58 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
     }
 });
 
+app.post('/api/lessons/complete', async (req, res) => {
+    try {
+        const { username, topicName, lessonsCompleted } = req.body;
+        
+        console.log(`📚 ${username} - ${topicName}: ${lessonsCompleted} lessons`);
+        
+        if (!username || !topicName || lessonsCompleted === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing required fields'
+            });
+        }
+        
+        const user = await usersCollection.findOne({ username });
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        await usersCollection.updateOne(
+            { username },
+            { 
+                $set: { 
+                    [`progress.${topicName}.lessonsCompleted`]: lessonsCompleted,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                } 
+            }
+        );
+        
+        console.log(`✅ Updated: ${username} - ${topicName} = ${lessonsCompleted}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Lesson completion updated',
+            username,
+            topicName,
+            lessonsCompleted 
+        });
+        
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to update',
+            details: error.message 
+        });
+    }
+});
+
 app.delete('/api/lessons/:lessonId', async (req, res) => {
     try {
         const result = await lessonsCollection.deleteOne({ 
@@ -641,6 +693,8 @@ app.delete('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
+
 
 // ==================== STATS ====================
 
