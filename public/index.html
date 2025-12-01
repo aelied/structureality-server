@@ -200,7 +200,6 @@
           
           // Check for null (key not found) or the corrupted string "undefined"
           if (!adminUser || adminUser === 'undefined') {
-              // Clean up any corrupted item before redirecting
               localStorage.removeItem('adminUser'); 
               window.location.href = 'login.html';
               return null;
@@ -422,12 +421,15 @@
 
       // Initialize
       window.addEventListener('load', () => {
-        const user = checkAuth();
+        const user = checkAuth(); // Executes immediately upon script load
         if (user) {
-          document.getElementById('adminName').textContent = user.name || user.username;
-          document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-          document.getElementById('adminEmailDisplay').textContent = user.email;
-          loadDashboardData();
+            // Only proceed with setting up the dashboard if checkAuth succeeded
+            document.getElementById('adminName').textContent = user.name || user.username;
+            document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+            document.getElementById('adminEmailDisplay').textContent = user.email;
+            
+            // Defer the dashboard data loading until the window is fully loaded
+            window.addEventListener('load', loadDashboardData); 
         }
       });
     </script>

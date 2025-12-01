@@ -195,7 +195,6 @@
           
           // Check for null (key not found) or the corrupted string "undefined"
           if (!adminUser || adminUser === 'undefined') {
-              // Clean up any corrupted item before redirecting
               localStorage.removeItem('adminUser'); 
               window.location.href = 'login.html';
               return null;
@@ -211,7 +210,7 @@
               return null;
           }
       }
-      
+
       async function loadUsers() {
         try {
           const response = await fetch(`${API_URL}/progress`);

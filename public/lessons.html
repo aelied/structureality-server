@@ -367,7 +367,6 @@
           
           // Check for null (key not found) or the corrupted string "undefined"
           if (!adminUser || adminUser === 'undefined') {
-              // Clean up any corrupted item before redirecting
               localStorage.removeItem('adminUser'); 
               window.location.href = 'login.html';
               return null;
