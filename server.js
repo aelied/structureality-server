@@ -839,7 +839,7 @@ connectDB().then(() => {
         console.log('🚀 StructuReality Server v2.2 - Password Management');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
-        console.log(`🎛️ Admin: http://localhost:${PORT}/admin.html`);
+        console.log(`🎛️ Admin: http://localhost:${PORT}/login.html`);
         console.log(`💾 Database: ${DB_NAME}`);
         console.log(`📚 Collections: users, lessons`);
         console.log(`✨ Features: User Auth, Progress Tracking, Password Change`);
