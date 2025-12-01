@@ -196,12 +196,25 @@
       }
 
       function checkAuth() {
-        const adminUser = localStorage.getItem('adminUser');
-        if (!adminUser) {
-          window.location.href = 'login.html';
-          return null;
-        }
-        return JSON.parse(adminUser);
+          const adminUser = localStorage.getItem('adminUser');
+          
+          // Check for null (key not found) or the corrupted string "undefined"
+          if (!adminUser || adminUser === 'undefined') {
+              // Clean up any corrupted item before redirecting
+              localStorage.removeItem('adminUser'); 
+              window.location.href = 'login.html';
+              return null;
+          }
+          
+          try {
+              return JSON.parse(adminUser);
+          } catch (e) {
+              console.error("Failed to parse adminUser JSON:", e);
+              // Clear the corrupted item and redirect on parse failure
+              localStorage.removeItem('adminUser');
+              window.location.href = 'login.html';
+              return null;
+          }
       }
 
       async function loadDashboardData() {
