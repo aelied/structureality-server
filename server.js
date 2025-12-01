@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
@@ -9,6 +10,8 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static files from 'public' directory
 app.use(express.static('public'));
 
 // MongoDB Connection
@@ -55,12 +58,35 @@ async function connectDB() {
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
-        version: '2.1.0',
+        version: '2.2.0',
         database: db ? 'Connected' : 'Disconnected',
         collections: ['users', 'lessons'],
         features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking', 'Password Management'],
-        message: 'Server ready for Unity and admin connections'
+        message: 'Server ready for Unity and admin connections',
+        adminPages: {
+            login: '/login.html',
+            dashboard: '/index.html',
+            users: '/users.html',
+            lessons: '/lessons.html'
+        }
     });
+});
+
+// Serve admin pages explicitly (optional, but good for clarity)
+app.get('/login.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/users.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'users.html'));
+});
+
+app.get('/lessons.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'lessons.html'));
 });
 
 // ==================== USER ENDPOINTS ====================
@@ -230,7 +256,6 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// NEW: Get single user endpoint
 app.get('/api/users/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne(
@@ -286,7 +311,6 @@ app.put('/api/users/:username/change-password', async (req, res) => {
         
         console.log(`🔐 Password change request for: ${username}`);
         
-        // Validate input
         if (!currentPassword || !newPassword) {
             console.log('❌ Missing password fields');
             return res.status(400).json({
@@ -295,7 +319,6 @@ app.put('/api/users/:username/change-password', async (req, res) => {
             });
         }
         
-        // Find user
         const user = await usersCollection.findOne({ username });
         
         if (!user) {
@@ -307,14 +330,9 @@ app.put('/api/users/:username/change-password', async (req, res) => {
         }
         
         console.log(`📝 User found: ${username}`);
-        console.log(`🔍 Stored password: ${user.password}`);
-        console.log(`🔍 Provided current password: ${currentPassword}`);
         
-        // Verify current password
         if (user.password !== currentPassword) {
             console.log(`❌ Password mismatch for ${username}`);
-            console.log(`   Expected: ${user.password}`);
-            console.log(`   Received: ${currentPassword}`);
             return res.status(401).json({ 
                 success: false,
                 error: 'Current password is incorrect' 
@@ -323,7 +341,6 @@ app.put('/api/users/:username/change-password', async (req, res) => {
         
         console.log(`✓ Current password verified for ${username}`);
         
-        // Update to new password
         const result = await usersCollection.updateOne(
             { username },
             { 
@@ -836,13 +853,15 @@ app.get('/api/stats', async (req, res) => {
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server v2.2 - Password Management');
+        console.log('🚀 StructuReality Server v2.2 - Multi-Page Admin');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
-        console.log(`🎛️ Admin: http://localhost:${PORT}/login.html`);
+        console.log(`🔐 Login: http://localhost:${PORT}/login.html`);
+        console.log(`📊 Dashboard: http://localhost:${PORT}/index.html`);
+        console.log(`👥 Users: http://localhost:${PORT}/users.html`);
+        console.log(`📚 Lessons: http://localhost:${PORT}/lessons.html`);
         console.log(`💾 Database: ${DB_NAME}`);
         console.log(`📚 Collections: users, lessons`);
-        console.log(`✨ Features: User Auth, Progress Tracking, Password Change`);
         console.log('==================================================\n');
     });
 });
