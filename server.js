@@ -58,7 +58,7 @@ app.get('/', (req, res) => {
         version: '2.1.0',
         database: db ? 'Connected' : 'Disconnected',
         collections: ['users', 'lessons'],
-        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking'],
+        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking', 'Password Management'],
         message: 'Server ready for Unity and admin connections'
     });
 });
@@ -79,7 +79,7 @@ app.post('/api/users', async (req, res) => {
                     tutorialCompleted: false, 
                     puzzleCompleted: false, 
                     score: 0,
-                    lessonsCompleted: 0, // NEW
+                    lessonsCompleted: 0,
                     progressPercentage: 0,
                     lastAccessed: '',
                     timeSpent: 0
@@ -88,7 +88,7 @@ app.post('/api/users', async (req, res) => {
                     tutorialCompleted: false, 
                     puzzleCompleted: false, 
                     score: 0,
-                    lessonsCompleted: 0, // NEW
+                    lessonsCompleted: 0,
                     progressPercentage: 0,
                     lastAccessed: '',
                     timeSpent: 0
@@ -97,7 +97,7 @@ app.post('/api/users', async (req, res) => {
                     tutorialCompleted: false, 
                     puzzleCompleted: false, 
                     score: 0,
-                    lessonsCompleted: 0, // NEW
+                    lessonsCompleted: 0,
                     progressPercentage: 0,
                     lastAccessed: '',
                     timeSpent: 0
@@ -106,7 +106,7 @@ app.post('/api/users', async (req, res) => {
                     tutorialCompleted: false, 
                     puzzleCompleted: false, 
                     score: 0,
-                    lessonsCompleted: 0, // NEW
+                    lessonsCompleted: 0,
                     progressPercentage: 0,
                     lastAccessed: '',
                     timeSpent: 0
@@ -115,7 +115,7 @@ app.post('/api/users', async (req, res) => {
                     tutorialCompleted: false, 
                     puzzleCompleted: false, 
                     score: 0,
-                    lessonsCompleted: 0, // NEW
+                    lessonsCompleted: 0,
                     progressPercentage: 0,
                     lastAccessed: '',
                     timeSpent: 0
@@ -230,6 +230,31 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
+// NEW: Get single user endpoint
+app.get('/api/users/:username', async (req, res) => {
+    try {
+        const user = await usersCollection.findOne(
+            { username: req.params.username },
+            { projection: { password: 0 } }
+        );
+        
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        res.json(user);
+        
+    } catch (error) {
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch user' 
+        });
+    }
+});
+
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
@@ -248,6 +273,80 @@ app.delete('/api/users/:username', async (req, res) => {
         res.status(500).json({ 
             success: false,
             error: 'Failed to delete user' 
+        });
+    }
+});
+
+// ==================== PASSWORD CHANGE ====================
+
+app.put('/api/users/:username/change-password', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { currentPassword, newPassword } = req.body;
+        
+        console.log(`🔐 Password change request for: ${username}`);
+        
+        // Validate input
+        if (!currentPassword || !newPassword) {
+            console.log('❌ Missing password fields');
+            return res.status(400).json({
+                success: false,
+                error: 'Current password and new password are required'
+            });
+        }
+        
+        // Find user
+        const user = await usersCollection.findOne({ username });
+        
+        if (!user) {
+            console.log(`❌ User not found: ${username}`);
+            return res.status(404).json({ 
+                success: false,
+                error: 'User not found' 
+            });
+        }
+        
+        console.log(`📝 User found: ${username}`);
+        console.log(`🔍 Stored password: ${user.password}`);
+        console.log(`🔍 Provided current password: ${currentPassword}`);
+        
+        // Verify current password
+        if (user.password !== currentPassword) {
+            console.log(`❌ Password mismatch for ${username}`);
+            console.log(`   Expected: ${user.password}`);
+            console.log(`   Received: ${currentPassword}`);
+            return res.status(401).json({ 
+                success: false,
+                error: 'Current password is incorrect' 
+            });
+        }
+        
+        console.log(`✓ Current password verified for ${username}`);
+        
+        // Update to new password
+        const result = await usersCollection.updateOne(
+            { username },
+            { 
+                $set: { 
+                    password: newPassword,
+                    lastUpdated: new Date().toISOString()
+                } 
+            }
+        );
+        
+        console.log(`✅ Password changed successfully for ${username}`);
+        
+        res.json({ 
+            success: true, 
+            message: 'Password changed successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error changing password:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to change password',
+            details: error.message 
         });
     }
 });
@@ -272,7 +371,7 @@ app.put('/api/progress/:username', async (req, res) => {
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: topic.timeSpent || 0,
-                    lessonsCompleted: topic.lessonsCompleted || 0 // NEW: Preserve lessons completed
+                    lessonsCompleted: topic.lessonsCompleted || 0
                 };
             });
         }
@@ -317,7 +416,6 @@ app.put('/api/progress/:username', async (req, res) => {
     }
 });
 
-// NEW: Update lesson completion for a specific topic
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
         const { username } = req.params;
@@ -341,7 +439,6 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
             });
         }
         
-        // Initialize progress object if it doesn't exist
         if (!user.progress) {
             user.progress = {};
         }
@@ -357,11 +454,9 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
             };
         }
         
-        // Update lessons completed
         user.progress[topicName].lessonsCompleted = lessonsCompleted;
         user.progress[topicName].lastAccessed = new Date().toISOString();
         
-        // Update in database
         const result = await usersCollection.updateOne(
             { username },
             { 
@@ -414,7 +509,7 @@ app.get('/api/progress/:username', async (req, res) => {
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
-                    lessonsCompleted: topic.lessonsCompleted || 0 // NEW: Include lessons completed
+                    lessonsCompleted: topic.lessonsCompleted || 0
                 });
             });
         }
@@ -459,7 +554,7 @@ app.get('/api/progress', async (req, res) => {
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
                         timeSpent: topic.timeSpent || 0,
-                        lessonsCompleted: topic.lessonsCompleted || 0 // NEW
+                        lessonsCompleted: topic.lessonsCompleted || 0
                     });
                 });
             }
@@ -694,8 +789,6 @@ app.delete('/api/lessons/:lessonId', async (req, res) => {
     }
 });
 
-
-
 // ==================== STATS ====================
 
 app.get('/api/stats', async (req, res) => {
@@ -743,13 +836,13 @@ app.get('/api/stats', async (req, res) => {
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server v2.1 - With Lesson Tracking');
+        console.log('🚀 StructuReality Server v2.2 - Password Management');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🎛️ Admin: http://localhost:${PORT}/admin.html`);
         console.log(`💾 Database: ${DB_NAME}`);
         console.log(`📚 Collections: users, lessons`);
-        console.log(`✨ New Feature: Lesson completion tracking`);
+        console.log(`✨ Features: User Auth, Progress Tracking, Password Change`);
         console.log('==================================================\n');
     });
 });
