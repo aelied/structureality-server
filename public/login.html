@@ -165,7 +165,7 @@
 
           if (data.success) {
             // Store user info in localStorage
-            localStorage.setItem('adminUser', JSON.stringify(data.user));
+            localStorage.setItem('adminUser', JSON.stringify(data.admin));
             showSuccess('Login successful! Redirecting...');
             
             setTimeout(() => {
