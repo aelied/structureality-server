@@ -89,14 +89,9 @@
           <p class="text-sm text-gray-500">Platform performance insights</p>
         </div>
         <div class="flex items-center space-x-4">
-          <select
-            class="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <option>Last 7 Days</option>
-            <option>Last 30 Days</option>
-            <option>Last 3 Months</option>
-            <option>Last Year</option>
-          </select>
+          <button onclick="loadAnalytics()" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
+            <i class="fas fa-sync mr-2"></i>Refresh Data
+          </button>
           <button class="p-2 hover:bg-gray-100 rounded-lg transition">
             <i class="fas fa-bell text-gray-600"></i>
           </button>
@@ -126,291 +121,147 @@
 
     <!-- Main Content -->
     <main class="ml-64 mt-20 p-8">
-      <!-- Key Metrics -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
-            >
-              <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
-            </div>
-            <span
-              class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-            >
-              +8.3%
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1">73.2%</p>
-          <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
-        </div>
-
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
-            >
-              <i class="fas fa-clock text-purple-600 text-xl"></i>
-            </div>
-            <span
-              class="px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full"
-            >
-              -3.2%
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">Avg. Session Time</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1">18m</p>
-          <p class="text-xs text-gray-400 mt-2">per user session</p>
-        </div>
-
-        <div
-          class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <div
-              class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
-            >
-              <i class="fas fa-star text-orange-600 text-xl"></i>
-            </div>
-            <span
-              class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
-            >
-              +15.7%
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1">8.4/10</p>
-          <p class="text-xs text-gray-400 mt-2">engagement score</p>
-        </div>
+      <!-- Loading State -->
+      <div id="loadingState" class="text-center py-20">
+        <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
+        <p class="text-gray-600">Loading analytics data...</p>
       </div>
 
-      <!-- Charts Row 1 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-800">User Activity</h3>
-            <div class="flex space-x-2">
-              <button
-                class="px-3 py-1 text-xs font-medium bg-indigo-100 text-indigo-700 rounded-lg"
+      <!-- Analytics Content -->
+      <div id="analyticsContent" style="display: none;">
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div
+                class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"
               >
-                Daily
-              </button>
-              <button
-                class="px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
+                <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
+              </div>
+              <span
+                id="completionTrend"
+                class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
               >
-                Weekly
-              </button>
-              <button
-                class="px-3 py-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg"
-              >
-                Monthly
-              </button>
+                --
+              </span>
             </div>
+            <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
+            <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
           </div>
-          <canvas id="activityChart" height="80"></canvas>
-        </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            Topic Popularity
-          </h3>
-          <canvas id="topicChart"></canvas>
-          <div class="mt-6 space-y-3">
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span class="text-gray-700">Queue</span>
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div
+                class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-clock text-purple-600 text-xl"></i>
               </div>
-              <span class="font-semibold text-gray-800">22%</span>
+              <span
+                id="sessionTrend"
+                class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full"
+              >
+                --
+              </span>
             </div>
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span class="text-gray-700">Stacks</span>
+            <h3 class="text-gray-500 text-sm font-medium">Avg. Session Time</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-1" id="avgSessionTime">--m</p>
+            <p class="text-xs text-gray-400 mt-2">per user session</p>
+          </div>
+
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div
+                class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-star text-orange-600 text-xl"></i>
               </div>
-              <span class="font-semibold text-gray-800">18%</span>
+              <span
+                id="engagementTrend"
+                class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full"
+              >
+                --
+              </span>
             </div>
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
-                <span class="text-gray-700">Linked Lists</span>
-              </div>
-              <span class="font-semibold text-gray-800">24%</span>
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <span class="text-gray-700">Trees</span>
-              </div>
-              <span class="font-semibold text-gray-800">20%</span>
-            </div>
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span class="text-gray-700">Graphs</span>
-              </div>
-              <span class="font-semibold text-gray-800">16%</span>
-            </div>
+            <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
+            <p class="text-xs text-gray-400 mt-2">engagement score</p>
           </div>
         </div>
-      </div>
 
-      <!-- Charts Row 2 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            User Progress Distribution
-          </h3>
-          <canvas id="progressChart" height="120"></canvas>
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-lg font-semibold text-gray-800">User Activity (Last 7 Days)</h3>
+            </div>
+            <canvas id="activityChart" height="80"></canvas>
+          </div>
+
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">
+              Topic Popularity
+            </h3>
+            <canvas id="topicChart"></canvas>
+            <div class="mt-6 space-y-3" id="topicLegend">
+              <!-- Will be populated dynamically -->
+            </div>
+          </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            Streak Distribution
-          </h3>
-          <canvas id="streakChart" height="120"></canvas>
-        </div>
-      </div>
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">
+              User Progress Distribution
+            </h3>
+            <canvas id="progressChart" height="120"></canvas>
+          </div>
 
-      <!-- Performance Table -->
-      <div class="bg-white rounded-xl shadow-sm mb-8">
-        <div class="p-6 border-b border-gray-100">
-          <h3 class="text-lg font-semibold text-gray-800">
-            Lesson Performance
-          </h3>
+          <div class="bg-white rounded-xl shadow-sm p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-6">
+              Streak Distribution
+            </h3>
+            <canvas id="streakChart" height="120"></canvas>
+          </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr
-                class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50"
-              >
-                <th class="px-6 py-4">Lesson Name</th>
-                <th class="px-6 py-4">Topic</th>
-                <th class="px-6 py-4">Completions</th>
-                <th class="px-6 py-4">Avg. Score</th>
-                <th class="px-6 py-4">Avg. Time</th>
-                <th class="px-6 py-4">Rating</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100">
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                  <p class="font-medium text-gray-800">Queue Basics</p>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold"
-                    >Queue</span
-                  >
-                </td>
-                <td class="px-6 py-4 text-gray-700">1,243</td>
-                <td class="px-6 py-4">
-                  <span class="font-semibold text-gray-800">87.5%</span>
-                </td>
-                <td class="px-6 py-4 text-gray-700">12m 35s</td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-star text-yellow-400 text-sm"></i>
-                    <span class="text-gray-800 font-medium">4.8</span>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                  <p class="font-medium text-gray-800">Stack Operations</p>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
-                    >Stacks</span
-                  >
-                </td>
-                <td class="px-6 py-4 text-gray-700">1,089</td>
-                <td class="px-6 py-4">
-                  <span class="font-semibold text-gray-800">82.3%</span>
-                </td>
-                <td class="px-6 py-4 text-gray-700">15m 20s</td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-star text-yellow-400 text-sm"></i>
-                    <span class="text-gray-800 font-medium">4.6</span>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                  <p class="font-medium text-gray-800">Linked List Traversal</p>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold"
-                    >Linked Lists</span
-                  >
-                </td>
-                <td class="px-6 py-4 text-gray-700">1,456</td>
-                <td class="px-6 py-4">
-                  <span class="font-semibold text-gray-800">91.2%</span>
-                </td>
-                <td class="px-6 py-4 text-gray-700">10m 45s</td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-star text-yellow-400 text-sm"></i>
-                    <span class="text-gray-800 font-medium">4.9</span>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                  <p class="font-medium text-gray-800">Binary Tree Basics</p>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold"
-                    >Trees</span
-                  >
-                </td>
-                <td class="px-6 py-4 text-gray-700">892</td>
-                <td class="px-6 py-4">
-                  <span class="font-semibold text-gray-800">79.8%</span>
-                </td>
-                <td class="px-6 py-4 text-gray-700">18m 12s</td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-star text-yellow-400 text-sm"></i>
-                    <span class="text-gray-800 font-medium">4.5</span>
-                  </div>
-                </td>
-              </tr>
-              <tr class="hover:bg-gray-50 transition">
-                <td class="px-6 py-4">
-                  <p class="font-medium text-gray-800">Graph Representation</p>
-                </td>
-                <td class="px-6 py-4">
-                  <span
-                    class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold"
-                    >Graphs</span
-                  >
-                </td>
-                <td class="px-6 py-4 text-gray-700">767</td>
-                <td class="px-6 py-4">
-                  <span class="font-semibold text-gray-800">75.6%</span>
-                </td>
-                <td class="px-6 py-4 text-gray-700">22m 30s</td>
-                <td class="px-6 py-4">
-                  <div class="flex items-center space-x-1">
-                    <i class="fas fa-star text-yellow-400 text-sm"></i>
-                    <span class="text-gray-800 font-medium">4.3</span>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+
+        <!-- Performance Table -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+          <div class="p-6 border-b border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800">
+              Lesson Performance
+            </h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead>
+                <tr
+                  class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50"
+                >
+                  <th class="px-6 py-4">Lesson Name</th>
+                  <th class="px-6 py-4">Topic</th>
+                  <th class="px-6 py-4">Completions</th>
+                  <th class="px-6 py-4">Avg. Score</th>
+                  <th class="px-6 py-4">Avg. Time</th>
+                  <th class="px-6 py-4">Rating</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
+                <tr>
+                  <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                    Loading lesson performance data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </main>
@@ -419,6 +270,8 @@
       const API_URL = window.location.hostname === 'localhost'
         ? 'http://localhost:3000/api'
         : 'https://structureality-admin.onrender.com/api';
+
+      let activityChart, topicChart, progressChart, streakChart;
 
       function logout() {
         localStorage.removeItem('adminUser');
@@ -444,195 +297,332 @@
         }
       }
 
+      async function loadAnalytics() {
+        try {
+          document.getElementById('loadingState').style.display = 'block';
+          document.getElementById('analyticsContent').style.display = 'none';
+
+          const response = await fetch(`${API_URL}/analytics`);
+          const result = await response.json();
+
+          if (!result.success) {
+            throw new Error(result.error || 'Failed to load analytics');
+          }
+
+          const data = result.data;
+
+          // Update key metrics
+          document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
+          document.getElementById('avgSessionTime').textContent = data.metrics.avgSessionTime + 'm';
+          document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
+
+          // Update trend indicators (simplified - you can make this more sophisticated)
+          document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
+          document.getElementById('sessionTrend').textContent = data.metrics.avgSessionTime > 15 ? 'Good' : 'Low';
+          document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
+
+          // Update charts
+          updateActivityChart(data.activity);
+          updateTopicChart(data.topicPopularity);
+          updateProgressChart(data.progressDistribution);
+          updateStreakChart(data.streakDistribution);
+          updateLessonPerformanceTable(data.lessonPerformance);
+
+          document.getElementById('loadingState').style.display = 'none';
+          document.getElementById('analyticsContent').style.display = 'block';
+
+        } catch (error) {
+          console.error('Error loading analytics:', error);
+          document.getElementById('loadingState').innerHTML = `
+            <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
+            <p class="text-gray-600">Failed to load analytics data</p>
+            <button onclick="loadAnalytics()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+              Retry
+            </button>
+          `;
+        }
+      }
+
+      function updateActivityChart(activityData) {
+        const ctx = document.getElementById("activityChart").getContext("2d");
+        
+        if (activityChart) {
+          activityChart.destroy();
+        }
+
+        activityChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: activityData.labels,
+            datasets: [
+              {
+                label: "Active Users",
+                data: activityData.activeUsers,
+                borderColor: "#6366f1",
+                backgroundColor: "rgba(99, 102, 241, 0.1)",
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2,
+              },
+              {
+                label: "Lessons Completed",
+                data: activityData.lessonsCompleted,
+                borderColor: "#10b981",
+                backgroundColor: "rgba(16, 185, 129, 0.1)",
+                tension: 0.4,
+                fill: true,
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: "bottom",
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: true,
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function updateTopicChart(topicPopularity) {
+        const ctx = document.getElementById("topicChart").getContext("2d");
+        
+        if (topicChart) {
+          topicChart.destroy();
+        }
+
+        const topics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+        const labels = ['Queue', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
+        const data = topics.map(t => topicPopularity[t] || 0);
+        const colors = ["#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"];
+
+        topicChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                data: data,
+                backgroundColor: colors,
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+          },
+        });
+
+        // Update legend
+        let legendHtml = '';
+        labels.forEach((label, i) => {
+          legendHtml += `
+            <div class="flex items-center justify-between text-sm">
+              <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full" style="background-color: ${colors[i]}"></div>
+                <span class="text-gray-700">${label}</span>
+              </div>
+              <span class="font-semibold text-gray-800">${data[i]}%</span>
+            </div>
+          `;
+        });
+        document.getElementById('topicLegend').innerHTML = legendHtml;
+      }
+
+      function updateProgressChart(progressData) {
+        const ctx = document.getElementById("progressChart").getContext("2d");
+        
+        if (progressChart) {
+          progressChart.destroy();
+        }
+
+        progressChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
+            datasets: [
+              {
+                label: "Number of Users",
+                data: [
+                  progressData['0-20'],
+                  progressData['21-40'],
+                  progressData['41-60'],
+                  progressData['61-80'],
+                  progressData['81-100']
+                ],
+                backgroundColor: [
+                  "rgba(239, 68, 68, 0.8)",
+                  "rgba(251, 146, 60, 0.8)",
+                  "rgba(234, 179, 8, 0.8)",
+                  "rgba(34, 197, 94, 0.8)",
+                  "rgba(16, 185, 129, 0.8)",
+                ],
+                borderRadius: 6,
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: true,
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function updateStreakChart(streakData) {
+        const ctx = document.getElementById("streakChart").getContext("2d");
+        
+        if (streakChart) {
+          streakChart.destroy();
+        }
+
+        streakChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: [
+              "1-3 days",
+              "4-7 days",
+              "8-14 days",
+              "15-30 days",
+              "30+ days",
+            ],
+            datasets: [
+              {
+                label: "Number of Users",
+                data: [
+                  streakData['1-3'],
+                  streakData['4-7'],
+                  streakData['8-14'],
+                  streakData['15-30'],
+                  streakData['30+']
+                ],
+                backgroundColor: "rgba(168, 85, 247, 0.8)",
+                borderRadius: 6,
+                borderWidth: 0,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false,
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: true,
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                grid: {
+                  display: false,
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function updateLessonPerformanceTable(lessonData) {
+        const tbody = document.getElementById('lessonPerformanceTable');
+        
+        if (lessonData.length === 0) {
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                No lesson performance data available
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        let html = '';
+        lessonData.forEach(lesson => {
+          html += `
+            <tr class="hover:bg-gray-50 transition">
+              <td class="px-6 py-4">
+                <p class="font-medium text-gray-800">${lesson.name}</p>
+              </td>
+              <td class="px-6 py-4">
+                <span class="px-3 py-1 bg-${lesson.color}-100 text-${lesson.color}-700 rounded-full text-xs font-semibold">
+                  ${lesson.topic}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-gray-700">${lesson.completions}</td>
+              <td class="px-6 py-4">
+                <span class="font-semibold text-gray-800">${lesson.avgScore}</span>
+              </td>
+              <td class="px-6 py-4 text-gray-700">${lesson.avgTime}</td>
+              <td class="px-6 py-4">
+                <div class="flex items-center space-x-1">
+                  <i class="fas fa-star text-yellow-400 text-sm"></i>
+                  <span class="text-gray-800 font-medium">${lesson.rating}</span>
+                </div>
+              </td>
+            </tr>
+          `;
+        });
+
+        tbody.innerHTML = html;
+      }
+
       // Initialize
       window.addEventListener('load', () => {
         const user = checkAuth();
         if (user) {
           document.getElementById('adminUserDisplay').textContent = user.name || user.username;
           document.getElementById('adminEmailDisplay').textContent = user.email;
+          loadAnalytics();
         }
-      });
-
-      // User Activity Chart
-      const activityCtx = document
-        .getElementById("activityChart")
-        .getContext("2d");
-      new Chart(activityCtx, {
-        type: "line",
-        data: {
-          labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-          datasets: [
-            {
-              label: "Active Users",
-              data: [1200, 1400, 1300, 1600, 1500, 1100, 900],
-              borderColor: "#6366f1",
-              backgroundColor: "rgba(99, 102, 241, 0.1)",
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-            },
-            {
-              label: "Lessons Completed",
-              data: [800, 950, 1050, 1200, 1100, 750, 600],
-              borderColor: "#10b981",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: "bottom",
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-
-      // Topic Popularity Doughnut Chart
-      const topicCtx = document.getElementById("topicChart").getContext("2d");
-      new Chart(topicCtx, {
-        type: "doughnut",
-        data: {
-          labels: ["Queue", "Stacks", "Linked Lists", "Trees", "Graphs"],
-          datasets: [
-            {
-              data: [22, 18, 24, 20, 16],
-              backgroundColor: [
-                "#3b82f6",
-                "#10b981",
-                "#a855f7",
-                "#eab308",
-                "#ef4444",
-              ],
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-        },
-      });
-
-      // Progress Distribution Bar Chart
-      const progressCtx = document
-        .getElementById("progressChart")
-        .getContext("2d");
-      new Chart(progressCtx, {
-        type: "bar",
-        data: {
-          labels: ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
-          datasets: [
-            {
-              label: "Number of Users",
-              data: [245, 412, 568, 823, 799],
-              backgroundColor: [
-                "rgba(239, 68, 68, 0.8)",
-                "rgba(251, 146, 60, 0.8)",
-                "rgba(234, 179, 8, 0.8)",
-                "rgba(34, 197, 94, 0.8)",
-                "rgba(16, 185, 129, 0.8)",
-              ],
-              borderRadius: 6,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-
-      // Streak Distribution Chart
-      const streakCtx = document.getElementById("streakChart").getContext("2d");
-      new Chart(streakCtx, {
-        type: "bar",
-        data: {
-          labels: [
-            "1-3 days",
-            "4-7 days",
-            "8-14 days",
-            "15-30 days",
-            "30+ days",
-          ],
-          datasets: [
-            {
-              label: "Number of Users",
-              data: [892, 654, 445, 312, 544],
-              backgroundColor: "rgba(168, 85, 247, 0.8)",
-              borderRadius: 6,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
       });
     </script>
   </body>

@@ -906,6 +906,269 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+// ==================== ANALYTICS ====================
+
+app.get('/api/analytics', async (req, res) => {
+    try {
+        // Fetch all users and lessons
+        const users = await usersCollection.find({}).toArray();
+        const lessons = await lessonsCollection.find({}).toArray();
+        
+        const totalUsers = users.length;
+        const totalLessons = lessons.length;
+        
+        // Calculate active users (last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        let activeUsers = 0;
+        let idleUsers = 0;
+        let inactiveUsers = 0;
+        
+        // Topic statistics
+        const topicStats = {
+            Queue: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
+            Stacks: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
+            LinkedLists: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
+            Trees: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
+            Graphs: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 }
+        };
+        
+        // Progress distribution
+        const progressRanges = {
+            '0-20': 0,
+            '21-40': 0,
+            '41-60': 0,
+            '61-80': 0,
+            '81-100': 0
+        };
+        
+        // Streak distribution
+        const streakRanges = {
+            '1-3': 0,
+            '4-7': 0,
+            '8-14': 0,
+            '15-30': 0,
+            '30+': 0
+        };
+        
+        // Activity by day (last 7 days)
+        const activityByDay = Array(7).fill(0);
+        const lessonsCompletedByDay = Array(7).fill(0);
+        
+        let totalStreak = 0;
+        let totalCompletedTopics = 0;
+        let totalLessonsCompleted = 0;
+        let totalTimeSpent = 0;
+        
+        // Process each user
+        users.forEach(user => {
+            // Calculate overall progress
+            let userProgress = 0;
+            if (user.progress) {
+                const topicCount = Object.keys(user.progress).length;
+                Object.values(user.progress).forEach(topic => {
+                    userProgress += topic.progressPercentage || 0;
+                });
+                userProgress = topicCount > 0 ? userProgress / topicCount : 0;
+            }
+            
+            // Progress distribution
+            if (userProgress <= 20) progressRanges['0-20']++;
+            else if (userProgress <= 40) progressRanges['21-40']++;
+            else if (userProgress <= 60) progressRanges['41-60']++;
+            else if (userProgress <= 80) progressRanges['61-80']++;
+            else progressRanges['81-100']++;
+            
+            // Streak distribution
+            const streak = user.streak || 0;
+            totalStreak += streak;
+            if (streak >= 1 && streak <= 3) streakRanges['1-3']++;
+            else if (streak >= 4 && streak <= 7) streakRanges['4-7']++;
+            else if (streak >= 8 && streak <= 14) streakRanges['8-14']++;
+            else if (streak >= 15 && streak <= 30) streakRanges['15-30']++;
+            else if (streak > 30) streakRanges['30+']++;
+            
+            // Completed topics
+            totalCompletedTopics += user.completedTopics || 0;
+            
+            // User activity status
+            let mostRecentActivity = null;
+            
+            // Process topic statistics
+            if (user.progress) {
+                Object.entries(user.progress).forEach(([topicName, topic]) => {
+                    if (topicStats[topicName]) {
+                        topicStats[topicName].totalLessons += topic.lessonsCompleted || 0;
+                        topicStats[topicName].totalScore += topic.score || 0;
+                        topicStats[topicName].totalTime += topic.timeSpent || 0;
+                        
+                        if (topic.puzzleCompleted) {
+                            topicStats[topicName].completions++;
+                        }
+                        
+                        if (topic.lessonsCompleted > 0 || topic.tutorialCompleted) {
+                            topicStats[topicName].users++;
+                        }
+                        
+                        totalLessonsCompleted += topic.lessonsCompleted || 0;
+                        totalTimeSpent += topic.timeSpent || 0;
+                        
+                        // Track most recent activity
+                        if (topic.lastAccessed) {
+                            const accessDate = new Date(topic.lastAccessed);
+                            if (!mostRecentActivity || accessDate > mostRecentActivity) {
+                                mostRecentActivity = accessDate;
+                            }
+                            
+                            // Activity by day
+                            const daysDiff = Math.floor((new Date() - accessDate) / (1000 * 60 * 60 * 24));
+                            if (daysDiff < 7) {
+                                activityByDay[6 - daysDiff]++;
+                                lessonsCompletedByDay[6 - daysDiff] += topic.lessonsCompleted || 0;
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Determine user status
+            if (mostRecentActivity) {
+                const hoursSince = (new Date() - mostRecentActivity) / (1000 * 60 * 60);
+                if (hoursSince < 24) activeUsers++;
+                else if (hoursSince < 168) idleUsers++;
+                else inactiveUsers++;
+            } else {
+                inactiveUsers++;
+            }
+        });
+        
+        // Calculate averages
+        const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
+        const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
+        const avgSessionTime = totalUsers > 0 ? Math.floor(totalTimeSpent / totalUsers / 60) : 0; // in minutes
+        
+        // Calculate completion rate
+        const totalPossibleLessons = totalUsers * totalLessons;
+        const completionRate = totalPossibleLessons > 0 
+            ? ((totalLessonsCompleted / totalPossibleLessons) * 100).toFixed(1)
+            : 0;
+        
+        // Calculate engagement score (0-10)
+        const engagementScore = totalUsers > 0
+            ? Math.min(10, ((activeUsers / totalUsers) * 5 + (parseFloat(completionRate) / 10))).toFixed(1)
+            : 0;
+        
+        // Topic popularity percentages
+        const totalTopicUsers = Object.values(topicStats).reduce((sum, topic) => sum + topic.users, 0);
+        const topicPopularity = {};
+        Object.entries(topicStats).forEach(([topic, stats]) => {
+            topicPopularity[topic] = totalTopicUsers > 0 
+                ? Math.round((stats.users / totalTopicUsers) * 100)
+                : 0;
+        });
+        
+        // Lesson performance data
+        const lessonPerformance = [];
+        const topicColors = {
+            Queue: 'blue',
+            Stacks: 'green',
+            LinkedLists: 'purple',
+            Trees: 'yellow',
+            Graphs: 'red'
+        };
+        
+        // Get top lessons by completion
+        const lessonCompletionMap = new Map();
+        users.forEach(user => {
+            if (user.progress) {
+                Object.entries(user.progress).forEach(([topicName, topic]) => {
+                    const completions = topic.lessonsCompleted || 0;
+                    if (!lessonCompletionMap.has(topicName)) {
+                        lessonCompletionMap.set(topicName, 0);
+                    }
+                    lessonCompletionMap.set(topicName, lessonCompletionMap.get(topicName) + completions);
+                });
+            }
+        });
+        
+        lessons.slice(0, 10).forEach(lesson => {
+            const topicStat = topicStats[lesson.topicName];
+            if (topicStat) {
+                const avgScore = topicStat.users > 0 
+                    ? ((topicStat.totalScore / topicStat.users) * 100).toFixed(1)
+                    : 0;
+                const avgTime = topicStat.users > 0
+                    ? Math.floor(topicStat.totalTime / topicStat.users / 60)
+                    : 0;
+                const rating = (parseFloat(avgScore) / 20).toFixed(1); // Convert to 5-star scale
+                
+                lessonPerformance.push({
+                    name: lesson.title,
+                    topic: lesson.topicName,
+                    color: topicColors[lesson.topicName] || 'gray',
+                    completions: lessonCompletionMap.get(lesson.topicName) || 0,
+                    avgScore: avgScore + '%',
+                    avgTime: `${avgTime}m`,
+                    rating: rating
+                });
+            }
+        });
+        
+        // Generate day labels
+        const dayLabels = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            dayLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                // Key metrics
+                metrics: {
+                    completionRate: parseFloat(completionRate),
+                    avgSessionTime: avgSessionTime,
+                    engagementScore: parseFloat(engagementScore),
+                    totalUsers: totalUsers,
+                    activeUsers: activeUsers,
+                    totalLessons: totalLessons,
+                    avgStreak: parseFloat(avgStreak)
+                },
+                // User activity chart
+                activity: {
+                    labels: dayLabels,
+                    activeUsers: activityByDay,
+                    lessonsCompleted: lessonsCompletedByDay
+                },
+                // Topic popularity
+                topicPopularity: topicPopularity,
+                // Progress distribution
+                progressDistribution: progressRanges,
+                // Streak distribution
+                streakDistribution: streakRanges,
+                // Lesson performance
+                lessonPerformance: lessonPerformance,
+                // User status
+                userStatus: {
+                    active: activeUsers,
+                    idle: idleUsers,
+                    inactive: inactiveUsers
+                }
+            }
+        });
+        
+    } catch (error) {
+        console.error('❌ Analytics error:', error);
+        res.status(500).json({ 
+            success: false,
+            error: 'Failed to fetch analytics data',
+            details: error.message
+        });
+    }
+});
+
 // ==================== START SERVER ====================
 
 connectDB().then(() => {
