@@ -71,7 +71,8 @@ app.get('/', (req, res) => {
             login: '/login.html',
             dashboard: '/index.html',
             users: '/users.html',
-            lessons: '/lessons.html'
+            lessons: '/lessons.html',
+            analytics: '/analytics.html'
         }
     });
 });
@@ -91,6 +92,10 @@ app.get('/users.html', (req, res) => {
 
 app.get('/lessons.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'lessons.html'));
+});
+
+app.get('/analytics.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
 });
 
 // ==================== ADMIN ENDPOINTS ====================
