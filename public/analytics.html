@@ -45,7 +45,6 @@
           </div>
         </div>
       </div>
-
       <nav class="mt-6 px-4">
         <a
           href="index.html"
@@ -54,7 +53,6 @@
           <i class="fas fa-home w-5"></i>
           <span class="font-medium">Dashboard</span>
         </a>
-
         <a
           href="users.html"
           class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition"
@@ -62,7 +60,6 @@
           <i class="fas fa-users w-5"></i>
           <span class="font-medium">Users</span>
         </a>
-
         <a
           href="lessons.html"
           class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition"
@@ -70,7 +67,6 @@
           <i class="fas fa-book w-5"></i>
           <span class="font-medium">Lessons</span>
         </a>
-
         <a
           href="analytics.html"
           class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"
@@ -80,7 +76,6 @@
         </a>
       </nav>
     </aside>
-
     <!-- Navbar -->
     <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
       <div class="px-8 py-4 flex items-center justify-between">
@@ -118,7 +113,6 @@
         </div>
       </div>
     </nav>
-
     <!-- Main Content -->
     <main class="ml-64 mt-20 p-8">
       <!-- Loading State -->
@@ -126,11 +120,10 @@
         <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
         <p class="text-gray-600">Loading analytics data...</p>
       </div>
-
       <!-- Analytics Content -->
       <div id="analyticsContent" style="display: none;">
         <!-- Key Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div
             class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500"
           >
@@ -151,7 +144,6 @@
             <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
             <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
           </div>
-
           <div
             class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500"
           >
@@ -168,11 +160,25 @@
                 --
               </span>
             </div>
-            <h3 class="text-gray-500 text-sm font-medium">Avg. Session Time</h3>
-            <p class="text-3xl font-bold text-gray-800 mt-1" id="avgSessionTime">--m</p>
-            <p class="text-xs text-gray-400 mt-2">per user session</p>
+            <h3 class="text-gray-500 text-sm font-medium">Avg. Time per User</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
+            <p class="text-xs text-gray-400 mt-2">total time / users</p>
           </div>
-
+          
+          <div
+            class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <div
+                class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"
+              >
+                <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
+              </div>
+            </div>
+            <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
+            <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
+            <p class="text-xs text-gray-400 mt-2">all users combined</p>
+          </div>
           <div
             class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500"
           >
@@ -194,7 +200,6 @@
             <p class="text-xs text-gray-400 mt-2">engagement score</p>
           </div>
         </div>
-
         <!-- Charts Row 1 -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
@@ -203,7 +208,6 @@
             </div>
             <canvas id="activityChart" height="80"></canvas>
           </div>
-
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-6">
               Topic Popularity
@@ -214,7 +218,6 @@
             </div>
           </div>
         </div>
-
         <!-- Charts Row 2 -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div class="bg-white rounded-xl shadow-sm p-6">
@@ -223,7 +226,6 @@
             </h3>
             <canvas id="progressChart" height="120"></canvas>
           </div>
-
           <div class="bg-white rounded-xl shadow-sm p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-6">
               Streak Distribution
@@ -231,7 +233,6 @@
             <canvas id="streakChart" height="120"></canvas>
           </div>
         </div>
-
         <!-- Performance Table -->
         <div class="bg-white rounded-xl shadow-sm mb-8">
           <div class="p-6 border-b border-gray-100">
@@ -265,28 +266,22 @@
         </div>
       </div>
     </main>
-
     <script>
       const API_URL = window.location.hostname === 'localhost'
         ? 'http://localhost:3000/api'
         : 'https://structureality-admin.onrender.com/api';
-
       let activityChart, topicChart, progressChart, streakChart;
-
       function logout() {
         localStorage.removeItem('adminUser');
         window.location.href = 'login.html';
       }
-
       function checkAuth() {
         const adminUser = localStorage.getItem('adminUser');
-
         if (!adminUser || adminUser === 'undefined') {
           localStorage.removeItem('adminUser');
           window.location.href = 'login.html';
           return null;
         }
-
         try {
           return JSON.parse(adminUser);
         } catch (e) {
@@ -296,41 +291,41 @@
           return null;
         }
       }
-
+      
+      function formatTime(seconds) {
+        if (!seconds) return '0m';
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        if (h > 0) return `${h}h ${m}m`;
+        return `${m}m`;
+      }
       async function loadAnalytics() {
         try {
           document.getElementById('loadingState').style.display = 'block';
           document.getElementById('analyticsContent').style.display = 'none';
-
           const response = await fetch(`${API_URL}/analytics`);
           const result = await response.json();
-
           if (!result.success) {
             throw new Error(result.error || 'Failed to load analytics');
           }
-
           const data = result.data;
-
           // Update key metrics
           document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
-          document.getElementById('avgSessionTime').textContent = data.metrics.avgSessionTime + 'm';
+          document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
+          document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
           document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
-
-          // Update trend indicators (simplified - you can make this more sophisticated)
+          // Update trend indicators
           document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
-          document.getElementById('sessionTrend').textContent = data.metrics.avgSessionTime > 15 ? 'Good' : 'Low';
+          document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low'; // > 15 mins
           document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
-
           // Update charts
           updateActivityChart(data.activity);
           updateTopicChart(data.topicPopularity);
           updateProgressChart(data.progressDistribution);
           updateStreakChart(data.streakDistribution);
           updateLessonPerformanceTable(data.lessonPerformance);
-
           document.getElementById('loadingState').style.display = 'none';
           document.getElementById('analyticsContent').style.display = 'block';
-
         } catch (error) {
           console.error('Error loading analytics:', error);
           document.getElementById('loadingState').innerHTML = `
@@ -342,14 +337,12 @@
           `;
         }
       }
-
       function updateActivityChart(activityData) {
         const ctx = document.getElementById("activityChart").getContext("2d");
         
         if (activityChart) {
           activityChart.destroy();
         }
-
         activityChart = new Chart(ctx, {
           type: "line",
           data: {
@@ -401,19 +394,16 @@
           },
         });
       }
-
       function updateTopicChart(topicPopularity) {
         const ctx = document.getElementById("topicChart").getContext("2d");
         
         if (topicChart) {
           topicChart.destroy();
         }
-
         const topics = ['Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
         const labels = ['Queue', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
         const data = topics.map(t => topicPopularity[t] || 0);
         const colors = ["#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"];
-
         topicChart = new Chart(ctx, {
           type: "doughnut",
           data: {
@@ -436,7 +426,6 @@
             },
           },
         });
-
         // Update legend
         let legendHtml = '';
         labels.forEach((label, i) => {
@@ -452,14 +441,12 @@
         });
         document.getElementById('topicLegend').innerHTML = legendHtml;
       }
-
       function updateProgressChart(progressData) {
         const ctx = document.getElementById("progressChart").getContext("2d");
         
         if (progressChart) {
           progressChart.destroy();
         }
-
         progressChart = new Chart(ctx, {
           type: "bar",
           data: {
@@ -511,14 +498,12 @@
           },
         });
       }
-
       function updateStreakChart(streakData) {
         const ctx = document.getElementById("streakChart").getContext("2d");
         
         if (streakChart) {
           streakChart.destroy();
         }
-
         streakChart = new Chart(ctx, {
           type: "bar",
           data: {
@@ -570,7 +555,6 @@
           },
         });
       }
-
       function updateLessonPerformanceTable(lessonData) {
         const tbody = document.getElementById('lessonPerformanceTable');
         
@@ -584,7 +568,6 @@
           `;
           return;
         }
-
         let html = '';
         lessonData.forEach(lesson => {
           html += `
@@ -611,10 +594,8 @@
             </tr>
           `;
         });
-
         tbody.innerHTML = html;
       }
-
       // Initialize
       window.addEventListener('load', () => {
         const user = checkAuth();
