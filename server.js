@@ -3,19 +3,24 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
 // Serve static files from 'public' directory
 app.use(express.static('public'));
+
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_admin:oG4qBQnbGLLyBF4f@structureality-cluster.chm4r6c.mongodb.net/?appName=StructuReality-Cluster";
 const DB_NAME = "structureality_db";
 const USERS_COLLECTION = "users";
 const LESSONS_COLLECTION = "lessons";
 const ADMINS_COLLECTION = "admins";
+
 // MongoDB Client
 const client = new MongoClient(MONGODB_URI, {
     serverApi: {
@@ -24,10 +29,12 @@ const client = new MongoClient(MONGODB_URI, {
         deprecationErrors: true,
     }
 });
+
 let db;
 let usersCollection;
 let lessonsCollection;
 let adminsCollection;
+
 // Connect to MongoDB
 async function connectDB() {
     try {
@@ -36,18 +43,22 @@ async function connectDB() {
         usersCollection = db.collection(USERS_COLLECTION);
         lessonsCollection = db.collection(LESSONS_COLLECTION);
         adminsCollection = db.collection(ADMINS_COLLECTION);
+
         // Create indexes
         await usersCollection.createIndex({ username: 1 }, { unique: true });
         await usersCollection.createIndex({ email: 1 }, { unique: true });
         await lessonsCollection.createIndex({ topicName: 1, order: 1 });
         await adminsCollection.createIndex({ username: 1 }, { unique: true });
+
         console.log("✅ Connected to MongoDB Atlas!");
     } catch (error) {
         console.error("❌ MongoDB connection failed:", error);
         process.exit(1);
     }
 }
+
 // ==================== ROOT & HEALTH CHECK ====================
+
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
@@ -65,27 +76,36 @@ app.get('/', (req, res) => {
         }
     });
 });
+
 // Serve admin pages explicitly
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
 app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
 app.get('/users.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'users.html'));
 });
+
 app.get('/lessons.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'lessons.html'));
 });
+
 app.get('/analytics.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
 });
+
 // ==================== ADMIN ENDPOINTS ====================
+
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
+
         const admin = await adminsCollection.findOne({ username: username });
+
         if (!admin) {
             console.log(`❌ Admin login failed: User not found for ${username}`);
             return res.status(404).json({
@@ -93,6 +113,7 @@ app.post('/api/admin/login', async (req, res) => {
                 error: 'Admin user not found'
             });
         }
+
         if (admin.password !== password) {
             console.log(`❌ Admin login failed: Incorrect password for ${username}`);
             return res.status(401).json({
@@ -100,13 +121,16 @@ app.post('/api/admin/login', async (req, res) => {
                 error: 'Incorrect password'
             });
         }
+
         console.log(`🔐 Admin logged in: ${admin.username}`);
         const { password: _, ...adminWithoutPassword } = admin;
+
         res.json({
             success: true,
             message: 'Admin login successful',
             admin: adminWithoutPassword
         });
+
     } catch (error) {
         console.error('❌ Admin login error:', error);
         res.status(500).json({
@@ -116,13 +140,17 @@ app.post('/api/admin/login', async (req, res) => {
         });
     }
 });
+
 // ==================== USER ENDPOINTS ====================
+
 app.post('/api/users', async (req, res) => {
     try {
         const userData = req.body;
+
         if (!userData.registerDate) {
             userData.registerDate = new Date().toISOString();
         }
+
         // Initialize empty progress structure if missing
         if (!userData.progress) {
             userData.progress = {
@@ -133,12 +161,14 @@ app.post('/api/users', async (req, res) => {
                 Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 }
             };
         }
+
         const existingUser = await usersCollection.findOne({
             $or: [
                 { username: userData.username },
                 { email: userData.email }
             ]
         });
+
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -146,13 +176,16 @@ app.post('/api/users', async (req, res) => {
                 field: existingUser.username === userData.username ? 'username' : 'email'
             });
         }
+
         const result = await usersCollection.insertOne(userData);
+
         console.log(`✅ New user registered: ${userData.username}`);
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
             userId: result.insertedId
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -162,27 +195,32 @@ app.post('/api/users', async (req, res) => {
         });
     }
 });
+
 app.post('/api/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+
         const user = await usersCollection.findOne({
             $or: [
                 { username: username },
                 { email: email }
             ]
         });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         if (user.password !== password) {
             return res.status(401).json({
                 success: false,
                 error: 'Incorrect password'
             });
         }
+
         await usersCollection.updateOne(
             { _id: user._id },
             {
@@ -191,13 +229,16 @@ app.post('/api/login', async (req, res) => {
                 }
             }
         );
+
         console.log(`🔐 User logged in: ${user.username}`);
+
         const { password: _, ...userWithoutPassword } = user;
         res.json({
             success: true,
             message: 'Login successful',
             user: userWithoutPassword
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -207,16 +248,19 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
+
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
             .project({ password: 0 })
             .toArray();
+
         res.json({
             success: true,
             count: users.length,
             users: users
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -224,19 +268,23 @@ app.get('/api/users', async (req, res) => {
         });
     }
 });
+
 app.get('/api/users/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne(
             { username: req.params.username },
             { projection: { password: 0 } }
         );
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         res.json(user);
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -244,17 +292,21 @@ app.get('/api/users/:username', async (req, res) => {
         });
     }
 });
+
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
+
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         console.log(`🗑️ User deleted: ${req.params.username}`);
         res.json({ success: true, message: 'User deleted successfully' });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -262,31 +314,39 @@ app.delete('/api/users/:username', async (req, res) => {
         });
     }
 });
+
 // ==================== PASSWORD CHANGE ====================
+
 app.put('/api/users/:username/change-password', async (req, res) => {
     try {
         const { username } = req.params;
         const { currentPassword, newPassword } = req.body;
+
         console.log(`🔐 Password change request for: ${username}`);
+
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
                 success: false,
                 error: 'Current password and new password are required'
             });
         }
+
         const user = await usersCollection.findOne({ username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         if (user.password !== currentPassword) {
             return res.status(401).json({
                 success: false,
                 error: 'Current password is incorrect'
             });
         }
+
         await usersCollection.updateOne(
             { username },
             {
@@ -296,11 +356,14 @@ app.put('/api/users/:username/change-password', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Password changed successfully for ${username}`);
+
         res.json({
             success: true,
             message: 'Password changed successfully'
         });
+
     } catch (error) {
         console.error('❌ Error changing password:', error);
         res.status(500).json({
@@ -310,29 +373,34 @@ app.put('/api/users/:username/change-password', async (req, res) => {
         });
     }
 });
+
 // ==================== PROGRESS SYNC ====================
+
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const progressData = req.body;
+
         console.log('📥 Progress sync:', username);
+
         const dbProgress = {};
+
         // ROBUST DATA HANDLING: Ensure types are correct
-               // ROBUST DATA HANDLING: Ensure types are correct
-               if (progressData.topics && Array.isArray(progressData.topics)) {
-                progressData.topics.forEach(topic => {
-                    dbProgress[topic.topicName] = {
-                        tutorialCompleted: topic.tutorialCompleted === true,
-                        puzzleCompleted: topic.puzzleCompleted === true,
-                        score: parseInt(topic.puzzleScore || topic.score || 0), // Accept both, save as score
-                        progressPercentage: parseFloat(topic.progressPercentage || 0),
-                        lastAccessed: topic.lastAccessed || new Date().toISOString(),
-                        timeSpent: parseFloat(topic.timeSpent || 0),
-                        lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
-                        readingCompleted: topic.readingCompleted === true // ADD THIS
-                    };
-                });
-            }
+        if (progressData.topics && Array.isArray(progressData.topics)) {
+            progressData.topics.forEach(topic => {
+                dbProgress[topic.topicName] = {
+                    tutorialCompleted: topic.tutorialCompleted === true,
+                    puzzleCompleted: topic.puzzleCompleted === true,
+                    score: parseInt(topic.puzzleScore || topic.score || 0),
+                    progressPercentage: parseFloat(topic.progressPercentage || 0),
+                    lastAccessed: topic.lastAccessed || new Date().toISOString(),
+                    timeSpent: parseFloat(topic.timeSpent || 0),
+                    lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
+                    readingCompleted: topic.readingCompleted === true
+                };
+            });
+        }
+
         const updateData = {
             progress: dbProgress,
             streak: parseInt(progressData.streak || 0),
@@ -341,23 +409,28 @@ app.put('/api/progress/:username', async (req, res) => {
             name: progressData.name,
             email: progressData.email
         };
+
         const result = await usersCollection.updateOne(
             { username: username },
             { $set: updateData },
             { upsert: false }
         );
+
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         console.log(`✅ Progress synced: ${username}`);
+
         res.json({
             success: true,
             message: 'Progress synced successfully',
             syncedTopics: Object.keys(dbProgress).length
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -367,25 +440,32 @@ app.put('/api/progress/:username', async (req, res) => {
         });
     }
 });
+
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
         const { username } = req.params;
         const { topicName, lessonsCompleted } = req.body;
+
         console.log(`📚 Updating lessons for ${username}: ${topicName} - ${lessonsCompleted} lessons`);
+
         if (!topicName || lessonsCompleted === undefined) {
             return res.status(400).json({
                 success: false,
                 error: 'topicName and lessonsCompleted are required'
             });
         }
+
         const user = await usersCollection.findOne({ username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         const lessonsCount = parseInt(lessonsCompleted);
+
         await usersCollection.updateOne(
             { username },
             {
@@ -395,13 +475,16 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Lessons updated for ${username}: ${topicName} = ${lessonsCount}`);
+
         res.json({
             success: true,
             message: 'Lesson completion updated',
             topicName,
             lessonsCompleted: lessonsCount
         });
+
     } catch (error) {
         console.error('Error updating lessons:', error);
         res.status(500).json({
@@ -411,15 +494,18 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
         });
     }
 });
+
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
@@ -428,15 +514,16 @@ app.get('/api/progress/:username', async (req, res) => {
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    score: topic.score || 0, // CHANGE THIS from puzzleScore to score
+                    score: topic.score || 0,
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
                     lessonsCompleted: topic.lessonsCompleted || 0,
-                    readingCompleted: topic.readingCompleted || false // ADD THIS
+                    readingCompleted: topic.readingCompleted || false
                 });
             });
         }
+
         res.json({
             success: true,
             data: {
@@ -449,6 +536,7 @@ app.get('/api/progress/:username', async (req, res) => {
                 topics: topics
             }
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -456,11 +544,13 @@ app.get('/api/progress/:username', async (req, res) => {
         });
     }
 });
+
 app.get('/api/progress', async (req, res) => {
     try {
         const users = await usersCollection.find({})
             .project({ password: 0 })
             .toArray();
+
         const progressData = users.map(user => {
             const topics = [];
             if (user.progress) {
@@ -470,15 +560,16 @@ app.get('/api/progress', async (req, res) => {
                         topicName: topicName,
                         tutorialCompleted: topic.tutorialCompleted || false,
                         puzzleCompleted: topic.puzzleCompleted || false,
-                        score: topic.score || 0, // CHANGE THIS from puzzleScore to score
+                        score: topic.score || 0,
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
                         timeSpent: topic.timeSpent || 0,
                         lessonsCompleted: topic.lessonsCompleted || 0,
-                        readingCompleted: topic.readingCompleted || false // ADD THIS
+                        readingCompleted: topic.readingCompleted || false
                     });
                 });
             }
+
             return {
                 username: user.username,
                 name: user.name || '',
@@ -489,11 +580,13 @@ app.get('/api/progress', async (req, res) => {
                 topics: topics
             };
         });
+
         res.json({
             success: true,
             count: progressData.length,
             data: progressData
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -501,17 +594,21 @@ app.get('/api/progress', async (req, res) => {
         });
     }
 });
+
 // ==================== LESSON MANAGEMENT ====================
+
 app.get('/api/lessons', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({})
             .sort({ topicName: 1, order: 1 })
             .toArray();
+
         res.json({
             success: true,
             count: lessons.length,
             lessons: lessons
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -520,6 +617,7 @@ app.get('/api/lessons', async (req, res) => {
         });
     }
 });
+
 app.get('/api/lessons/:topicName', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({
@@ -527,12 +625,14 @@ app.get('/api/lessons/:topicName', async (req, res) => {
         })
             .sort({ order: 1 })
             .toArray();
+
         res.json({
             success: true,
             topicName: req.params.topicName,
             count: lessons.length,
             lessons: lessons
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -540,6 +640,7 @@ app.get('/api/lessons/:topicName', async (req, res) => {
         });
     }
 });
+
 app.post('/api/lessons', async (req, res) => {
     try {
         const lessonData = {
@@ -550,19 +651,24 @@ app.post('/api/lessons', async (req, res) => {
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
+
         if (!lessonData.topicName || !lessonData.title || !lessonData.description) {
             return res.status(400).json({
                 success: false,
                 error: 'Topic name, title, and description are required'
             });
         }
+
         const result = await lessonsCollection.insertOne(lessonData);
+
         console.log(`✅ New lesson added: ${lessonData.title} (${lessonData.topicName})`);
+
         res.status(201).json({
             success: true,
             message: 'Lesson added successfully',
             lessonId: result.insertedId
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -572,6 +678,7 @@ app.post('/api/lessons', async (req, res) => {
         });
     }
 });
+
 app.put('/api/lessons/:lessonId', async (req, res) => {
     try {
         const updateData = {
@@ -581,24 +688,30 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
+
         Object.keys(updateData).forEach(key =>
             updateData[key] === undefined && delete updateData[key]
         );
+
         const result = await lessonsCollection.updateOne(
             { _id: new ObjectId(req.params.lessonId) },
             { $set: updateData }
         );
+
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Lesson not found'
             });
         }
+
         console.log(`✅ Lesson updated: ${req.params.lessonId}`);
+
         res.json({
             success: true,
             message: 'Lesson updated successfully'
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -606,23 +719,29 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
 app.post('/api/lessons/complete', async (req, res) => {
     try {
         const { username, topicName, lessonsCompleted } = req.body;
+
         console.log(`📚 ${username} - ${topicName}: ${lessonsCompleted} lessons`);
+
         if (!username || !topicName || lessonsCompleted === undefined) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields'
             });
         }
+
         const user = await usersCollection.findOne({ username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         await usersCollection.updateOne(
             { username },
             {
@@ -632,7 +751,9 @@ app.post('/api/lessons/complete', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Updated: ${username} - ${topicName} = ${lessonsCompleted}`);
+
         res.json({
             success: true,
             message: 'Lesson completion updated',
@@ -640,6 +761,7 @@ app.post('/api/lessons/complete', async (req, res) => {
             topicName,
             lessonsCompleted
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -649,22 +771,27 @@ app.post('/api/lessons/complete', async (req, res) => {
         });
     }
 });
+
 app.delete('/api/lessons/:lessonId', async (req, res) => {
     try {
         const result = await lessonsCollection.deleteOne({
             _id: new ObjectId(req.params.lessonId)
         });
+
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Lesson not found'
             });
         }
+
         console.log(`🗑️ Lesson deleted: ${req.params.lessonId}`);
+
         res.json({
             success: true,
             message: 'Lesson deleted successfully'
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -672,24 +799,33 @@ app.delete('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
 // ==================== STATS ====================
+
 app.get('/api/stats', async (req, res) => {
     try {
         const totalUsers = await usersCollection.countDocuments();
+
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
         const activeUsers = await usersCollection.countDocuments({
             lastLogin: { $gte: sevenDaysAgo.toISOString() }
         });
+
         const users = await usersCollection.find({}).toArray();
+
         let totalStreak = 0;
         let totalCompletedTopics = 0;
+
         users.forEach(user => {
             totalStreak += user.streak || 0;
             totalCompletedTopics += user.completedTopics || 0;
         });
+
         const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
         const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
+
         res.json({
             success: true,
             totalUsers,
@@ -697,6 +833,7 @@ app.get('/api/stats', async (req, res) => {
             avgStreak,
             avgCompletion
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -704,20 +841,26 @@ app.get('/api/stats', async (req, res) => {
         });
     }
 });
+
 // ==================== ANALYTICS ====================
+
 app.get('/api/analytics', async (req, res) => {
     try {
         // Fetch all users and lessons
         const users = await usersCollection.find({}).toArray();
         const lessons = await lessonsCollection.find({}).toArray();
+
         const totalUsers = users.length;
         const totalLessons = lessons.length;
+
         // Calculate active users (last 7 days)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
         let activeUsers = 0;
         let idleUsers = 0;
         let inactiveUsers = 0;
+
         // Topic statistics
         const topicStats = {
             Queue: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
@@ -726,6 +869,7 @@ app.get('/api/analytics', async (req, res) => {
             Trees: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             Graphs: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 }
         };
+
         // Progress distribution
         const progressRanges = {
             '0-20': 0,
@@ -734,6 +878,7 @@ app.get('/api/analytics', async (req, res) => {
             '61-80': 0,
             '81-100': 0
         };
+
         // Streak distribution
         const streakRanges = {
             '1-3': 0,
@@ -742,13 +887,16 @@ app.get('/api/analytics', async (req, res) => {
             '15-30': 0,
             '30+': 0
         };
+
         // Activity by day (last 7 days)
         const activityByDay = Array(7).fill(0);
         const lessonsCompletedByDay = Array(7).fill(0);
+
         let totalStreak = 0;
         let totalCompletedTopics = 0;
         let totalLessonsCompleted = 0;
         let totalTimeSpent = 0; // In seconds
+
         // Process each user
         users.forEach(user => {
             // Calculate overall progress
@@ -760,12 +908,14 @@ app.get('/api/analytics', async (req, res) => {
                 });
                 userProgress = topicCount > 0 ? userProgress / topicCount : 0;
             }
+
             // Progress distribution
             if (userProgress <= 20) progressRanges['0-20']++;
             else if (userProgress <= 40) progressRanges['21-40']++;
             else if (userProgress <= 60) progressRanges['41-60']++;
             else if (userProgress <= 80) progressRanges['61-80']++;
             else progressRanges['81-100']++;
+
             // Streak distribution
             const streak = parseInt(user.streak || 0);
             totalStreak += streak;
@@ -774,10 +924,13 @@ app.get('/api/analytics', async (req, res) => {
             else if (streak >= 8 && streak <= 14) streakRanges['8-14']++;
             else if (streak >= 15 && streak <= 30) streakRanges['15-30']++;
             else if (streak > 30) streakRanges['30+']++;
+
             // Completed topics
             totalCompletedTopics += parseInt(user.completedTopics || 0);
+
             // User activity status
             let mostRecentActivity = null;
+
             // Process topic statistics
             if (user.progress) {
                 Object.entries(user.progress).forEach(([topicName, topic]) => {
@@ -785,23 +938,29 @@ app.get('/api/analytics', async (req, res) => {
                         const tLessons = parseInt(topic.lessonsCompleted || 0);
                         const tScore = parseInt(topic.score || 0);
                         const tTime = parseFloat(topic.timeSpent || 0);
+
                         topicStats[topicName].totalLessons += tLessons;
                         topicStats[topicName].totalScore += tScore;
                         topicStats[topicName].totalTime += tTime;
+
                         if (topic.puzzleCompleted) {
                             topicStats[topicName].completions++;
                         }
+
                         if (tLessons > 0 || topic.tutorialCompleted) {
                             topicStats[topicName].users++;
                         }
+
                         totalLessonsCompleted += tLessons;
                         totalTimeSpent += tTime;
+
                         // Track most recent activity
                         if (topic.lastAccessed) {
                             const accessDate = new Date(topic.lastAccessed);
                             if (!mostRecentActivity || accessDate > mostRecentActivity) {
                                 mostRecentActivity = accessDate;
                             }
+
                             // Activity by day
                             const daysDiff = Math.floor((new Date() - accessDate) / (1000 * 60 * 60 * 24));
                             if (daysDiff >= 0 && daysDiff < 7) {
@@ -812,6 +971,7 @@ app.get('/api/analytics', async (req, res) => {
                     }
                 });
             }
+
             // Determine user status
             if (mostRecentActivity) {
                 const hoursSince = (new Date() - mostRecentActivity) / (1000 * 60 * 60);
@@ -822,21 +982,26 @@ app.get('/api/analytics', async (req, res) => {
                 inactiveUsers++;
             }
         });
+
         // Calculate averages
         const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
         const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
+
         // Time calculations
         // totalTimeSpent is in seconds
         const avgTimePerUser = totalUsers > 0 ? (totalTimeSpent / totalUsers) : 0; // in seconds
+
         // Calculate completion rate
         const totalPossibleLessons = totalUsers * totalLessons;
         const completionRate = totalPossibleLessons > 0
             ? ((totalLessonsCompleted / totalPossibleLessons) * 100).toFixed(1)
             : 0;
+
         // Calculate engagement score (0-10)
         const engagementScore = totalUsers > 0
             ? Math.min(10, ((activeUsers / totalUsers) * 5 + (parseFloat(completionRate) / 10))).toFixed(1)
             : 0;
+
         // Topic popularity percentages
         const totalTopicUsers = Object.values(topicStats).reduce((sum, topic) => sum + topic.users, 0);
         const topicPopularity = {};
@@ -845,6 +1010,7 @@ app.get('/api/analytics', async (req, res) => {
                 ? Math.round((stats.users / totalTopicUsers) * 100)
                 : 0;
         });
+
         // Lesson performance data
         const lessonPerformance = [];
         const topicColors = {
@@ -854,6 +1020,7 @@ app.get('/api/analytics', async (req, res) => {
             Trees: 'yellow',
             Graphs: 'red'
         };
+
         // Get top lessons by completion
         const lessonCompletionMap = new Map();
         users.forEach(user => {
@@ -867,6 +1034,7 @@ app.get('/api/analytics', async (req, res) => {
                 });
             }
         });
+
         lessons.slice(0, 10).forEach(lesson => {
             const topicStat = topicStats[lesson.topicName];
             if (topicStat) {
@@ -877,6 +1045,7 @@ app.get('/api/analytics', async (req, res) => {
                     ? Math.floor(topicStat.totalTime / topicStat.users / 60) // Minutes
                     : 0;
                 const rating = (parseFloat(avgScore) / 20).toFixed(1); // Convert to 5-star scale
+
                 lessonPerformance.push({
                     name: lesson.title,
                     topic: lesson.topicName,
@@ -888,6 +1057,7 @@ app.get('/api/analytics', async (req, res) => {
                 });
             }
         });
+
         // Generate day labels
         const dayLabels = [];
         for (let i = 6; i >= 0; i--) {
@@ -895,6 +1065,7 @@ app.get('/api/analytics', async (req, res) => {
             date.setDate(date.getDate() - i);
             dayLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
         }
+
         res.json({
             success: true,
             data: {
@@ -931,6 +1102,7 @@ app.get('/api/analytics', async (req, res) => {
                 }
             }
         });
+
     } catch (error) {
         console.error('❌ Analytics error:', error);
         res.status(500).json({
@@ -940,7 +1112,9 @@ app.get('/api/analytics', async (req, res) => {
         });
     }
 });
+
 // ==================== START SERVER ====================
+
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
@@ -956,6 +1130,7 @@ connectDB().then(() => {
         console.log('==================================================\n');
     });
 });
+
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down...');
     await client.close();
