@@ -318,19 +318,21 @@ app.put('/api/progress/:username', async (req, res) => {
         console.log('📥 Progress sync:', username);
         const dbProgress = {};
         // ROBUST DATA HANDLING: Ensure types are correct
-        if (progressData.topics && Array.isArray(progressData.topics)) {
-            progressData.topics.forEach(topic => {
-                dbProgress[topic.topicName] = {
-                    tutorialCompleted: topic.tutorialCompleted === true,
-                    puzzleCompleted: topic.puzzleCompleted === true,
-                    score: parseInt(topic.puzzleScore || topic.score || 0),
-                    progressPercentage: parseFloat(topic.progressPercentage || 0),
-                    lastAccessed: topic.lastAccessed || new Date().toISOString(),
-                    timeSpent: parseFloat(topic.timeSpent || 0),
-                    lessonsCompleted: parseInt(topic.lessonsCompleted || 0)
-                };
-            });
-        }
+               // ROBUST DATA HANDLING: Ensure types are correct
+               if (progressData.topics && Array.isArray(progressData.topics)) {
+                progressData.topics.forEach(topic => {
+                    dbProgress[topic.topicName] = {
+                        tutorialCompleted: topic.tutorialCompleted === true,
+                        puzzleCompleted: topic.puzzleCompleted === true,
+                        score: parseInt(topic.puzzleScore || topic.score || 0), // Accept both, save as score
+                        progressPercentage: parseFloat(topic.progressPercentage || 0),
+                        lastAccessed: topic.lastAccessed || new Date().toISOString(),
+                        timeSpent: parseFloat(topic.timeSpent || 0),
+                        lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
+                        readingCompleted: topic.readingCompleted === true // ADD THIS
+                    };
+                });
+            }
         const updateData = {
             progress: dbProgress,
             streak: parseInt(progressData.streak || 0),
@@ -426,11 +428,12 @@ app.get('/api/progress/:username', async (req, res) => {
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
-                    puzzleScore: topic.score || 0,
+                    score: topic.score || 0, // CHANGE THIS from puzzleScore to score
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
-                    lessonsCompleted: topic.lessonsCompleted || 0
+                    lessonsCompleted: topic.lessonsCompleted || 0,
+                    readingCompleted: topic.readingCompleted || false // ADD THIS
                 });
             });
         }
@@ -467,11 +470,12 @@ app.get('/api/progress', async (req, res) => {
                         topicName: topicName,
                         tutorialCompleted: topic.tutorialCompleted || false,
                         puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,
+                        score: topic.score || 0, // CHANGE THIS from puzzleScore to score
                         progressPercentage: topic.progressPercentage || 0,
                         lastAccessed: topic.lastAccessed || '',
                         timeSpent: topic.timeSpent || 0,
-                        lessonsCompleted: topic.lessonsCompleted || 0
+                        lessonsCompleted: topic.lessonsCompleted || 0,
+                        readingCompleted: topic.readingCompleted || false // ADD THIS
                     });
                 });
             }
