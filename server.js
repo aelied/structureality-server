@@ -270,7 +270,14 @@ app.get('/api/users/:username', async (req, res) => {
             });
         }
 
-        res.json(user);
+        // IMPORTANT: Return format that matches UserDataResponse in Unity
+        res.json({
+            username: user.username,
+            name: user.name || user.username,
+            email: user.email,  // Ensure correct email is sent
+            streak: user.streak || 0,
+            completedTopics: user.completedTopics || 0
+        });
     } catch (error) {
         res.status(500).json({
             success: false,
