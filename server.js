@@ -3,19 +3,24 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
+
 // Serve static files from 'public' directory
 app.use(express.static('public'));
+
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_admin:oG4qBQnbGLLyBF4f@structureality-cluster.chm4r6c.mongodb.net/?appName=StructuReality-Cluster";
 const DB_NAME = "structureality_db";
 const USERS_COLLECTION = "users";
 const LESSONS_COLLECTION = "lessons";
 const ADMINS_COLLECTION = "admins";
+
 // MongoDB Client
 const client = new MongoClient(MONGODB_URI, {
     serverApi: {
@@ -24,10 +29,12 @@ const client = new MongoClient(MONGODB_URI, {
         deprecationErrors: true,
     }
 });
+
 let db;
 let usersCollection;
 let lessonsCollection;
 let adminsCollection;
+
 // Connect to MongoDB
 async function connectDB() {
     try {
@@ -36,25 +43,28 @@ async function connectDB() {
         usersCollection = db.collection(USERS_COLLECTION);
         lessonsCollection = db.collection(LESSONS_COLLECTION);
         adminsCollection = db.collection(ADMINS_COLLECTION);
+
         // Create indexes
         await usersCollection.createIndex({ username: 1 }, { unique: true });
         await usersCollection.createIndex({ email: 1 }, { unique: true });
         await lessonsCollection.createIndex({ topicName: 1, order: 1 });
         await adminsCollection.createIndex({ username: 1 }, { unique: true });
+
         console.log("✅ Connected to MongoDB Atlas!");
     } catch (error) {
         console.error("❌ MongoDB connection failed:", error);
         process.exit(1);
     }
 }
+
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
-        version: '2.4.0', // Updated Version
+        version: '2.5.0', // Updated Version for Fixes
         database: db ? 'Connected' : 'Disconnected',
         collections: ['users', 'lessons', 'admins'],
-        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking', 'Password Management', 'Admin Login', 'Robust Analytics'],
+        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking', 'Streak Fixes', 'Admin Login', 'Robust Analytics'],
         message: 'Server ready for Unity and admin connections',
         adminPages: {
             login: '/login.html',
@@ -65,6 +75,7 @@ app.get('/', (req, res) => {
         }
     });
 });
+
 // Serve admin pages explicitly
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -81,11 +92,13 @@ app.get('/lessons.html', (req, res) => {
 app.get('/analytics.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
 });
+
 // ==================== ADMIN ENDPOINTS ====================
 app.post('/api/admin/login', async (req, res) => {
     try {
         const { username, password } = req.body;
         const admin = await adminsCollection.findOne({ username: username });
+
         if (!admin) {
             console.log(`❌ Admin login failed: User not found for ${username}`);
             return res.status(404).json({
@@ -93,6 +106,7 @@ app.post('/api/admin/login', async (req, res) => {
                 error: 'Admin user not found'
             });
         }
+
         if (admin.password !== password) {
             console.log(`❌ Admin login failed: Incorrect password for ${username}`);
             return res.status(401).json({
@@ -100,6 +114,7 @@ app.post('/api/admin/login', async (req, res) => {
                 error: 'Incorrect password'
             });
         }
+
         console.log(`🔐 Admin logged in: ${admin.username}`);
         const { password: _, ...adminWithoutPassword } = admin;
         res.json({
@@ -116,13 +131,16 @@ app.post('/api/admin/login', async (req, res) => {
         });
     }
 });
+
 // ==================== USER ENDPOINTS ====================
 app.post('/api/users', async (req, res) => {
     try {
         const userData = req.body;
+
         if (!userData.registerDate) {
             userData.registerDate = new Date().toISOString();
         }
+
         // Initialize empty progress structure if missing
         if (!userData.progress) {
             userData.progress = {
@@ -133,12 +151,14 @@ app.post('/api/users', async (req, res) => {
                 Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 }
             };
         }
+
         const existingUser = await usersCollection.findOne({
             $or: [
                 { username: userData.username },
                 { email: userData.email }
             ]
         });
+
         if (existingUser) {
             return res.status(400).json({
                 success: false,
@@ -146,8 +166,10 @@ app.post('/api/users', async (req, res) => {
                 field: existingUser.username === userData.username ? 'username' : 'email'
             });
         }
+
         const result = await usersCollection.insertOne(userData);
         console.log(`✅ New user registered: ${userData.username}`);
+
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
@@ -162,27 +184,32 @@ app.post('/api/users', async (req, res) => {
         });
     }
 });
+
 app.post('/api/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+
         const user = await usersCollection.findOne({
             $or: [
                 { username: username },
                 { email: email }
             ]
         });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         if (user.password !== password) {
             return res.status(401).json({
                 success: false,
                 error: 'Incorrect password'
             });
         }
+
         await usersCollection.updateOne(
             { _id: user._id },
             {
@@ -191,8 +218,10 @@ app.post('/api/login', async (req, res) => {
                 }
             }
         );
+
         console.log(`🔐 User logged in: ${user.username}`);
         const { password: _, ...userWithoutPassword } = user;
+
         res.json({
             success: true,
             message: 'Login successful',
@@ -207,11 +236,13 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
+
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
             .project({ password: 0 })
             .toArray();
+
         res.json({
             success: true,
             count: users.length,
@@ -224,18 +255,21 @@ app.get('/api/users', async (req, res) => {
         });
     }
 });
+
 app.get('/api/users/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne(
             { username: req.params.username },
             { projection: { password: 0 } }
         );
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         res.json(user);
     } catch (error) {
         res.status(500).json({
@@ -244,15 +278,18 @@ app.get('/api/users/:username', async (req, res) => {
         });
     }
 });
+
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
+
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         console.log(`🗑️ User deleted: ${req.params.username}`);
         res.json({ success: true, message: 'User deleted successfully' });
     } catch (error) {
@@ -262,31 +299,38 @@ app.delete('/api/users/:username', async (req, res) => {
         });
     }
 });
+
 // ==================== PASSWORD CHANGE ====================
 app.put('/api/users/:username/change-password', async (req, res) => {
     try {
         const { username } = req.params;
         const { currentPassword, newPassword } = req.body;
+
         console.log(`🔐 Password change request for: ${username}`);
+
         if (!currentPassword || !newPassword) {
             return res.status(400).json({
                 success: false,
                 error: 'Current password and new password are required'
             });
         }
+
         const user = await usersCollection.findOne({ username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         if (user.password !== currentPassword) {
             return res.status(401).json({
                 success: false,
                 error: 'Current password is incorrect'
             });
         }
+
         await usersCollection.updateOne(
             { username },
             {
@@ -296,6 +340,7 @@ app.put('/api/users/:username/change-password', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Password changed successfully for ${username}`);
         res.json({
             success: true,
@@ -310,18 +355,34 @@ app.put('/api/users/:username/change-password', async (req, res) => {
         });
     }
 });
+
 // ==================== PROGRESS SYNC ====================
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
         const progressData = req.body;
         console.log('📥 Progress sync:', username);
-        
-        const dbProgress = {};
-        
+
+        // --- DATA LOSS FIX START ---
+        // Fetch existing user first to get current progress
+        const existingUser = await usersCollection.findOne({ username: username });
+
+        if (!existingUser) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Initialize with existing progress or empty object
+        const mergedProgress = existingUser.progress || {};
+
+        // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                dbProgress[topic.topicName] = {
+                // Only update the topics included in the request
+                // Preserve others
+                mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
                     puzzleCompleted: topic.puzzleCompleted === true,
                     score: parseInt(topic.puzzleScore || topic.score || 0),
@@ -332,59 +393,78 @@ app.put('/api/progress/:username', async (req, res) => {
                 };
             });
         }
-        
-        // Get existing user data for streak calculation
-        const existingUser = await usersCollection.findOne({ username: username });
-        
-        let newStreak = 1;
+        // --- DATA LOSS FIX END ---
+
+        let newStreak = existingUser.streak || 0; // Default to 0 if undefined
+        if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1; // Start streak if new user
+
         const now = new Date();
-        
-        if (existingUser && existingUser.lastActivity) {
+
+        if (existingUser.lastActivity) {
             const lastActivity = new Date(existingUser.lastActivity);
-            const hoursDiff = (now - lastActivity) / (1000 * 60 * 60);
-            
-            // If last activity was within 24-48 hours, increment streak
-            if (hoursDiff >= 24 && hoursDiff < 48) {
+
+            // --- STREAK FIX START ---
+            // Use Calendar Date comparison instead of 24h window
+
+            // Helper to get date string YYYY-MM-DD
+            const toDateString = (d) => d.toISOString().split('T')[0];
+
+            const todayStr = toDateString(now);
+            const lastActiveStr = toDateString(lastActivity);
+
+            const msPerDay = 1000 * 60 * 60 * 24;
+            // Floor dates to ignore time component
+            const todayDate = new Date(todayStr);
+            const lastActiveDate = new Date(lastActiveStr);
+
+            const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
+
+            if (diffDays === 1) {
+                // Yesterday was active -> Increment
                 newStreak = (existingUser.streak || 0) + 1;
-            }
-            // If within 24 hours, keep current streak
-            else if (hoursDiff < 24) {
+                console.log(`🔥 Streak incremented to ${newStreak} (Yesterday: ${lastActiveStr}, Today: ${todayStr})`);
+            } else if (diffDays === 0) {
+                // Already active today -> Keep same
                 newStreak = existingUser.streak || 1;
-            }
-            // If more than 48 hours, reset to 1
-            else {
+                console.log(`✓ Streak maintained at ${newStreak} (Active today)`);
+            } else {
+                // Missed a day or more -> Reset
+                if (existingUser.streak > 0) {
+                    console.log(`❌ Streak broken. Reset to 1 (Last active: ${lastActiveStr}, Today: ${todayStr}, Diff: ${diffDays} days)`);
+                }
                 newStreak = 1;
             }
+            // --- STREAK FIX END ---
+        } else {
+            newStreak = 1;
         }
-        
+
+        // Use the MERGED progress dictionary
         const updateData = {
-            progress: dbProgress,
+            progress: mergedProgress,
             streak: newStreak,
             completedTopics: parseInt(progressData.completedTopics || 0),
             lastUpdated: progressData.lastUpdated || new Date().toISOString(),
             lastActivity: now.toISOString(),
-            name: progressData.name,
-            email: progressData.email
+            // Only update name/email if provided
         };
-        
+
+        if (progressData.name) updateData.name = progressData.name;
+        if (progressData.email) updateData.email = progressData.email;
+
+        // Only use specific fields in $set to be safer, though we merged 'progress' object above
         const result = await usersCollection.updateOne(
             { username: username },
             { $set: updateData },
             { upsert: false }
         );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'User not found'
-            });
-        }
-        
+
         console.log(`✅ Progress synced: ${username}, Streak: ${newStreak}`);
+
         res.json({
             success: true,
             message: 'Progress synced successfully',
-            syncedTopics: Object.keys(dbProgress).length,
+            syncedTopics: progressData.topics ? progressData.topics.length : 0,
             streak: newStreak
         });
     } catch (error) {
@@ -401,21 +481,27 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
         const { username } = req.params;
         const { topicName, lessonsCompleted } = req.body;
+
         console.log(`📚 Updating lessons for ${username}: ${topicName} - ${lessonsCompleted} lessons`);
+
         if (!topicName || lessonsCompleted === undefined) {
             return res.status(400).json({
                 success: false,
                 error: 'topicName and lessonsCompleted are required'
             });
         }
+
         const user = await usersCollection.findOne({ username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         const lessonsCount = parseInt(lessonsCompleted);
+
         await usersCollection.updateOne(
             { username },
             {
@@ -425,7 +511,9 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Lessons updated for ${username}: ${topicName} = ${lessonsCount}`);
+
         res.json({
             success: true,
             message: 'Lesson completion updated',
@@ -441,15 +529,18 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
         });
     }
 });
+
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
+
         if (!user) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
+
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
@@ -466,6 +557,7 @@ app.get('/api/progress/:username', async (req, res) => {
                 });
             });
         }
+
         res.json({
             success: true,
             data: {
@@ -485,11 +577,13 @@ app.get('/api/progress/:username', async (req, res) => {
         });
     }
 });
+
 app.get('/api/progress', async (req, res) => {
     try {
         const users = await usersCollection.find({})
             .project({ password: 0 })
             .toArray();
+
         const progressData = users.map(user => {
             const topics = [];
             if (user.progress) {
@@ -507,6 +601,7 @@ app.get('/api/progress', async (req, res) => {
                     });
                 });
             }
+
             return {
                 username: user.username,
                 name: user.name || '',
@@ -517,6 +612,7 @@ app.get('/api/progress', async (req, res) => {
                 topics: topics
             };
         });
+
         res.json({
             success: true,
             count: progressData.length,
@@ -529,12 +625,14 @@ app.get('/api/progress', async (req, res) => {
         });
     }
 });
+
 // ==================== LESSON MANAGEMENT ====================
 app.get('/api/lessons', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({})
             .sort({ topicName: 1, order: 1 })
             .toArray();
+
         res.json({
             success: true,
             count: lessons.length,
@@ -548,6 +646,7 @@ app.get('/api/lessons', async (req, res) => {
         });
     }
 });
+
 app.get('/api/lessons/:topicName', async (req, res) => {
     try {
         const lessons = await lessonsCollection.find({
@@ -555,6 +654,7 @@ app.get('/api/lessons/:topicName', async (req, res) => {
         })
             .sort({ order: 1 })
             .toArray();
+
         res.json({
             success: true,
             topicName: req.params.topicName,
@@ -568,6 +668,7 @@ app.get('/api/lessons/:topicName', async (req, res) => {
         });
     }
 });
+
 app.post('/api/lessons', async (req, res) => {
     try {
         const lessonData = {
@@ -578,14 +679,17 @@ app.post('/api/lessons', async (req, res) => {
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
+
         if (!lessonData.topicName || !lessonData.title || !lessonData.description) {
             return res.status(400).json({
                 success: false,
                 error: 'Topic name, title, and description are required'
             });
         }
+
         const result = await lessonsCollection.insertOne(lessonData);
         console.log(`✅ New lesson added: ${lessonData.title} (${lessonData.topicName})`);
+
         res.status(201).json({
             success: true,
             message: 'Lesson added successfully',
@@ -600,6 +704,7 @@ app.post('/api/lessons', async (req, res) => {
         });
     }
 });
+
 app.put('/api/lessons/:lessonId', async (req, res) => {
     try {
         const updateData = {
@@ -609,19 +714,23 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
+
         Object.keys(updateData).forEach(key =>
             updateData[key] === undefined && delete updateData[key]
         );
+
         const result = await lessonsCollection.updateOne(
             { _id: new ObjectId(req.params.lessonId) },
             { $set: updateData }
         );
+
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Lesson not found'
             });
         }
+
         console.log(`✅ Lesson updated: ${req.params.lessonId}`);
         res.json({
             success: true,
@@ -634,16 +743,19 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
 app.post('/api/lessons/complete', async (req, res) => {
     try {
         const { username, topicName, lessonsCompleted } = req.body;
         console.log(`📚 ${username} - ${topicName}: ${lessonsCompleted} lessons`);
+
         if (!username || !topicName || lessonsCompleted === undefined) {
             return res.status(400).json({
                 success: false,
                 error: 'Missing required fields'
             });
         }
+
         const user = await usersCollection.findOne({ username });
         if (!user) {
             return res.status(404).json({
@@ -651,6 +763,7 @@ app.post('/api/lessons/complete', async (req, res) => {
                 error: 'User not found'
             });
         }
+
         await usersCollection.updateOne(
             { username },
             {
@@ -660,6 +773,7 @@ app.post('/api/lessons/complete', async (req, res) => {
                 }
             }
         );
+
         console.log(`✅ Updated: ${username} - ${topicName} = ${lessonsCompleted}`);
         res.json({
             success: true,
@@ -677,17 +791,20 @@ app.post('/api/lessons/complete', async (req, res) => {
         });
     }
 });
+
 app.delete('/api/lessons/:lessonId', async (req, res) => {
     try {
         const result = await lessonsCollection.deleteOne({
             _id: new ObjectId(req.params.lessonId)
         });
+
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'Lesson not found'
             });
         }
+
         console.log(`🗑️ Lesson deleted: ${req.params.lessonId}`);
         res.json({
             success: true,
@@ -700,24 +817,30 @@ app.delete('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
 // ==================== STATS ====================
 app.get('/api/stats', async (req, res) => {
     try {
         const totalUsers = await usersCollection.countDocuments();
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
         const activeUsers = await usersCollection.countDocuments({
             lastLogin: { $gte: sevenDaysAgo.toISOString() }
         });
+
         const users = await usersCollection.find({}).toArray();
         let totalStreak = 0;
         let totalCompletedTopics = 0;
+
         users.forEach(user => {
             totalStreak += user.streak || 0;
             totalCompletedTopics += user.completedTopics || 0;
         });
+
         const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
         const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
+
         res.json({
             success: true,
             totalUsers,
@@ -732,23 +855,24 @@ app.get('/api/stats', async (req, res) => {
         });
     }
 });
+
 // ==================== ANALYTICS ====================
 app.get('/api/analytics', async (req, res) => {
     try {
         const users = await usersCollection.find({}).toArray();
         const lessons = await lessonsCollection.find({}).toArray();
-        
+
         const totalUsers = users.length;
         const totalLessons = lessons.length;
-        
+
         // Calculate active users (last 24 hours)
         const oneDayAgo = new Date();
         oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-        
+
         let activeUsers = 0;
         let idleUsers = 0;
         let inactiveUsers = 0;
-        
+
         // Topic statistics
         const topicStats = {
             Queue: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
@@ -757,7 +881,7 @@ app.get('/api/analytics', async (req, res) => {
             Trees: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             Graphs: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 }
         };
-        
+
         const progressRanges = {
             '0-20': 0,
             '21-40': 0,
@@ -765,7 +889,7 @@ app.get('/api/analytics', async (req, res) => {
             '61-80': 0,
             '81-100': 0
         };
-        
+
         const streakRanges = {
             '1-3': 0,
             '4-7': 0,
@@ -773,15 +897,15 @@ app.get('/api/analytics', async (req, res) => {
             '15-30': 0,
             '30+': 0
         };
-        
+
         const activityByDay = Array(7).fill(0);
         const lessonsCompletedByDay = Array(7).fill(0);
-        
+
         let totalStreak = 0;
         let totalCompletedTopics = 0;
         let totalLessonsCompleted = 0;
         let totalTimeSpent = 0;
-        
+
         users.forEach(user => {
             // Calculate overall progress
             let userProgress = 0;
@@ -792,14 +916,14 @@ app.get('/api/analytics', async (req, res) => {
                 });
                 userProgress = topicCount > 0 ? userProgress / topicCount : 0;
             }
-            
+
             // Progress distribution
             if (userProgress <= 20) progressRanges['0-20']++;
             else if (userProgress <= 40) progressRanges['21-40']++;
             else if (userProgress <= 60) progressRanges['41-60']++;
             else if (userProgress <= 80) progressRanges['61-80']++;
             else progressRanges['81-100']++;
-            
+
             // Streak distribution
             const streak = parseInt(user.streak || 0);
             totalStreak += streak;
@@ -808,40 +932,41 @@ app.get('/api/analytics', async (req, res) => {
             else if (streak >= 8 && streak <= 14) streakRanges['8-14']++;
             else if (streak >= 15 && streak <= 30) streakRanges['15-30']++;
             else if (streak > 30) streakRanges['30+']++;
-            
+
             totalCompletedTopics += parseInt(user.completedTopics || 0);
-            
+
             // User activity status based on lastActivity
             let mostRecentActivity = null;
-            
+
             if (user.progress) {
                 Object.entries(user.progress).forEach(([topicName, topic]) => {
+                    // Safety check for topic existence
                     if (topicStats[topicName]) {
                         const tLessons = parseInt(topic.lessonsCompleted || 0);
                         const tScore = parseInt(topic.score || 0);
                         const tTime = parseFloat(topic.timeSpent || 0);
-                        
+
                         topicStats[topicName].totalLessons += tLessons;
                         topicStats[topicName].totalScore += tScore;
                         topicStats[topicName].totalTime += tTime;
-                        
+
                         if (topic.puzzleCompleted) {
                             topicStats[topicName].completions++;
                         }
-                        
+
                         if (tLessons > 0 || topic.tutorialCompleted) {
                             topicStats[topicName].users++;
                         }
-                        
+
                         totalLessonsCompleted += tLessons;
                         totalTimeSpent += tTime;
-                        
+
                         if (topic.lastAccessed) {
                             const accessDate = new Date(topic.lastAccessed);
                             if (!mostRecentActivity || accessDate > mostRecentActivity) {
                                 mostRecentActivity = accessDate;
                             }
-                            
+
                             const daysDiff = Math.floor((new Date() - accessDate) / (1000 * 60 * 60 * 24));
                             if (daysDiff >= 0 && daysDiff < 7) {
                                 activityByDay[6 - daysDiff]++;
@@ -851,12 +976,12 @@ app.get('/api/analytics', async (req, res) => {
                     }
                 });
             }
-            
+
             // Check lastActivity for user status
             if (user.lastActivity) {
                 const lastActivityDate = new Date(user.lastActivity);
                 const hoursSince = (new Date() - lastActivityDate) / (1000 * 60 * 60);
-                
+
                 if (hoursSince < 24) activeUsers++;
                 else if (hoursSince < 168) idleUsers++;
                 else inactiveUsers++;
@@ -869,21 +994,23 @@ app.get('/api/analytics', async (req, res) => {
                 inactiveUsers++;
             }
         });
-        
+
         const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
         const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
-        
+
         const avgTimePerUser = totalUsers > 0 ? (totalTimeSpent / totalUsers) : 0;
-        
+
         const totalPossibleLessons = totalUsers * totalLessons;
         const completionRate = totalPossibleLessons > 0
             ? ((totalLessonsCompleted / totalPossibleLessons) * 100).toFixed(1)
             : 0;
-        
+
+        // Custom engagement score algorithm
         const engagementScore = totalUsers > 0
             ? Math.min(10, ((activeUsers / totalUsers) * 5 + (parseFloat(completionRate) / 10))).toFixed(1)
             : 0;
-        
+
+        // Calculate percentages for topic popularity
         const totalTopicUsers = Object.values(topicStats).reduce((sum, topic) => sum + topic.users, 0);
         const topicPopularity = {};
         Object.entries(topicStats).forEach(([topic, stats]) => {
@@ -891,7 +1018,8 @@ app.get('/api/analytics', async (req, res) => {
                 ? Math.round((stats.users / totalTopicUsers) * 100)
                 : 0;
         });
-        
+
+        // Prepare lesson performance data
         const lessonPerformance = [];
         const topicColors = {
             Queue: 'blue',
@@ -900,7 +1028,8 @@ app.get('/api/analytics', async (req, res) => {
             Trees: 'yellow',
             Graphs: 'red'
         };
-        
+
+        // Aggregate lesson completions
         const lessonCompletionMap = new Map();
         users.forEach(user => {
             if (user.progress) {
@@ -913,23 +1042,23 @@ app.get('/api/analytics', async (req, res) => {
                 });
             }
         });
-        
+
         lessons.slice(0, 10).forEach(lesson => {
             const topicStat = topicStats[lesson.topicName];
             if (topicStat) {
                 const avgScore = topicStat.users > 0
                     ? ((topicStat.totalScore / topicStat.users)).toFixed(1)
                     : 0;
-                
+
                 const avgTimeSeconds = topicStat.users > 0
                     ? (topicStat.totalTime / topicStat.users)
                     : 0;
-                
+
                 // Format time as "Xh Ym" or "Xm"
                 const avgTimeFormatted = formatTime(avgTimeSeconds);
-                
-                const rating = (parseFloat(avgScore) / 20).toFixed(1);
-                
+
+                const rating = (parseFloat(avgScore) / 20).toFixed(1); // 5-star based on score
+
                 lessonPerformance.push({
                     name: lesson.title,
                     topic: lesson.topicName,
@@ -941,14 +1070,15 @@ app.get('/api/analytics', async (req, res) => {
                 });
             }
         });
-        
+
+        // Day labels
         const dayLabels = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             dayLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
         }
-        
+
         res.json({
             success: true,
             data: {
@@ -990,20 +1120,21 @@ app.get('/api/analytics', async (req, res) => {
 
 function formatTime(seconds) {
     if (!seconds || seconds === 0) return '0m';
-    
+
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) {
         return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
     }
     return `${minutes}m`;
 }
+
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server v2.4 - Robust Analytics');
+        console.log('🚀 StructuReality Server v2.5 - Fixes & Analytics');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🔐 Login: http://localhost:${PORT}/login.html`);
@@ -1015,6 +1146,7 @@ connectDB().then(() => {
         console.log('==================================================\n');
     });
 });
+
 process.on('SIGINT', async () => {
     console.log('\n🛑 Shutting down...');
     await client.close();
