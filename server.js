@@ -316,8 +316,9 @@ app.put('/api/progress/:username', async (req, res) => {
         const { username } = req.params;
         const progressData = req.body;
         console.log('📥 Progress sync:', username);
+        
         const dbProgress = {};
-        // ROBUST DATA HANDLING: Ensure types are correct
+        
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
                 dbProgress[topic.topicName] = {
@@ -331,30 +332,60 @@ app.put('/api/progress/:username', async (req, res) => {
                 };
             });
         }
+        
+        // Get existing user data for streak calculation
+        const existingUser = await usersCollection.findOne({ username: username });
+        
+        let newStreak = 1;
+        const now = new Date();
+        
+        if (existingUser && existingUser.lastActivity) {
+            const lastActivity = new Date(existingUser.lastActivity);
+            const hoursDiff = (now - lastActivity) / (1000 * 60 * 60);
+            
+            // If last activity was within 24-48 hours, increment streak
+            if (hoursDiff >= 24 && hoursDiff < 48) {
+                newStreak = (existingUser.streak || 0) + 1;
+            }
+            // If within 24 hours, keep current streak
+            else if (hoursDiff < 24) {
+                newStreak = existingUser.streak || 1;
+            }
+            // If more than 48 hours, reset to 1
+            else {
+                newStreak = 1;
+            }
+        }
+        
         const updateData = {
             progress: dbProgress,
-            streak: parseInt(progressData.streak || 0),
+            streak: newStreak,
             completedTopics: parseInt(progressData.completedTopics || 0),
             lastUpdated: progressData.lastUpdated || new Date().toISOString(),
+            lastActivity: now.toISOString(),
             name: progressData.name,
             email: progressData.email
         };
+        
         const result = await usersCollection.updateOne(
             { username: username },
             { $set: updateData },
             { upsert: false }
         );
+        
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 error: 'User not found'
             });
         }
-        console.log(`✅ Progress synced: ${username}`);
+        
+        console.log(`✅ Progress synced: ${username}, Streak: ${newStreak}`);
         res.json({
             success: true,
             message: 'Progress synced successfully',
-            syncedTopics: Object.keys(dbProgress).length
+            syncedTopics: Object.keys(dbProgress).length,
+            streak: newStreak
         });
     } catch (error) {
         console.error('Error:', error);
@@ -365,6 +396,7 @@ app.put('/api/progress/:username', async (req, res) => {
         });
     }
 });
+
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
         const { username } = req.params;
@@ -703,17 +735,20 @@ app.get('/api/stats', async (req, res) => {
 // ==================== ANALYTICS ====================
 app.get('/api/analytics', async (req, res) => {
     try {
-        // Fetch all users and lessons
         const users = await usersCollection.find({}).toArray();
         const lessons = await lessonsCollection.find({}).toArray();
+        
         const totalUsers = users.length;
         const totalLessons = lessons.length;
-        // Calculate active users (last 7 days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        
+        // Calculate active users (last 24 hours)
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        
         let activeUsers = 0;
         let idleUsers = 0;
         let inactiveUsers = 0;
+        
         // Topic statistics
         const topicStats = {
             Queue: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
@@ -722,7 +757,7 @@ app.get('/api/analytics', async (req, res) => {
             Trees: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             Graphs: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 }
         };
-        // Progress distribution
+        
         const progressRanges = {
             '0-20': 0,
             '21-40': 0,
@@ -730,7 +765,7 @@ app.get('/api/analytics', async (req, res) => {
             '61-80': 0,
             '81-100': 0
         };
-        // Streak distribution
+        
         const streakRanges = {
             '1-3': 0,
             '4-7': 0,
@@ -738,14 +773,15 @@ app.get('/api/analytics', async (req, res) => {
             '15-30': 0,
             '30+': 0
         };
-        // Activity by day (last 7 days)
+        
         const activityByDay = Array(7).fill(0);
         const lessonsCompletedByDay = Array(7).fill(0);
+        
         let totalStreak = 0;
         let totalCompletedTopics = 0;
         let totalLessonsCompleted = 0;
-        let totalTimeSpent = 0; // In seconds
-        // Process each user
+        let totalTimeSpent = 0;
+        
         users.forEach(user => {
             // Calculate overall progress
             let userProgress = 0;
@@ -756,12 +792,14 @@ app.get('/api/analytics', async (req, res) => {
                 });
                 userProgress = topicCount > 0 ? userProgress / topicCount : 0;
             }
+            
             // Progress distribution
             if (userProgress <= 20) progressRanges['0-20']++;
             else if (userProgress <= 40) progressRanges['21-40']++;
             else if (userProgress <= 60) progressRanges['41-60']++;
             else if (userProgress <= 80) progressRanges['61-80']++;
             else progressRanges['81-100']++;
+            
             // Streak distribution
             const streak = parseInt(user.streak || 0);
             totalStreak += streak;
@@ -770,35 +808,40 @@ app.get('/api/analytics', async (req, res) => {
             else if (streak >= 8 && streak <= 14) streakRanges['8-14']++;
             else if (streak >= 15 && streak <= 30) streakRanges['15-30']++;
             else if (streak > 30) streakRanges['30+']++;
-            // Completed topics
+            
             totalCompletedTopics += parseInt(user.completedTopics || 0);
-            // User activity status
+            
+            // User activity status based on lastActivity
             let mostRecentActivity = null;
-            // Process topic statistics
+            
             if (user.progress) {
                 Object.entries(user.progress).forEach(([topicName, topic]) => {
                     if (topicStats[topicName]) {
                         const tLessons = parseInt(topic.lessonsCompleted || 0);
                         const tScore = parseInt(topic.score || 0);
                         const tTime = parseFloat(topic.timeSpent || 0);
+                        
                         topicStats[topicName].totalLessons += tLessons;
                         topicStats[topicName].totalScore += tScore;
                         topicStats[topicName].totalTime += tTime;
+                        
                         if (topic.puzzleCompleted) {
                             topicStats[topicName].completions++;
                         }
+                        
                         if (tLessons > 0 || topic.tutorialCompleted) {
                             topicStats[topicName].users++;
                         }
+                        
                         totalLessonsCompleted += tLessons;
                         totalTimeSpent += tTime;
-                        // Track most recent activity
+                        
                         if (topic.lastAccessed) {
                             const accessDate = new Date(topic.lastAccessed);
                             if (!mostRecentActivity || accessDate > mostRecentActivity) {
                                 mostRecentActivity = accessDate;
                             }
-                            // Activity by day
+                            
                             const daysDiff = Math.floor((new Date() - accessDate) / (1000 * 60 * 60 * 24));
                             if (daysDiff >= 0 && daysDiff < 7) {
                                 activityByDay[6 - daysDiff]++;
@@ -808,8 +851,16 @@ app.get('/api/analytics', async (req, res) => {
                     }
                 });
             }
-            // Determine user status
-            if (mostRecentActivity) {
+            
+            // Check lastActivity for user status
+            if (user.lastActivity) {
+                const lastActivityDate = new Date(user.lastActivity);
+                const hoursSince = (new Date() - lastActivityDate) / (1000 * 60 * 60);
+                
+                if (hoursSince < 24) activeUsers++;
+                else if (hoursSince < 168) idleUsers++;
+                else inactiveUsers++;
+            } else if (mostRecentActivity) {
                 const hoursSince = (new Date() - mostRecentActivity) / (1000 * 60 * 60);
                 if (hoursSince < 24) activeUsers++;
                 else if (hoursSince < 168) idleUsers++;
@@ -818,22 +869,21 @@ app.get('/api/analytics', async (req, res) => {
                 inactiveUsers++;
             }
         });
-        // Calculate averages
+        
         const avgStreak = totalUsers > 0 ? (totalStreak / totalUsers).toFixed(1) : 0;
         const avgCompletion = totalUsers > 0 ? (totalCompletedTopics / totalUsers).toFixed(1) : 0;
-        // Time calculations
-        // totalTimeSpent is in seconds
-        const avgTimePerUser = totalUsers > 0 ? (totalTimeSpent / totalUsers) : 0; // in seconds
-        // Calculate completion rate
+        
+        const avgTimePerUser = totalUsers > 0 ? (totalTimeSpent / totalUsers) : 0;
+        
         const totalPossibleLessons = totalUsers * totalLessons;
         const completionRate = totalPossibleLessons > 0
             ? ((totalLessonsCompleted / totalPossibleLessons) * 100).toFixed(1)
             : 0;
-        // Calculate engagement score (0-10)
+        
         const engagementScore = totalUsers > 0
             ? Math.min(10, ((activeUsers / totalUsers) * 5 + (parseFloat(completionRate) / 10))).toFixed(1)
             : 0;
-        // Topic popularity percentages
+        
         const totalTopicUsers = Object.values(topicStats).reduce((sum, topic) => sum + topic.users, 0);
         const topicPopularity = {};
         Object.entries(topicStats).forEach(([topic, stats]) => {
@@ -841,7 +891,7 @@ app.get('/api/analytics', async (req, res) => {
                 ? Math.round((stats.users / totalTopicUsers) * 100)
                 : 0;
         });
-        // Lesson performance data
+        
         const lessonPerformance = [];
         const topicColors = {
             Queue: 'blue',
@@ -850,7 +900,7 @@ app.get('/api/analytics', async (req, res) => {
             Trees: 'yellow',
             Graphs: 'red'
         };
-        // Get top lessons by completion
+        
         const lessonCompletionMap = new Map();
         users.forEach(user => {
             if (user.progress) {
@@ -863,63 +913,64 @@ app.get('/api/analytics', async (req, res) => {
                 });
             }
         });
+        
         lessons.slice(0, 10).forEach(lesson => {
             const topicStat = topicStats[lesson.topicName];
             if (topicStat) {
                 const avgScore = topicStat.users > 0
                     ? ((topicStat.totalScore / topicStat.users)).toFixed(1)
                     : 0;
-                const avgTime = topicStat.users > 0
-                    ? Math.floor(topicStat.totalTime / topicStat.users / 60) // Minutes
+                
+                const avgTimeSeconds = topicStat.users > 0
+                    ? (topicStat.totalTime / topicStat.users)
                     : 0;
-                const rating = (parseFloat(avgScore) / 20).toFixed(1); // Convert to 5-star scale
+                
+                // Format time as "Xh Ym" or "Xm"
+                const avgTimeFormatted = formatTime(avgTimeSeconds);
+                
+                const rating = (parseFloat(avgScore) / 20).toFixed(1);
+                
                 lessonPerformance.push({
                     name: lesson.title,
                     topic: lesson.topicName,
                     color: topicColors[lesson.topicName] || 'gray',
                     completions: lessonCompletionMap.get(lesson.topicName) || 0,
                     avgScore: avgScore + '%',
-                    avgTime: `${avgTime}m`,
+                    avgTime: avgTimeFormatted,
                     rating: rating
                 });
             }
         });
-        // Generate day labels
+        
         const dayLabels = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             dayLabels.push(date.toLocaleDateString('en-US', { weekday: 'short' }));
         }
+        
         res.json({
             success: true,
             data: {
-                // Key metrics
                 metrics: {
                     completionRate: parseFloat(completionRate),
-                    avgTimePerUser: avgTimePerUser, // Seconds
-                    totalTimeSpent: totalTimeSpent, // Seconds
+                    avgTimePerUser: avgTimePerUser,
+                    totalTimeSpent: totalTimeSpent,
                     engagementScore: parseFloat(engagementScore),
                     totalUsers: totalUsers,
                     activeUsers: activeUsers,
                     totalLessons: totalLessons,
                     avgStreak: parseFloat(avgStreak)
                 },
-                // User activity chart
                 activity: {
                     labels: dayLabels,
                     activeUsers: activityByDay,
                     lessonsCompleted: lessonsCompletedByDay
                 },
-                // Topic popularity
                 topicPopularity: topicPopularity,
-                // Progress distribution
                 progressDistribution: progressRanges,
-                // Streak distribution
                 streakDistribution: streakRanges,
-                // Lesson performance
                 lessonPerformance: lessonPerformance,
-                // User status
                 userStatus: {
                     active: activeUsers,
                     idle: idleUsers,
@@ -936,6 +987,18 @@ app.get('/api/analytics', async (req, res) => {
         });
     }
 });
+
+function formatTime(seconds) {
+    if (!seconds || seconds === 0) return '0m';
+    
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (hours > 0) {
+        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+    }
+    return `${minutes}m`;
+}
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {

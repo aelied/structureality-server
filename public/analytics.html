@@ -293,50 +293,68 @@
       }
       
       function formatTime(seconds) {
-        if (!seconds) return '0m';
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        if (h > 0) return `${h}h ${m}m`;
-        return `${m}m`;
-      }
-      async function loadAnalytics() {
-        try {
-          document.getElementById('loadingState').style.display = 'block';
-          document.getElementById('analyticsContent').style.display = 'none';
-          const response = await fetch(`${API_URL}/analytics`);
-          const result = await response.json();
-          if (!result.success) {
-            throw new Error(result.error || 'Failed to load analytics');
-          }
-          const data = result.data;
-          // Update key metrics
-          document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
-          document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
-          document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
-          document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
-          // Update trend indicators
-          document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
-          document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low'; // > 15 mins
-          document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
-          // Update charts
-          updateActivityChart(data.activity);
-          updateTopicChart(data.topicPopularity);
-          updateProgressChart(data.progressDistribution);
-          updateStreakChart(data.streakDistribution);
-          updateLessonPerformanceTable(data.lessonPerformance);
-          document.getElementById('loadingState').style.display = 'none';
-          document.getElementById('analyticsContent').style.display = 'block';
-        } catch (error) {
-          console.error('Error loading analytics:', error);
-          document.getElementById('loadingState').innerHTML = `
-            <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
-            <p class="text-gray-600">Failed to load analytics data</p>
-            <button onclick="loadAnalytics()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-              Retry
-            </button>
-          `;
+        if (!seconds || seconds === 0) return '0m';
+        
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (hours > 0) {
+          return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
         }
+        return `${minutes}m`;
       }
+
+      async function loadAnalytics() {
+          try {
+            document.getElementById('loadingState').style.display = 'block';
+            document.getElementById('analyticsContent').style.display = 'none';
+            
+            const response = await fetch(`${API_URL}/analytics`);
+            const result = await response.json();
+            
+            if (!result.success) {
+              throw new Error(result.error || 'Failed to load analytics');
+            }
+            
+            const data = result.data;
+            
+            // Update key metrics
+            document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
+            
+            // Format avgTimePerUser (seconds to "Xh Ym" or "Xm")
+            document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
+            
+            // Format totalTimeSpent (seconds to "Xh Ym" or "Xm")
+            document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
+            
+            document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
+            
+            // Update trend indicators
+            document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
+            document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low'; // > 15 mins
+            document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
+            
+            // Update charts
+            updateActivityChart(data.activity);
+            updateTopicChart(data.topicPopularity);
+            updateProgressChart(data.progressDistribution);
+            updateStreakChart(data.streakDistribution);
+            updateLessonPerformanceTable(data.lessonPerformance);
+            
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('analyticsContent').style.display = 'block';
+          } catch (error) {
+            console.error('Error loading analytics:', error);
+            document.getElementById('loadingState').innerHTML = `
+              <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
+              <p class="text-gray-600">Failed to load analytics data</p>
+              <button onclick="loadAnalytics()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                Retry
+              </button>
+            `;
+          }
+        }
+
       function updateActivityChart(activityData) {
         const ctx = document.getElementById("activityChart").getContext("2d");
         
