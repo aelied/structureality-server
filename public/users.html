@@ -1,241 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Users - StructuReality Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
     <style>
-      * {
-        font-family: "Poppins", sans-serif;
-      }
-      .stat-card-hover {
-        transition: all 0.3s ease;
-      }
-      .stat-card-hover:hover {
-        transform: translateY(-4px);
-      }
+        * {
+            font-family: "Poppins", sans-serif;
+        }
+
+        .stat-card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-hover:hover {
+            transform: translateY(-4px);
+        }
     </style>
-  </head>
-  <body class="bg-gray-50">
+</head>
+
+<body class="bg-gray-50">
     <!-- Sidebar -->
     <aside
-      class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50"
-    >
-      <div class="p-6 border-b border-indigo-700">
-        <div class="flex items-center space-x-3">
-          <div
-            class="w-10 h-10 bg-white rounded-lg flex items-center justify-center"
-          >
-            <i class="fas fa-cube text-indigo-700 text-xl"></i>
-          </div>
-          <div>
-            <h1 class="text-xl font-bold">StructuReality</h1>
-            <p class="text-xs text-indigo-300">Admin Portal</p>
-          </div>
+        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+        <div class="p-6 border-b border-indigo-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">StructuReality</h1>
+                    <p class="text-xs text-indigo-300">Admin Portal</p>
+                </div>
+            </div>
         </div>
-      </div>
 
-      <nav class="mt-6 px-4">
-        <a
-          href="index.html"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"
-        >
-          <i class="fas fa-home w-5"></i>
-          <span class="font-medium">Dashboard</span>
-        </a>
+        <nav class="mt-6 px-4">
+            <a href="index.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
 
-        <a
-          href="users.html"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"
-        >
-          <i class="fas fa-users w-5"></i>
-          <span class="font-medium">Users</span>
-        </a>
+            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-users w-5"></i>
+                <span class="font-medium">Users</span>
+            </a>
 
-        <a
-          href="lessons.html"
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition"
-        >
-          <i class="fas fa-book w-5"></i>
-          <span class="font-medium">Lessons</span>
-        </a>
+            <a href="lessons.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
+                <i class="fas fa-book w-5"></i>
+                <span class="font-medium">Lessons</span>
+            </a>
 
-        <a href="analytics.html" 
-          class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition"
-        >
-          <i class="fas fa-chart-line w-5"></i>
-          <span class="font-medium">Analytics</span>
-        </a>
-      </nav>
+            <a href="analytics.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="font-medium">Analytics</span>
+            </a>
+        </nav>
     </aside>
 
     <!-- Navbar -->
     <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-      <div class="px-8 py-4 flex items-center justify-between">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800">Users</h2>
-          <p class="text-sm text-gray-500">Manage system users</p>
-        </div>
-
-        <div class="flex items-center space-x-4">
-          <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-            <i class="fas fa-bell text-gray-600"></i>
-          </button>
-          <div
-            class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer"
-          >
-            <div
-              class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center"
-            >
-              <i class="fas fa-user text-indigo-700 text-sm"></i>
-            </div>
+        <div class="px-8 py-4 flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-              <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+                <h2 class="text-2xl font-bold text-gray-800">Users</h2>
+                <p class="text-sm text-gray-500">Manage system users</p>
             </div>
-          </div>
 
-          <button
-            onclick="logout()"
-            title="Logout"
-            class="p-2 hover:bg-gray-100 rounded-lg transition"
-          >
-            <i class="fas fa-sign-out-alt text-gray-600"></i>
-          </button>
+            <div class="flex items-center space-x-4">
+                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-bell text-gray-600"></i>
+                </button>
+                <div
+                    class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-700 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
+                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+                    </div>
+                </div>
+
+                <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt text-gray-600"></i>
+                </button>
+            </div>
         </div>
-      </div>
     </nav>
 
     <!-- Main Content -->
     <main class="ml-64 p-8 mt-20">
-      <!-- Search and Filters -->
-      <div
-        class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6"
-      >
-        <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-4 flex-1">
-            <div class="flex-1">
-              <div class="relative">
-                <i
-                  class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                ></i>
-                <input
-                  type="text"
-                  id="searchInput"
-                  placeholder="Search users by name, email, or username..."
-                  class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  onkeyup="filterUsers()"
-                />
-              </div>
+        <!-- Search and Filters -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4 flex-1">
+                    <div class="flex-1">
+                        <div class="relative">
+                            <i
+                                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="searchInput"
+                                placeholder="Search users by name, email, or username..."
+                                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                onkeyup="filterUsers()" />
+                        </div>
+                    </div>
+
+                    <select id="statusFilter" onchange="filterUsers()"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="idle">Idle</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-3 ml-6">
+                    <button onclick="loadUsers()"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        <i class="fas fa-sync mr-2"></i>Refresh
+                    </button>
+                </div>
             </div>
-
-            <select
-              id="statusFilter"
-              onchange="filterUsers()"
-              class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            >
-              <option value="all">All Status</option>
-              <option value="active">Active</option>
-              <option value="idle">Idle</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-
-          <div class="flex items-center space-x-3 ml-6">
-            <button
-              onclick="loadUsers()"
-              class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-            >
-              <i class="fas fa-sync mr-2"></i>Refresh
-            </button>
-          </div>
         </div>
-      </div>
 
-      <!-- Users Table -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div class="p-6 border-b border-gray-100">
-          <div class="flex items-center justify-between">
-            <h3 class="text-lg font-semibold text-gray-800">All Users</h3>
-            <div class="flex items-center space-x-2 text-sm text-gray-500">
-              <span id="userCount">Showing 0 users</span>
+        <!-- Users Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-800">All Users</h3>
+                    <div class="flex items-center space-x-2 text-sm text-gray-500">
+                        <span id="userCount">Showing 0 users</span>
+                    </div>
+                </div>
             </div>
-          </div>
+            <div class="overflow-x-auto" id="usersTableContainer">
+                <p class="text-center p-8 text-gray-500">Loading users...</p>
+            </div>
         </div>
-        <div class="overflow-x-auto" id="usersTableContainer">
-          <p class="text-center p-8 text-gray-500">Loading users...</p>
-        </div>
-      </div>
     </main>
 
     <script>
-      const API_URL = window.location.hostname === 'localhost' 
-        ? 'http://localhost:3000/api'
-        : 'https://structureality-admin.onrender.com/api';
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : 'https://structureality-admin.onrender.com/api';
 
-      let allUsersData = [];
+        let allUsersData = [];
 
-      function logout() {
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-      }
-
-      function checkAuth() {
-          const adminUser = localStorage.getItem('adminUser');
-          
-          // Check for null (key not found) or the corrupted string "undefined"
-          if (!adminUser || adminUser === 'undefined') {
-              localStorage.removeItem('adminUser'); 
-              window.location.href = 'login.html';
-              return null;
-          }
-          
-          try {
-              return JSON.parse(adminUser);
-          } catch (e) {
-              console.error("Failed to parse adminUser JSON:", e);
-              // Clear the corrupted item and redirect on parse failure
-              localStorage.removeItem('adminUser');
-              window.location.href = 'login.html';
-              return null;
-          }
-      }
-
-      async function loadUsers() {
-        try {
-          const response = await fetch(`${API_URL}/progress`);
-          const data = await response.json();
-          
-          if (data.success) {
-            allUsersData = data.data || [];
-            displayUsers(allUsersData);
-          }
-        } catch (error) {
-          console.error('Error loading users:', error);
-          document.getElementById('usersTableContainer').innerHTML = 
-            '<p class="text-center p-8 text-red-500">Failed to load users</p>';
-        }
-      }
-
-      function displayUsers(users) {
-        const container = document.getElementById('usersTableContainer');
-        document.getElementById('userCount').textContent = `Showing ${users.length} users`;
-
-        if (users.length === 0) {
-          container.innerHTML = '<p class="text-center p-8 text-gray-500">No users found</p>';
-          return;
+        function logout() {
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
         }
 
-        let html = `
+        function checkAuth() {
+            const adminUser = localStorage.getItem('adminUser');
+
+            // Check for null (key not found) or the corrupted string "undefined"
+            if (!adminUser || adminUser === 'undefined') {
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+
+            try {
+                return JSON.parse(adminUser);
+            } catch (e) {
+                console.error("Failed to parse adminUser JSON:", e);
+                // Clear the corrupted item and redirect on parse failure
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch(`${API_URL}/progress`);
+                const data = await response.json();
+
+                if (data.success) {
+                    allUsersData = data.data || [];
+                    displayUsers(allUsersData);
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersTableContainer').innerHTML =
+                    '<p class="text-center p-8 text-red-500">Failed to load users</p>';
+            }
+        }
+
+        function displayUsers(users) {
+            const container = document.getElementById('usersTableContainer');
+            document.getElementById('userCount').textContent = `Showing ${users.length} users`;
+
+            if (users.length === 0) {
+                container.innerHTML = '<p class="text-center p-8 text-gray-500">No users found</p>';
+                return;
+            }
+
+            let html = `
           <table class="w-full">
             <thead>
               <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
@@ -251,41 +221,41 @@
             <tbody class="text-sm divide-y divide-gray-100">
         `;
 
-        users.forEach(user => {
-          const completedTopics = user.topics?.filter(t => t.puzzleCompleted).length || 0;
-          const progressPercent = Math.round((completedTopics / 5) * 100);
-          
-          let lastActive = 'Never';
-          let status = 'inactive';
-          
-          if (user.topics && user.topics.length > 0) {
-            const mostRecent = user.topics.reduce((latest, topic) => {
-              if (!topic.lastAccessed) return latest;
-              const topicDate = new Date(topic.lastAccessed);
-              return !latest || topicDate > latest ? topicDate : latest;
-            }, null);
-            
-            if (mostRecent) {
-              lastActive = getTimeAgo(mostRecent);
-              const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
-              
-              if (hoursSince < 24) status = 'active';
-              else if (hoursSince < 168) status = 'idle';
-              else status = 'inactive';
-            }
-          }
+            users.forEach(user => {
+                const completedTopics = user.topics?.filter(t => t.puzzleCompleted).length || 0;
+                const progressPercent = Math.round((completedTopics / 6) * 100);
 
-          const initials = (user.name || user.username).substring(0, 2).toUpperCase();
-          const colors = ['indigo', 'green', 'yellow', 'purple', 'pink', 'blue'];
-          const color = colors[Math.floor(Math.random() * colors.length)];
+                let lastActive = 'Never';
+                let status = 'inactive';
 
-          const statusColors = {
-            active: { bg: 'green', text: 'Active' },
-            idle: { bg: 'yellow', text: 'Idle' },
-            inactive: { bg: 'gray', text: 'Inactive' }
-          };
+                if (user.topics && user.topics.length > 0) {
+                    const mostRecent = user.topics.reduce((latest, topic) => {
+                        if (!topic.lastAccessed) return latest;
+                        const topicDate = new Date(topic.lastAccessed);
+                        return !latest || topicDate > latest ? topicDate : latest;
+                    }, null);
 
-          html += `
+                    if (mostRecent) {
+                        lastActive = getTimeAgo(mostRecent);
+                        const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
+
+                        if (hoursSince < 24) status = 'active';
+                        else if (hoursSince < 168) status = 'idle';
+                        else status = 'inactive';
+                    }
+                }
+
+                const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+                const colors = ['indigo', 'green', 'yellow', 'purple', 'pink', 'blue'];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+
+                const statusColors = {
+                    active: { bg: 'green', text: 'Active' },
+                    idle: { bg: 'yellow', text: 'Idle' },
+                    inactive: { bg: 'gray', text: 'Inactive' }
+                };
+
+                html += `
             <tr class="hover:bg-gray-50">
               <td class="px-6 py-4">
                 <div class="flex items-center space-x-3">
@@ -330,97 +300,98 @@
               </td>
             </tr>
           `;
-        });
+            });
 
-        html += '</tbody></table>';
-        container.innerHTML = html;
-      }
-
-      function filterUsers() {
-        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-        const statusFilter = document.getElementById('statusFilter').value;
-
-        let filtered = allUsersData.filter(user => {
-          const matchesSearch = 
-            (user.name || '').toLowerCase().includes(searchTerm) ||
-            (user.username || '').toLowerCase().includes(searchTerm) ||
-            (user.email || '').toLowerCase().includes(searchTerm);
-
-          if (!matchesSearch) return false;
-
-          if (statusFilter === 'all') return true;
-
-          // Determine user status
-          if (!user.topics || user.topics.length === 0) {
-            return statusFilter === 'inactive';
-          }
-
-          const mostRecent = user.topics.reduce((latest, topic) => {
-            if (!topic.lastAccessed) return latest;
-            const topicDate = new Date(topic.lastAccessed);
-            return !latest || topicDate > latest ? topicDate : latest;
-          }, null);
-
-          if (!mostRecent) return statusFilter === 'inactive';
-
-          const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
-          
-          if (statusFilter === 'active') return hoursSince < 24;
-          if (statusFilter === 'idle') return hoursSince >= 24 && hoursSince < 168;
-          if (statusFilter === 'inactive') return hoursSince >= 168;
-
-          return true;
-        });
-
-        displayUsers(filtered);
-      }
-
-      function viewUser(username) {
-        alert(`View details for user: ${username}\n\nThis would show detailed user information and progress.`);
-      }
-
-      async function deleteUser(username) {
-        if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
-
-        try {
-          const response = await fetch(`${API_URL}/users/${username}`, {
-            method: 'DELETE'
-          });
-          const data = await response.json();
-
-          if (data.success) {
-            alert('User deleted successfully');
-            loadUsers();
-          } else {
-            alert('Failed to delete user: ' + data.error);
-          }
-        } catch (error) {
-          alert('Error deleting user: ' + error.message);
+            html += '</tbody></table>';
+            container.innerHTML = html;
         }
-      }
 
-      function getTimeAgo(date) {
-        const now = new Date();
-        const diffMs = now - date;
-        const diffMins = Math.floor(diffMs / 60000);
-        const diffHours = Math.floor(diffMs / 3600000);
-        const diffDays = Math.floor(diffMs / 86400000);
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
 
-        if (diffMins < 60) return `${diffMins} min ago`;
-        if (diffHours < 24) return `${diffHours} hours ago`;
-        if (diffDays === 1) return '1 day ago';
-        return `${diffDays} days ago`;
-      }
+            let filtered = allUsersData.filter(user => {
+                const matchesSearch =
+                    (user.name || '').toLowerCase().includes(searchTerm) ||
+                    (user.username || '').toLowerCase().includes(searchTerm) ||
+                    (user.email || '').toLowerCase().includes(searchTerm);
 
-      // Initialize
-      window.addEventListener('load', () => {
-        const user = checkAuth();
-        if (user) {
-          document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-          document.getElementById('adminEmailDisplay').textContent = user.email;
-          loadUsers();
+                if (!matchesSearch) return false;
+
+                if (statusFilter === 'all') return true;
+
+                // Determine user status
+                if (!user.topics || user.topics.length === 0) {
+                    return statusFilter === 'inactive';
+                }
+
+                const mostRecent = user.topics.reduce((latest, topic) => {
+                    if (!topic.lastAccessed) return latest;
+                    const topicDate = new Date(topic.lastAccessed);
+                    return !latest || topicDate > latest ? topicDate : latest;
+                }, null);
+
+                if (!mostRecent) return statusFilter === 'inactive';
+
+                const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
+
+                if (statusFilter === 'active') return hoursSince < 24;
+                if (statusFilter === 'idle') return hoursSince >= 24 && hoursSince < 168;
+                if (statusFilter === 'inactive') return hoursSince >= 168;
+
+                return true;
+            });
+
+            displayUsers(filtered);
         }
-      });
+
+        function viewUser(username) {
+            alert(`View details for user: ${username}\n\nThis would show detailed user information and progress.`);
+        }
+
+        async function deleteUser(username) {
+            if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
+
+            try {
+                const response = await fetch(`${API_URL}/users/${username}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('User deleted successfully');
+                    loadUsers();
+                } else {
+                    alert('Failed to delete user: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error deleting user: ' + error.message);
+            }
+        }
+
+        function getTimeAgo(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 60) return `${diffMins} min ago`;
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            if (diffDays === 1) return '1 day ago';
+            return `${diffDays} days ago`;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            const user = checkAuth();
+            if (user) {
+                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+                document.getElementById('adminEmailDisplay').textContent = user.email;
+                loadUsers();
+            }
+        });
     </script>
-  </body>
+</body>
+
 </html>

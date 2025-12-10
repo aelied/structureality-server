@@ -882,6 +882,7 @@ app.get('/api/analytics', async (req, res) => {
 
         // Topic statistics
         const topicStats = {
+            Arrays: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             Queue: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             Stacks: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
             LinkedLists: { completions: 0, totalLessons: 0, totalScore: 0, totalTime: 0, users: 0 },
@@ -1029,6 +1030,7 @@ app.get('/api/analytics', async (req, res) => {
         // Prepare lesson performance data
         const lessonPerformance = [];
         const topicColors = {
+            Arrays: 'indigo',
             Queue: 'blue',
             Stacks: 'green',
             LinkedLists: 'purple',
