@@ -220,13 +220,23 @@ app.post('/api/login', async (req, res) => {
         );
 
         console.log(`🔐 User logged in: ${user.username}`);
-        const { password: _, ...userWithoutPassword } = user;
-
+        
+        // EXPLICIT RESPONSE FORMAT - Match Unity's UserData class exactly
         res.json({
             success: true,
             message: 'Login successful',
-            user: userWithoutPassword
+            user: {
+                username: user.username,
+                name: user.name || user.username,
+                email: user.email || '',  // ← Explicitly send email field
+                streak: user.streak || 0,
+                completedTopics: user.completedTopics || 0
+            }
         });
+        
+        // DEBUG: Log what we're sending
+        console.log(`📧 Sending email: ${user.email || 'EMPTY'}`);
+        
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -236,7 +246,6 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
-
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
