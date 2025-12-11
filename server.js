@@ -246,6 +246,7 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
+
 app.get('/api/users', async (req, res) => {
     try {
         const users = await usersCollection.find({})
@@ -891,6 +892,110 @@ app.put('/api/users/:username/fix-email', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to update email',
+            details: error.message
+        });
+    }
+});
+
+app.put('/api/users/:username/update-profile', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { name, username: newUsername, email } = req.body;
+        
+        console.log(`🔧 Profile update request for user: ${username}`);
+        console.log(`New data - Name: ${name}, Username: ${newUsername}, Email: ${email}`);
+        
+        // Validate required fields
+        if (!name || !newUsername || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Name, username, and email are required'
+            });
+        }
+        
+        // Check if user exists
+        const existingUser = await usersCollection.findOne({ username: username });
+        
+        if (!existingUser) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+        
+        // If username is changing, check if new username is available
+        if (newUsername !== username) {
+            const usernameExists = await usersCollection.findOne({ 
+                username: newUsername 
+            });
+            
+            if (usernameExists) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Username is already taken'
+                });
+            }
+        }
+        
+        // If email is changing, check if new email is available
+        if (email !== existingUser.email) {
+            const emailExists = await usersCollection.findOne({ 
+                email: email,
+                username: { $ne: username } // Exclude current user
+            });
+            
+            if (emailExists) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'Email is already registered to another user'
+                });
+            }
+        }
+        
+        // Prepare update data
+        const updateData = {
+            name: name,
+            email: email,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        // If username is changing, we need to update the username field too
+        if (newUsername !== username) {
+            updateData.username = newUsername;
+        }
+        
+        // Update the user document
+        const result = await usersCollection.updateOne(
+            { username: username },
+            { $set: updateData }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+        
+        console.log(`✅ Profile updated successfully for ${username}`);
+        if (newUsername !== username) {
+            console.log(`   Username changed: ${username} -> ${newUsername}`);
+        }
+        
+        res.json({
+            success: true,
+            message: 'Profile updated successfully',
+            data: {
+                username: newUsername,
+                name: name,
+                email: email
+            }
+        });
+    } catch (error) {
+        console.error('❌ Error updating profile:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update profile',
             details: error.message
         });
     }
