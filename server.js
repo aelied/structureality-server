@@ -825,6 +825,69 @@ app.delete('/api/lessons/:lessonId', async (req, res) => {
     }
 });
 
+app.put('/api/users/:username/fix-email', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { email } = req.body;
+        
+        console.log(`🔧 Fixing email for user: ${username}`);
+        
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+        
+        // Check if email is already taken by another user
+        const existingUser = await usersCollection.findOne({
+            email: email,
+            username: { $ne: username } // Not the current user
+        });
+        
+        if (existingUser) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is already registered to another user'
+            });
+        }
+        
+        // Update the email
+        const result = await usersCollection.updateOne(
+            { username: username },
+            {
+                $set: {
+                    email: email,
+                    lastUpdated: new Date().toISOString()
+                }
+            }
+        );
+        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+        
+        console.log(`✅ Email fixed for ${username}: ${email}`);
+        
+        res.json({
+            success: true,
+            message: 'Email updated successfully',
+            email: email
+        });
+    } catch (error) {
+        console.error('❌ Error fixing email:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update email',
+            details: error.message
+        });
+    }
+});
+
+
 // ==================== STATS ====================
 app.get('/api/stats', async (req, res) => {
     try {
