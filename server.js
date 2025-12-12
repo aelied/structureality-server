@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -92,6 +94,227 @@ app.get('/lessons.html', (req, res) => {
 app.get('/analytics.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
 });
+
+// ==================== EMAIL CONFIGURATION ====================
+// Configure your email service (Gmail example)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER || 'your-email@gmail.com', // Add to environment variables
+        pass: process.env.EMAIL_PASSWORD || 'your-app-password' // Use App Password, not regular password
+    }
+});
+
+// Store reset tokens temporarily (in production, use Redis or database)
+const resetTokens = new Map();
+
+// ==================== PASSWORD RESET ENDPOINTS ====================
+
+// Request password reset
+app.post('/api/forgot-password', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        console.log(`🔑 Password reset requested for: ${email}`);
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        // Find user by email
+        const user = await usersCollection.findOne({ email: email });
+
+        if (!user) {
+            // For security, don't reveal if email exists
+            return res.json({
+                success: true,
+                message: 'If that email exists, a reset link has been sent'
+            });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+
+        // Store token with expiry
+        resetTokens.set(resetToken, {
+            username: user.username,
+            email: user.email,
+            expiry: resetTokenExpiry
+        });
+
+        // Create reset link (adjust URL for your deployment)
+        const resetLink = `https://structureality-admin.onrender.com/reset-password.html?token=${resetToken}`;
+        
+        // Email content
+        const mailOptions = {
+            from: process.env.EMAIL_USER || 'your-email@gmail.com',
+            to: email,
+            subject: 'StructuReality - Password Reset Request',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h2 style="color: #4F46E5;">Password Reset Request</h2>
+                    <p>Hello ${user.name || user.username},</p>
+                    <p>You requested to reset your password for your StructuReality account.</p>
+                    <p>Click the button below to reset your password:</p>
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="${resetLink}" 
+                           style="background-color: #4F46E5; 
+                                  color: white; 
+                                  padding: 12px 30px; 
+                                  text-decoration: none; 
+                                  border-radius: 5px;
+                                  display: inline-block;">
+                            Reset Password
+                        </a>
+                    </div>
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p style="color: #666; word-break: break-all;">${resetLink}</p>
+                    <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                        This link will expire in 1 hour.<br>
+                        If you didn't request this, please ignore this email.
+                    </p>
+                </div>
+            `
+        };
+
+        // Send email
+        await transporter.sendMail(mailOptions);
+
+        console.log(`✅ Password reset email sent to: ${email}`);
+
+        res.json({
+            success: true,
+            message: 'If that email exists, a reset link has been sent'
+        });
+
+    } catch (error) {
+        console.error('❌ Forgot password error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process password reset request',
+            details: error.message
+        });
+    }
+});
+
+// Verify reset token
+app.get('/api/verify-reset-token/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+
+        const tokenData = resetTokens.get(token);
+
+        if (!tokenData) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid or expired reset token'
+            });
+        }
+
+        if (Date.now() > tokenData.expiry) {
+            resetTokens.delete(token);
+            return res.status(400).json({
+                success: false,
+                error: 'Reset token has expired'
+            });
+        }
+
+        res.json({
+            success: true,
+            username: tokenData.username
+        });
+
+    } catch (error) {
+        console.error('❌ Token verification error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to verify token'
+        });
+    }
+});
+
+// Reset password with token
+app.post('/api/reset-password', async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+
+        console.log(`🔑 Password reset attempt with token`);
+
+        if (!token || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                error: 'Token and new password are required'
+            });
+        }
+
+        if (newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                error: 'Password must be at least 6 characters'
+            });
+        }
+
+        const tokenData = resetTokens.get(token);
+
+        if (!tokenData) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid or expired reset token'
+            });
+        }
+
+        if (Date.now() > tokenData.expiry) {
+            resetTokens.delete(token);
+            return res.status(400).json({
+                success: false,
+                error: 'Reset token has expired'
+            });
+        }
+
+        // Update password in database
+        await usersCollection.updateOne(
+            { username: tokenData.username },
+            {
+                $set: {
+                    password: newPassword,
+                    lastUpdated: new Date().toISOString()
+                }
+            }
+        );
+
+        // Delete used token
+        resetTokens.delete(token);
+
+        console.log(`✅ Password reset successful for: ${tokenData.username}`);
+
+        res.json({
+            success: true,
+            message: 'Password reset successfully'
+        });
+
+    } catch (error) {
+        console.error('❌ Password reset error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to reset password',
+            details: error.message
+        });
+    }
+});
+
+// Clean up expired tokens periodically (every 10 minutes)
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of resetTokens.entries()) {
+        if (now > data.expiry) {
+            resetTokens.delete(token);
+        }
+    }
+}, 600000);
 
 // ==================== ADMIN ENDPOINTS ====================
 app.post('/api/admin/login', async (req, res) => {
