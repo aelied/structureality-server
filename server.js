@@ -460,11 +460,15 @@ app.post('/api/users', async (req, res) => {
 app.post('/api/login', async (req, res) => {
     try {
         const { username, email, password } = req.body;
+        
+        // The input could be either username or email
+        const loginIdentifier = username || email;
 
+        // Search by EITHER username OR email using the same identifier
         const user = await usersCollection.findOne({
             $or: [
-                { username: username },
-                { email: email }
+                { username: loginIdentifier },
+                { email: loginIdentifier }
             ]
         });
 
@@ -492,22 +496,20 @@ app.post('/api/login', async (req, res) => {
         );
 
         console.log(`🔐 User logged in: ${user.username}`);
+        console.log(`📧 User email from DB: ${user.email}`); // Debug log
         
-        // EXPLICIT RESPONSE FORMAT - Match Unity's UserData class exactly
+        // Return the ACTUAL data from the database
         res.json({
             success: true,
             message: 'Login successful',
             user: {
-                username: user.username,
-                name: user.name || user.username,
-                email: user.email || '',  // ← Explicitly send email field
+                username: user.username,           // From database
+                name: user.name || user.username,  // From database
+                email: user.email || '',           // From database - NOT the input
                 streak: user.streak || 0,
                 completedTopics: user.completedTopics || 0
             }
         });
-        
-        // DEBUG: Log what we're sending
-        console.log(`📧 Sending email: ${user.email || 'EMPTY'}`);
         
     } catch (error) {
         console.error('Error:', error);
