@@ -100,11 +100,25 @@ app.get('/analytics.html', (req, res) => {
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.EMAIL_USER || 'your-email@gmail.com', // Add to environment variables
-        pass: process.env.EMAIL_PASSWORD || 'your-app-password' // Use App Password, not regular password
-    }
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASSWORD
+    },
+    // Add these for better reliability
+    pool: true,
+    maxConnections: 1,
+    maxMessages: 3,
+    rateDelta: 1000,
+    rateLimit: 3
 });
 
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('❌ Email configuration error:', error);
+        console.error('   Check EMAIL_USER and EMAIL_PASSWORD in environment variables');
+    } else {
+        console.log('✅ Email server ready');
+    }
+});
 // Store reset tokens temporarily (in production, use Redis or database)
 const resetTokens = new Map();
 
@@ -151,45 +165,88 @@ app.post('/api/forgot-password', async (req, res) => {
         
         // Email content
         const mailOptions = {
-            from: process.env.EMAIL_USER || 'your-email@gmail.com',
+            from: `"StructuReality" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: 'StructuReality - Password Reset Request',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #4F46E5;">Password Reset Request</h2>
-                    <p>Hello ${user.name || user.username},</p>
-                    <p>You requested to reset your password for your StructuReality account.</p>
-                    <p>Click the button below to reset your password:</p>
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="${resetLink}" 
-                           style="background-color: #4F46E5; 
-                                  color: white; 
-                                  padding: 12px 30px; 
-                                  text-decoration: none; 
-                                  border-radius: 5px;
-                                  display: inline-block;">
-                            Reset Password
-                        </a>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px 10px 0 0;">
+                        <h1 style="color: white; margin: 0; font-size: 28px;">🔐 Password Reset</h1>
                     </div>
-                    <p>Or copy and paste this link into your browser:</p>
-                    <p style="color: #666; word-break: break-all;">${resetLink}</p>
-                    <p style="color: #666; font-size: 12px; margin-top: 30px;">
-                        This link will expire in 1 hour.<br>
-                        If you didn't request this, please ignore this email.
-                    </p>
+                    
+                    <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
+                        <p style="font-size: 16px; color: #333;">Hello <strong>${user.name || user.username}</strong>,</p>
+                        
+                        <p style="font-size: 14px; color: #666; line-height: 1.6;">
+                            You requested to reset your password for your StructuReality account. 
+                            Click the button below to create a new password:
+                        </p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${resetLink}" 
+                               style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                      color: white; 
+                                      padding: 14px 40px; 
+                                      text-decoration: none; 
+                                      border-radius: 8px;
+                                      display: inline-block;
+                                      font-weight: bold;
+                                      font-size: 16px;">
+                                Reset My Password
+                            </a>
+                        </div>
+                        
+                        <p style="font-size: 12px; color: #999; margin-top: 20px;">
+                            Or copy and paste this link into your browser:
+                        </p>
+                        <p style="font-size: 11px; color: #667eea; word-break: break-all; background: white; padding: 10px; border-radius: 5px;">
+                            ${resetLink}
+                        </p>
+                        
+                        <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
+                        
+                        <p style="font-size: 12px; color: #999;">
+                            ⏱️ This link will expire in <strong>1 hour</strong><br>
+                            🔒 If you didn't request this, please ignore this email<br>
+                            📧 This is an automated message, please do not reply
+                        </p>
+                    </div>
                 </div>
             `
         };
 
-        // Send email
-        await transporter.sendMail(mailOptions);
+        // Send email with timeout protection
+        console.log('📤 Attempting to send email...');
+        
+        const emailPromise = transporter.sendMail(mailOptions);
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Email timeout')), 10000)
+        );
 
-        console.log(`✅ Password reset email sent to: ${email}`);
-
-        res.json({
-            success: true,
-            message: 'If that email exists, a reset link has been sent'
-        });
+        try {
+            await Promise.race([emailPromise, timeoutPromise]);
+            console.log(`✅ Password reset email sent successfully to: ${email}`);
+            
+            res.json({
+                success: true,
+                message: 'If that email exists, a reset link has been sent'
+            });
+        } catch (emailError) {
+            console.error('❌ Email send error:', emailError.message);
+            
+            // Still return success for security (don't reveal if email exists)
+            // But log the actual error
+            if (emailError.message === 'Email timeout') {
+                console.error('   Email service timed out after 10 seconds');
+            } else {
+                console.error('   Full error:', emailError);
+            }
+            
+            res.json({
+                success: true,
+                message: 'If that email exists, a reset link has been sent'
+            });
+        }
 
     } catch (error) {
         console.error('❌ Forgot password error:', error);
@@ -306,16 +363,21 @@ app.post('/api/reset-password', async (req, res) => {
     }
 });
 
+
 // Clean up expired tokens periodically (every 10 minutes)
 setInterval(() => {
     const now = Date.now();
+    let cleaned = 0;
     for (const [token, data] of resetTokens.entries()) {
         if (now > data.expiry) {
             resetTokens.delete(token);
+            cleaned++;
         }
     }
+    if (cleaned > 0) {
+        console.log(`🧹 Cleaned up ${cleaned} expired reset tokens`);
+    }
 }, 600000);
-
 // ==================== ADMIN ENDPOINTS ====================
 app.post('/api/admin/login', async (req, res) => {
     try {
