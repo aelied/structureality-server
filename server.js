@@ -3,8 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const crypto = require('crypto'); // ← ADD THIS - Required for token generation
 const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -15,6 +15,15 @@ app.use(bodyParser.json());
 
 // Serve static files from 'public' directory
 app.use(express.static('public'));
+
+// ==================== SENDGRID CONFIGURATION ====================
+// Configure SendGrid with API key
+if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    console.log('✅ SendGrid API key configured');
+} else {
+    console.error('❌ SENDGRID_API_KEY not found in environment variables!');
+}
 
 // MongoDB Connection
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_admin:oG4qBQnbGLLyBF4f@structureality-cluster.chm4r6c.mongodb.net/?appName=StructuReality-Cluster";
@@ -36,6 +45,9 @@ let db;
 let usersCollection;
 let lessonsCollection;
 let adminsCollection;
+
+// Store reset tokens temporarily (in production, use Redis or database)
+const resetTokens = new Map();
 
 // Connect to MongoDB
 async function connectDB() {
@@ -63,10 +75,11 @@ async function connectDB() {
 app.get('/', (req, res) => {
     res.json({
         status: '✅ StructuReality Server is running',
-        version: '2.5.0', // Updated Version for Fixes
+        version: '2.6.0', // Updated version with SendGrid
         database: db ? 'Connected' : 'Disconnected',
+        email: process.env.SENDGRID_API_KEY ? 'SendGrid Ready' : 'Email Not Configured',
         collections: ['users', 'lessons', 'admins'],
-        features: ['User Management', 'Progress Tracking', 'Lesson Management', 'Lesson Completion Tracking', 'Streak Fixes', 'Admin Login', 'Robust Analytics'],
+        features: ['User Management', 'Progress Tracking', 'Password Reset', 'Lesson Management'],
         message: 'Server ready for Unity and admin connections',
         adminPages: {
             login: '/login.html',
@@ -95,33 +108,6 @@ app.get('/analytics.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
 });
 
-// ==================== EMAIL CONFIGURATION ====================
-// Configure your email service (Gmail example)
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    },
-    // Add these for better reliability
-    pool: true,
-    maxConnections: 1,
-    maxMessages: 3,
-    rateDelta: 1000,
-    rateLimit: 3
-});
-
-transporter.verify((error, success) => {
-    if (error) {
-        console.error('❌ Email configuration error:', error);
-        console.error('   Check EMAIL_USER and EMAIL_PASSWORD in environment variables');
-    } else {
-        console.log('✅ Email server ready');
-    }
-});
-// Store reset tokens temporarily (in production, use Redis or database)
-const resetTokens = new Map();
-
 // ==================== PASSWORD RESET ENDPOINTS ====================
 
 // Request password reset
@@ -138,34 +124,48 @@ app.post('/api/forgot-password', async (req, res) => {
             });
         }
 
+        // Check if SendGrid is configured
+        if (!process.env.SENDGRID_API_KEY) {
+            console.error('❌ SendGrid not configured - cannot send email');
+            return res.status(500).json({
+                success: false,
+                error: 'Email service not configured. Please contact support.'
+            });
+        }
+
+        // Find user by email
         const user = await usersCollection.findOne({ email: email });
 
         if (!user) {
+            // For security, don't reveal if email exists
+            console.log(`⚠️ Password reset requested for non-existent email: ${email}`);
             return res.json({
                 success: true,
                 message: 'If that email exists, a reset link has been sent'
             });
         }
 
+        // Generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpiry = Date.now() + 3600000;
+        const resetTokenExpiry = Date.now() + 3600000; // 1 hour
 
+        // Store token
         resetTokens.set(resetToken, {
             username: user.username,
             email: user.email,
             expiry: resetTokenExpiry
         });
 
+        // Create reset link
         const resetLink = `https://structureality-admin.onrender.com/reset-password.html?token=${resetToken}`;
         
+        // SendGrid email message
         const msg = {
             to: email,
-            // ⚠️ IMPORTANT: Use sandbox domain for testing
-            // This works instantly without verification
-            from: 'noreply@sandboxXXXXXXXXXXXXXXXXXXXXXXXX.mailgun.org', // ← Replace with your sandbox domain
-            // OR use SendGrid's test email:
-            // from: 'testing@sendgrid.net',
-            
+            from: {
+                email: process.env.SENDGRID_FROM_EMAIL || 'quelangliezl@gmail.com',
+                name: 'StructuReality'
+            },
             subject: 'StructuReality - Password Reset Request',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -207,7 +207,7 @@ app.post('/api/forgot-password', async (req, res) => {
                         <p style="font-size: 12px; color: #999;">
                             ⏱️ This link will expire in <strong>1 hour</strong><br>
                             🔒 If you didn't request this, please ignore this email<br>
-                            📧 This is a test email from SendGrid sandbox
+                            📧 This is an automated message, please do not reply
                         </p>
                     </div>
                 </div>
@@ -215,6 +215,8 @@ app.post('/api/forgot-password', async (req, res) => {
         };
 
         console.log('📤 Attempting to send email via SendGrid...');
+        console.log(`   To: ${email}`);
+        console.log(`   From: ${msg.from.email}`);
         
         try {
             await sgMail.send(msg);
@@ -225,8 +227,9 @@ app.post('/api/forgot-password', async (req, res) => {
                 message: 'If that email exists, a reset link has been sent'
             });
         } catch (emailError) {
-            console.error('❌ SendGrid error:', emailError.response?.body || emailError.message);
+            console.error('❌ SendGrid error:', emailError.response?.body?.errors || emailError.message);
             
+            // Still return success for security (don't reveal if email exists)
             res.json({
                 success: true,
                 message: 'If that email exists, a reset link has been sent'
@@ -242,6 +245,7 @@ app.post('/api/forgot-password', async (req, res) => {
         });
     }
 });
+
 // Verify reset token
 app.get('/api/verify-reset-token/:token', async (req, res) => {
     try {
@@ -346,7 +350,6 @@ app.post('/api/reset-password', async (req, res) => {
         });
     }
 });
-
 
 // Clean up expired tokens periodically (every 10 minutes)
 setInterval(() => {
