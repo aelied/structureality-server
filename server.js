@@ -667,16 +667,24 @@ app.post('/api/users', async (req, res) => {
 
 app.post('/api/login', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        // ✅ FIX: Accept loginIdentifier OR fallback to old format
+        const { loginIdentifier, username, email, password } = req.body;
         
-        // The input could be either username or email
-        const loginIdentifier = username || email;
+        // Use new format if available, otherwise fallback to old format
+        const identifier = loginIdentifier || username || email;
 
-        // Search by EITHER username OR email using the same identifier
+        if (!identifier) {
+            return res.status(400).json({
+                success: false,
+                error: 'Username or email is required'
+            });
+        }
+
+        // Search by EITHER username OR email
         const user = await usersCollection.findOne({
             $or: [
-                { username: loginIdentifier },
-                { email: loginIdentifier }
+                { username: identifier },
+                { email: identifier }
             ]
         });
 
@@ -694,6 +702,7 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
+        // Update last login
         await usersCollection.updateOne(
             { _id: user._id },
             {
@@ -704,23 +713,22 @@ app.post('/api/login', async (req, res) => {
         );
 
         console.log(`🔐 User logged in: ${user.username}`);
-        console.log(`📧 User email from DB: ${user.email}`); // Debug log
         
-        // Return the ACTUAL data from the database
+        // ✅ FIX: Return ACTUAL database values, never use input as fallback
         res.json({
             success: true,
             message: 'Login successful',
             user: {
                 username: user.username,           // From database
                 name: user.name || user.username,  // From database
-                email: user.email || '',           // From database - NOT the input
+                email: user.email || '',           // From database - empty if not set
                 streak: user.streak || 0,
                 completedTopics: user.completedTopics || 0
             }
         });
         
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Login error:', error);
         res.status(500).json({
             success: false,
             error: 'Login failed',
@@ -762,22 +770,35 @@ app.get('/api/users/:username', async (req, res) => {
             });
         }
 
+        // ✅ FIX: Validate email before sending
+        let validEmail = user.email || '';
+        
+        // Check if email is actually valid (not placeholder, not same as username)
+        if (validEmail && (
+            validEmail === user.username || 
+            !validEmail.includes('@') || 
+            validEmail.includes('@example.com')
+        )) {
+            console.log(`⚠️ User ${user.username} has invalid email: '${validEmail}' - returning empty`);
+            validEmail = '';
+        }
+
         // IMPORTANT: Return format that matches UserDataResponse in Unity
         res.json({
             username: user.username,
             name: user.name || user.username,
-            email: user.email,  // Ensure correct email is sent
+            email: validEmail,  // ✅ Only send valid email or empty string
             streak: user.streak || 0,
             completedTopics: user.completedTopics || 0
         });
     } catch (error) {
+        console.error('Error fetching user:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch user'
         });
     }
 });
-
 app.delete('/api/users/:username', async (req, res) => {
     try {
         const result = await usersCollection.deleteOne({ username: req.params.username });
