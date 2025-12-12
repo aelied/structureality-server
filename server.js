@@ -3,8 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+const sgMail = require('@sendgrid/mail');
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -138,35 +138,34 @@ app.post('/api/forgot-password', async (req, res) => {
             });
         }
 
-        // Find user by email
         const user = await usersCollection.findOne({ email: email });
 
         if (!user) {
-            // For security, don't reveal if email exists
             return res.json({
                 success: true,
                 message: 'If that email exists, a reset link has been sent'
             });
         }
 
-        // Generate reset token
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpiry = Date.now() + 3600000; // 1 hour from now
+        const resetTokenExpiry = Date.now() + 3600000;
 
-        // Store token with expiry
         resetTokens.set(resetToken, {
             username: user.username,
             email: user.email,
             expiry: resetTokenExpiry
         });
 
-        // Create reset link (adjust URL for your deployment)
         const resetLink = `https://structureality-admin.onrender.com/reset-password.html?token=${resetToken}`;
         
-        // Email content
-        const mailOptions = {
-            from: `"StructuReality" <${process.env.EMAIL_USER}>`,
+        const msg = {
             to: email,
+            // ⚠️ IMPORTANT: Use sandbox domain for testing
+            // This works instantly without verification
+            from: 'noreply@sandboxXXXXXXXXXXXXXXXXXXXXXXXX.mailgun.org', // ← Replace with your sandbox domain
+            // OR use SendGrid's test email:
+            // from: 'testing@sendgrid.net',
+            
             subject: 'StructuReality - Password Reset Request',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -208,23 +207,17 @@ app.post('/api/forgot-password', async (req, res) => {
                         <p style="font-size: 12px; color: #999;">
                             ⏱️ This link will expire in <strong>1 hour</strong><br>
                             🔒 If you didn't request this, please ignore this email<br>
-                            📧 This is an automated message, please do not reply
+                            📧 This is a test email from SendGrid sandbox
                         </p>
                     </div>
                 </div>
             `
         };
 
-        // Send email with timeout protection
-        console.log('📤 Attempting to send email...');
+        console.log('📤 Attempting to send email via SendGrid...');
         
-        const emailPromise = transporter.sendMail(mailOptions);
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Email timeout')), 10000)
-        );
-
         try {
-            await Promise.race([emailPromise, timeoutPromise]);
+            await sgMail.send(msg);
             console.log(`✅ Password reset email sent successfully to: ${email}`);
             
             res.json({
@@ -232,15 +225,7 @@ app.post('/api/forgot-password', async (req, res) => {
                 message: 'If that email exists, a reset link has been sent'
             });
         } catch (emailError) {
-            console.error('❌ Email send error:', emailError.message);
-            
-            // Still return success for security (don't reveal if email exists)
-            // But log the actual error
-            if (emailError.message === 'Email timeout') {
-                console.error('   Email service timed out after 10 seconds');
-            } else {
-                console.error('   Full error:', emailError);
-            }
+            console.error('❌ SendGrid error:', emailError.response?.body || emailError.message);
             
             res.json({
                 success: true,
@@ -257,7 +242,6 @@ app.post('/api/forgot-password', async (req, res) => {
         });
     }
 });
-
 // Verify reset token
 app.get('/api/verify-reset-token/:token', async (req, res) => {
     try {
