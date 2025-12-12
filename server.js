@@ -30,6 +30,7 @@ const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://structureality_adm
 const DB_NAME = "structureality_db";
 const USERS_COLLECTION = "users";
 const LESSONS_COLLECTION = "lessons";
+const QUIZZES_COLLECTION = "quizzes";
 const ADMINS_COLLECTION = "admins";
 
 // MongoDB Client
@@ -45,6 +46,7 @@ let db;
 let usersCollection;
 let lessonsCollection;
 let adminsCollection;
+let quizzesCollection;
 
 // Store reset tokens temporarily (in production, use Redis or database)
 const resetTokens = new Map();
@@ -57,11 +59,13 @@ async function connectDB() {
         usersCollection = db.collection(USERS_COLLECTION);
         lessonsCollection = db.collection(LESSONS_COLLECTION);
         adminsCollection = db.collection(ADMINS_COLLECTION);
+        quizzesCollection = db.collection(QUIZZES_COLLECTION);  // ✅ ADD THIS LINE
 
         // Create indexes
         await usersCollection.createIndex({ username: 1 }, { unique: true });
         await usersCollection.createIndex({ email: 1 }, { unique: true });
         await lessonsCollection.createIndex({ topicName: 1, order: 1 });
+        await quizzesCollection.createIndex({ topicName: 1, order: 1 });  // ✅ ADD THIS LINE
         await adminsCollection.createIndex({ username: 1 }, { unique: true });
 
         console.log("✅ Connected to MongoDB Atlas!");
@@ -70,6 +74,210 @@ async function connectDB() {
         process.exit(1);
     }
 }
+
+// ==================== QUIZ ENDPOINTS ====================
+
+// Get all quizzes
+app.get('/api/quizzes', async (req, res) => {
+    try {
+        const quizzes = await quizzesCollection.find({})
+            .sort({ topicName: 1, order: 1 })
+            .toArray();
+
+        res.json({
+            success: true,
+            count: quizzes.length,
+            quizzes: quizzes
+        });
+    } catch (error) {
+        console.error('Error fetching quizzes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch quizzes',
+            details: error.message
+        });
+    }
+});
+
+// Get quizzes by topic
+app.get('/api/quizzes/:topicName', async (req, res) => {
+    try {
+        const quizzes = await quizzesCollection.find({
+            topicName: req.params.topicName
+        })
+            .sort({ order: 1 })
+            .toArray();
+
+        res.json({
+            success: true,
+            topicName: req.params.topicName,
+            count: quizzes.length,
+            quizzes: quizzes
+        });
+    } catch (error) {
+        console.error('Error fetching topic quizzes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch quizzes',
+            details: error.message
+        });
+    }
+});
+
+// Add new quiz question
+app.post('/api/quizzes', async (req, res) => {
+    try {
+        const quizData = {
+            topicName: req.body.topicName,
+            questionText: req.body.questionText,
+            answerOptions: req.body.answerOptions, // Array of strings
+            correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
+            explanation: req.body.explanation,
+            order: req.body.order || 1,
+            createdAt: new Date().toISOString()
+        };
+
+        // Validation
+        if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions || quizData.correctAnswerIndex === undefined || !quizData.explanation) {
+            return res.status(400).json({
+                success: false,
+                error: 'Topic name, question, answers, correct answer index, and explanation are required'
+            });
+        }
+
+        if (!Array.isArray(quizData.answerOptions) || quizData.answerOptions.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'At least 2 answer options are required'
+            });
+        }
+
+        if (quizData.correctAnswerIndex < 0 || quizData.correctAnswerIndex >= quizData.answerOptions.length) {
+            return res.status(400).json({
+                success: false,
+                error: 'Invalid correct answer index'
+            });
+        }
+
+        const result = await quizzesCollection.insertOne(quizData);
+        console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName})`);
+
+        res.status(201).json({
+            success: true,
+            message: 'Quiz question added successfully',
+            quizId: result.insertedId
+        });
+    } catch (error) {
+        console.error('Error adding quiz:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to add quiz question',
+            details: error.message
+        });
+    }
+});
+
+// Update quiz question
+app.put('/api/quizzes/:quizId', async (req, res) => {
+    try {
+        const updateData = {
+            questionText: req.body.questionText,
+            answerOptions: req.body.answerOptions,
+            correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
+            explanation: req.body.explanation,
+            order: req.body.order,
+            updatedAt: new Date().toISOString()
+        };
+
+        // Remove undefined fields
+        Object.keys(updateData).forEach(key =>
+            updateData[key] === undefined && delete updateData[key]
+        );
+
+        const result = await quizzesCollection.updateOne(
+            { _id: new ObjectId(req.params.quizId) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Quiz question not found'
+            });
+        }
+
+        console.log(`✅ Quiz updated: ${req.params.quizId}`);
+        res.json({
+            success: true,
+            message: 'Quiz question updated successfully'
+        });
+    } catch (error) {
+        console.error('Error updating quiz:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update quiz question',
+            details: error.message
+        });
+    }
+});
+
+// Delete quiz question
+app.delete('/api/quizzes/:quizId', async (req, res) => {
+    try {
+        const result = await quizzesCollection.deleteOne({
+            _id: new ObjectId(req.params.quizId)
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Quiz question not found'
+            });
+        }
+
+        console.log(`🗑️ Quiz deleted: ${req.params.quizId}`);
+        res.json({
+            success: true,
+            message: 'Quiz question deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting quiz:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete quiz question',
+            details: error.message
+        });
+    }
+});
+
+// Get quiz statistics
+app.get('/api/quizzes-stats', async (req, res) => {
+    try {
+        const quizzes = await quizzesCollection.find({}).toArray();
+        
+        const stats = {
+            total: quizzes.length,
+            byTopic: {}
+        };
+
+        quizzes.forEach(quiz => {
+            if (!stats.byTopic[quiz.topicName]) {
+                stats.byTopic[quiz.topicName] = 0;
+            }
+            stats.byTopic[quiz.topicName]++;
+        });
+
+        res.json({
+            success: true,
+            stats: stats
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch quiz statistics'
+        });
+    }
+});
 
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
@@ -1589,6 +1797,47 @@ function formatTime(seconds) {
     }
     return `${minutes}m`;
 }
+
+// ==================== BULK QUIZ IMPORT (OPTIONAL) ====================
+app.post('/api/quizzes/bulk', async (req, res) => {
+    try {
+        const { quizzes } = req.body;
+        
+        if (!Array.isArray(quizzes) || quizzes.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'Quizzes array is required'
+            });
+        }
+        
+        const quizzesToInsert = quizzes.map(quiz => ({
+            topicName: quiz.topicName,
+            questionText: quiz.questionText,
+            answerOptions: quiz.answerOptions,
+            correctAnswerIndex: quiz.correctAnswerIndex,
+            explanation: quiz.explanation,
+            order: quiz.order || 1,
+            createdAt: new Date().toISOString()
+        }));
+        
+        const result = await quizzesCollection.insertMany(quizzesToInsert);
+        
+        console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
+        
+        res.json({
+            success: true,
+            message: `${result.insertedCount} quizzes added successfully`,
+            insertedCount: result.insertedCount
+        });
+    } catch (error) {
+        console.error('Error bulk importing quizzes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to bulk import quizzes',
+            details: error.message
+        });
+    }
+});
 
 // ==================== START SERVER ====================
 connectDB().then(() => {
