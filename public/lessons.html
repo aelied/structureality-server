@@ -53,10 +53,60 @@
             background-color: white;
             padding: 30px;
             border-radius: 15px;
-            max-width: 600px;
+            max-width: 800px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        .info-box-preview {
+            padding: 16px;
+            border-radius: 12px;
+            margin: 10px 0;
+            border-left: 4px solid;
+        }
+
+        .info-box-info {
+            background-color: #E0F7FA;
+            border-color: #006064;
+            color: #006064;
+        }
+
+        .info-box-tip {
+            background-color: #FFF9C4;
+            border-color: #F57F17;
+            color: #F57F17;
+        }
+
+        .info-box-warning {
+            background-color: #FFEBEE;
+            border-color: #B71C1C;
+            color: #B71C1C;
+        }
+
+        .info-box-note {
+            background-color: #F3E5F5;
+            border-color: #4A148C;
+            color: #4A148C;
+        }
+
+        .info-box-important {
+            background-color: #E8F5E9;
+            border-color: #1B5E20;
+            color: #1B5E20;
+        }
+
+        .insert-box-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .insert-box-btn:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -115,7 +165,7 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons & topics</p>
+                <p class="text-sm text-gray-500">Manage lessons & topics with special info boxes</p>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -290,12 +340,62 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                    <textarea id="lessonContent" placeholder="Full lesson content (supports TextMeshPro tags)"
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
+                    
+                    <!-- Info Box Buttons -->
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Info Boxes:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <button type="button" onclick="insertInfoBox('INFO')"
+                                class="insert-box-btn info-box-info">
+                                ℹ️ Info
+                            </button>
+                            <button type="button" onclick="insertInfoBox('TIP')"
+                                class="insert-box-btn info-box-tip">
+                                💡 Tip
+                            </button>
+                            <button type="button" onclick="insertInfoBox('WARNING')"
+                                class="insert-box-btn info-box-warning">
+                                ⚠️ Warning
+                            </button>
+                            <button type="button" onclick="insertInfoBox('NOTE')"
+                                class="insert-box-btn info-box-note">
+                                📝 Note
+                            </button>
+                            <button type="button" onclick="insertInfoBox('IMPORTANT')"
+                                class="insert-box-btn info-box-important">
+                                ⭐ Important
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">💡 Click a button to insert a special box at cursor position. Separate paragraphs with double line breaks.</p>
+                    </div>
+
+                    <textarea id="lessonContent" placeholder="Write your lesson content here...
+
+Example:
+This is a regular paragraph.
+
+[INFO]
+This will appear as a special info box with cyan background.
+
+Another regular paragraph.
+
+[TIP]
+This will appear as a tip box with yellow background."
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                        rows="8"></textarea>
-                    <small class="text-gray-500">💡 Use TextMeshPro tags: &lt;b&gt;bold&lt;/b&gt;,
-                        &lt;i&gt;italic&lt;/i&gt;, &lt;size=24&gt;large&lt;/size&gt;</small>
+                        rows="12"></textarea>
+                    
+                    <!-- Preview Button -->
+                    <button type="button" onclick="togglePreview()" 
+                        class="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-eye mr-2"></i>Preview Content
+                    </button>
+                </div>
+
+                <!-- Preview Area -->
+                <div id="contentPreview" style="display: none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Preview:</h3>
+                    <div id="previewContent"></div>
                 </div>
 
                 <div class="mb-6">
@@ -347,6 +447,70 @@
                 window.location.href = 'login.html';
                 return null;
             }
+        }
+
+        // Insert info box at cursor position
+        function insertInfoBox(type) {
+            const textarea = document.getElementById('lessonContent');
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
+            
+            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
+            
+            textarea.value = textBefore + template + textAfter;
+            textarea.focus();
+            
+            // Set cursor position after inserted text
+            const newPos = cursorPos + template.length;
+            textarea.setSelectionRange(newPos, newPos);
+        }
+
+        // Toggle preview
+        function togglePreview() {
+            const previewDiv = document.getElementById('contentPreview');
+            const content = document.getElementById('lessonContent').value;
+            
+            if (previewDiv.style.display === 'none') {
+                previewDiv.style.display = 'block';
+                renderPreview(content);
+            } else {
+                previewDiv.style.display = 'none';
+            }
+        }
+
+        // Render content preview
+        function renderPreview(content) {
+            const previewContent = document.getElementById('previewContent');
+            previewContent.innerHTML = '';
+            
+            const paragraphs = content.split('\n\n').filter(p => p.trim());
+            
+            paragraphs.forEach(para => {
+                const div = document.createElement('div');
+                
+                if (para.startsWith('[INFO]')) {
+                    div.className = 'info-box-preview info-box-info';
+                    div.innerHTML = '<strong>ℹ️ Info</strong><br><br>' + para.substring(6).trim();
+                } else if (para.startsWith('[TIP]')) {
+                    div.className = 'info-box-preview info-box-tip';
+                    div.innerHTML = '<strong>💡 Tip</strong><br><br>' + para.substring(5).trim();
+                } else if (para.startsWith('[WARNING]')) {
+                    div.className = 'info-box-preview info-box-warning';
+                    div.innerHTML = '<strong>⚠️ Warning</strong><br><br>' + para.substring(9).trim();
+                } else if (para.startsWith('[NOTE]')) {
+                    div.className = 'info-box-preview info-box-note';
+                    div.innerHTML = '<strong>📝 Note</strong><br><br>' + para.substring(6).trim();
+                } else if (para.startsWith('[IMPORTANT]')) {
+                    div.className = 'info-box-preview info-box-important';
+                    div.innerHTML = '<strong>⭐ Important</strong><br><br>' + para.substring(11).trim();
+                } else {
+                    div.className = 'p-4 bg-white rounded-lg mb-3 border border-gray-200';
+                    div.textContent = para;
+                }
+                
+                previewContent.appendChild(div);
+            });
         }
 
         async function loadLessons() {
@@ -401,6 +565,13 @@
                     ? lesson.content.substring(0, 80) + '...'
                     : 'No content added yet';
 
+                const hasSpecialBoxes = lesson.content && 
+                    (lesson.content.includes('[INFO]') || 
+                     lesson.content.includes('[TIP]') || 
+                     lesson.content.includes('[WARNING]') ||
+                     lesson.content.includes('[NOTE]') ||
+                     lesson.content.includes('[IMPORTANT]'));
+
                 html += `
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 lesson-card overflow-hidden">
               <div class="bg-gradient-to-r ${color.gradient} h-32 flex items-center justify-center">
@@ -411,7 +582,7 @@
                   <span class="px-3 py-1 bg-${color.badge}-100 text-${color.badge}-700 rounded-full text-xs font-semibold">
                     ${lesson.topicName}
                   </span>
-                  <span class="text-xs text-gray-500">Order: ${lesson.order}</span>
+                  ${hasSpecialBoxes ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">✨ Enhanced</span>' : ''}
                 </div>
                 <h3 class="text-lg font-semibold text-gray-800 mb-2">${lesson.title}</h3>
                 <p class="text-sm text-gray-600 mb-2">${lesson.description}</p>
@@ -425,6 +596,7 @@
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
+                  <span class="text-xs text-gray-500">Order: ${lesson.order}</span>
                 </div>
               </div>
             </div>
@@ -458,6 +630,7 @@
         function closeAddLessonModal() {
             document.getElementById('addLessonModal').classList.remove('active');
             document.getElementById('addLessonForm').reset();
+            document.getElementById('contentPreview').style.display = 'none';
         }
 
         async function addLesson(event) {
@@ -495,7 +668,15 @@
         function viewLesson(lessonId) {
             const lesson = allLessons.find(l => l._id === lessonId);
             if (lesson) {
-                alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\n\nDescription: ${lesson.description}\n\nContent: ${lesson.content || 'No content'}`);
+                const hasSpecialBoxes = lesson.content && 
+                    (lesson.content.includes('[INFO]') || 
+                     lesson.content.includes('[TIP]') || 
+                     lesson.content.includes('[WARNING]') ||
+                     lesson.content.includes('[NOTE]') ||
+                     lesson.content.includes('[IMPORTANT]'));
+                
+                const specialNote = hasSpecialBoxes ? '\n\n✨ This lesson contains special info boxes!' : '';
+                alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\n\nDescription: ${lesson.description}\n\nContent: ${lesson.content || 'No content'}${specialNote}`);
             }
         }
 
