@@ -1,87 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quizzes - StructuReality Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        * {
-            font-family: "Poppins", sans-serif;
-        }
-
-        .stat-card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .stat-card-hover:hover {
-            transform: translateY(-4px);
-        }
-
-        .quiz-card {
-            transition: all 0.3s ease;
-        }
-
-        .quiz-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 700px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .answer-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-        }
-
-        .answer-option input[type="text"] {
-            flex: 1;
-        }
-
-        .answer-option input[type="radio"] {
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
+        * { font-family: "Poppins", sans-serif; }
+        .stat-card-hover { transition: all 0.3s ease; }
+        .stat-card-hover:hover { transform: translateY(-4px); }
+        .quiz-card { transition: all 0.3s ease; }
+        .quiz-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.5); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .answer-option { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .answer-option input[type="text"] { flex: 1; }
+        .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
+        .difficulty-badge-easy { background: linear-gradient(135deg, #10b981, #34d399); }
+        .difficulty-badge-medium { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .difficulty-badge-hard { background: linear-gradient(135deg, #ef4444, #f87171); }
     </style>
 </head>
-
 <body class="bg-gray-50">
     <!-- Sidebar -->
-    <aside
-        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
         <div class="p-6 border-b border-indigo-700">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -93,36 +38,21 @@
                 </div>
             </div>
         </div>
-
         <nav class="mt-6 px-4">
-            <a href="index.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i>
-                <span class="font-medium">Dashboard</span>
+            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
             </a>
-
-            <a href="users.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-users w-5"></i>
-                <span class="font-medium">Users</span>
+            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
             </a>
-
-            <a href="lessons.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-book w-5"></i>
-                <span class="font-medium">Lessons</span>
+            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
             </a>
-
-            <a href="quizzes.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-question-circle w-5"></i>
-                <span class="font-medium">Quizzes</span>
+            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
             </a>
-
-            <a href="analytics.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
+            <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
             </a>
         </nav>
     </aside>
@@ -132,15 +62,13 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
-                <p class="text-sm text-gray-500">Manage quiz questions & answers</p>
+                <p class="text-sm text-gray-500">Manage quiz questions with difficulty levels</p>
             </div>
-
             <div class="flex items-center space-x-4">
                 <button class="p-2 hover:bg-gray-100 rounded-lg transition">
                     <i class="fas fa-bell text-gray-600"></i>
                 </button>
-                <div
-                    class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
                     <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-indigo-700 text-sm"></i>
                     </div>
@@ -149,7 +77,6 @@
                         <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
                     </div>
                 </div>
-
                 <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
                     <i class="fas fa-sign-out-alt text-gray-600"></i>
                 </button>
@@ -160,7 +87,7 @@
     <!-- Main Content -->
     <main class="ml-64 p-8 mt-20">
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -171,54 +98,34 @@
                 <p class="text-3xl font-bold text-gray-800" id="totalQuizzes">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-seedling text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Arrays</h3>
-                <p class="text-3xl font-bold text-gray-800" id="arraysQuizCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Easy Questions</h3>
+                <p class="text-3xl font-bold" id="easyCount">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-stream text-blue-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Queue</h3>
-                <p class="text-3xl font-bold text-gray-800" id="queueQuizCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Medium Questions</h3>
+                <p class="text-3xl font-bold" id="mediumCount">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-green-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-fire text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Stacks</h3>
-                <p class="text-3xl font-bold text-gray-800" id="stacksQuizCount">-</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-link text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Linked Lists</h3>
-                <p class="text-3xl font-bold text-gray-800" id="linkedlistsQuizCount">-</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-project-diagram text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Trees & Graphs</h3>
-                <p class="text-3xl font-bold text-gray-800" id="othersQuizCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Hard Questions</h3>
+                <p class="text-3xl font-bold" id="hardCount">-</p>
             </div>
         </div>
 
@@ -228,10 +135,8 @@
                 <div class="flex items-center space-x-4 flex-1">
                     <div class="flex-1">
                         <div class="relative">
-                            <i
-                                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchQuizzes" placeholder="Search quiz questions..."
-                                onkeyup="filterQuizzes()"
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="searchQuizzes" placeholder="Search quiz questions..." onkeyup="filterQuizzes()"
                                 class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
@@ -246,6 +151,14 @@
                         <option value="Trees">Trees</option>
                         <option value="Graphs">Graphs</option>
                     </select>
+
+                    <select id="difficultyFilter" onchange="filterQuizzes()"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">🟢 Easy</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="hard">🔴 Hard</option>
+                    </select>
                 </div>
 
                 <div class="flex items-center space-x-3 ml-6">
@@ -253,7 +166,6 @@
                         class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                         <i class="fas fa-sync mr-2"></i>Refresh
                     </button>
-
                     <button onclick="openAddQuizModal()"
                         class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                         <i class="fas fa-plus mr-2"></i>New Quiz
@@ -279,18 +191,30 @@
             </div>
 
             <form id="addQuizForm" onsubmit="addQuiz(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                    <select id="quizTopic" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="">Select Topic</option>
-                        <option value="Arrays">Arrays</option>
-                        <option value="Queue">Queue</option>
-                        <option value="Stacks">Stacks</option>
-                        <option value="LinkedLists">Linked Lists</option>
-                        <option value="Trees">Trees</option>
-                        <option value="Graphs">Graphs</option>
-                    </select>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                        <select id="quizTopic" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="">Select Topic</option>
+                            <option value="Arrays">Arrays</option>
+                            <option value="Queue">Queue</option>
+                            <option value="Stacks">Stacks</option>
+                            <option value="LinkedLists">Linked Lists</option>
+                            <option value="Trees">Trees</option>
+                            <option value="Graphs">Graphs</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty *</label>
+                        <select id="quizDifficulty" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="easy">🟢 Easy</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="hard">🔴 Hard</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="mb-4">
@@ -377,7 +301,6 @@
                 window.location.href = 'login.html';
                 return null;
             }
-
             try {
                 return JSON.parse(adminUser);
             } catch (e) {
@@ -407,13 +330,19 @@
 
         function updateStats() {
             document.getElementById('totalQuizzes').textContent = allQuizzes.length;
-            document.getElementById('arraysQuizCount').textContent = allQuizzes.filter(q => q.topicName === 'Arrays').length;
-            document.getElementById('queueQuizCount').textContent = allQuizzes.filter(q => q.topicName === 'Queue').length;
-            document.getElementById('stacksQuizCount').textContent = allQuizzes.filter(q => q.topicName === 'Stacks').length;
-            document.getElementById('linkedlistsQuizCount').textContent = allQuizzes.filter(q => q.topicName === 'LinkedLists').length;
-            document.getElementById('othersQuizCount').textContent = allQuizzes.filter(q =>
-                !['Arrays', 'Queue', 'Stacks', 'LinkedLists'].includes(q.topicName)
-            ).length;
+            document.getElementById('easyCount').textContent = allQuizzes.filter(q => q.difficulty === 'easy').length;
+            document.getElementById('mediumCount').textContent = allQuizzes.filter(q => q.difficulty === 'medium' || !q.difficulty).length;
+            document.getElementById('hardCount').textContent = allQuizzes.filter(q => q.difficulty === 'hard').length;
+        }
+
+        function getDifficultyBadge(difficulty) {
+            const diff = (difficulty || 'medium').toLowerCase();
+            const badges = {
+                easy: '<span class="px-3 py-1 difficulty-badge-easy text-white rounded-full text-xs font-bold shadow-md">🟢 EASY</span>',
+                medium: '<span class="px-3 py-1 difficulty-badge-medium text-white rounded-full text-xs font-bold shadow-md">🟡 MEDIUM</span>',
+                hard: '<span class="px-3 py-1 difficulty-badge-hard text-white rounded-full text-xs font-bold shadow-md">🔴 HARD</span>'
+            };
+            return badges[diff] || badges.medium;
         }
 
         function displayQuizzes(quizzes) {
@@ -425,18 +354,13 @@
             }
 
             const topicColors = {
-                'Arrays': 'indigo',
-                'Queue': 'blue',
-                'Stacks': 'green',
-                'LinkedLists': 'purple',
-                'Trees': 'yellow',
-                'Graphs': 'red'
+                'Arrays': 'indigo', 'Queue': 'blue', 'Stacks': 'green',
+                'LinkedLists': 'purple', 'Trees': 'yellow', 'Graphs': 'red'
             };
 
             let html = '';
             quizzes.forEach(quiz => {
                 const color = topicColors[quiz.topicName] || 'gray';
-                const correctAnswer = quiz.answerOptions[quiz.correctAnswerIndex];
 
                 html += `
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 quiz-card p-6">
@@ -446,6 +370,7 @@
                     <span class="px-3 py-1 bg-${color}-100 text-${color}-700 rounded-full text-xs font-semibold">
                       ${quiz.topicName}
                     </span>
+                    ${getDifficultyBadge(quiz.difficulty)}
                     <span class="text-xs text-gray-500">Order: ${quiz.order}</span>
                   </div>
                   <h3 class="text-lg font-semibold text-gray-800 mb-3">${quiz.questionText}</h3>
@@ -483,6 +408,7 @@
         function filterQuizzes() {
             const searchTerm = document.getElementById('searchQuizzes').value.toLowerCase();
             const topicFilter = document.getElementById('topicFilter').value;
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
 
             let filtered = allQuizzes.filter(quiz => {
                 const matchesSearch =
@@ -490,8 +416,9 @@
                     quiz.answerOptions.some(opt => opt.toLowerCase().includes(searchTerm));
 
                 const matchesTopic = topicFilter === 'all' || quiz.topicName === topicFilter;
+                const matchesDifficulty = difficultyFilter === 'all' || (quiz.difficulty || 'medium') === difficultyFilter;
 
-                return matchesSearch && matchesTopic;
+                return matchesSearch && matchesTopic && matchesDifficulty;
             });
 
             displayQuizzes(filtered);
@@ -524,6 +451,7 @@
                 answerOptions: answerOptions,
                 correctAnswerIndex: parseInt(correctAnswerRadio.value),
                 explanation: document.getElementById('quizExplanation').value,
+                difficulty: document.getElementById('quizDifficulty').value,
                 order: parseInt(document.getElementById('quizOrder').value)
             };
 
@@ -555,7 +483,10 @@
                     `${String.fromCharCode(65 + idx)}. ${opt} ${idx === quiz.correctAnswerIndex ? '✓ (Correct)' : ''}`
                 ).join('\n');
 
-                alert(`Question: ${quiz.questionText}\n\nTopic: ${quiz.topicName}\n\nAnswers:\n${answersList}\n\nExplanation: ${quiz.explanation}`);
+                const diffEmoji = { easy: '🟢', medium: '🟡', hard: '🔴' };
+                const diff = (quiz.difficulty || 'medium').toLowerCase();
+
+                alert(`Question: ${quiz.questionText}\n\nTopic: ${quiz.topicName}\nDifficulty: ${diffEmoji[diff]} ${diff.toUpperCase()}\n\nAnswers:\n${answersList}\n\nExplanation: ${quiz.explanation}`);
             }
         }
 
@@ -563,9 +494,7 @@
             if (!confirm('Are you sure you want to delete this quiz question?')) return;
 
             try {
-                const response = await fetch(`${API_URL}/quizzes/${quizId}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`${API_URL}/quizzes/${quizId}`, { method: 'DELETE' });
                 const data = await response.json();
 
                 if (data.success) {
@@ -589,5 +518,4 @@
         });
     </script>
 </body>
-
 </html>
