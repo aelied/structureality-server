@@ -75,6 +75,42 @@ async function connectDB() {
     }
 }
 
+
+// ==================== UPDATED QUIZ ENDPOINTS WITH DIFFICULTY ====================
+
+// Get quizzes by topic and difficulty (UPDATED)
+app.get('/api/quizzes/:topicName/:difficulty?', async (req, res) => {
+    try {
+        const { topicName, difficulty } = req.params;
+        
+        let query = { topicName: topicName };
+        
+        // Filter by difficulty if provided
+        if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty.toLowerCase())) {
+            query.difficulty = difficulty.toLowerCase();
+        }
+        
+        const quizzes = await quizzesCollection.find(query)
+            .sort({ difficulty: 1, order: 1 })  // Sort by difficulty then order
+            .toArray();
+
+        res.json({
+            success: true,
+            topicName: topicName,
+            difficulty: difficulty || 'all',
+            count: quizzes.length,
+            quizzes: quizzes
+        });
+    } catch (error) {
+        console.error('Error fetching topic quizzes:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch quizzes',
+            details: error.message
+        });
+    }
+});
+
 // ==================== QUIZ ENDPOINTS ====================
 
 // Get all quizzes
@@ -130,18 +166,27 @@ app.post('/api/quizzes', async (req, res) => {
         const quizData = {
             topicName: req.body.topicName,
             questionText: req.body.questionText,
-            answerOptions: req.body.answerOptions, // Array of strings
+            answerOptions: req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
             explanation: req.body.explanation,
+            difficulty: (req.body.difficulty || 'medium').toLowerCase(), // Default to medium
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
 
         // Validation
-        if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions || quizData.correctAnswerIndex === undefined || !quizData.explanation) {
+        if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions || 
+            quizData.correctAnswerIndex === undefined || !quizData.explanation) {
             return res.status(400).json({
                 success: false,
                 error: 'Topic name, question, answers, correct answer index, and explanation are required'
+            });
+        }
+
+        if (!['easy', 'medium', 'hard'].includes(quizData.difficulty)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Difficulty must be easy, medium, or hard'
             });
         }
 
@@ -160,7 +205,7 @@ app.post('/api/quizzes', async (req, res) => {
         }
 
         const result = await quizzesCollection.insertOne(quizData);
-        console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName})`);
+        console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName} - ${quizData.difficulty})`);
 
         res.status(201).json({
             success: true,
@@ -185,6 +230,7 @@ app.put('/api/quizzes/:quizId', async (req, res) => {
             answerOptions: req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
             explanation: req.body.explanation,
+            difficulty: req.body.difficulty ? req.body.difficulty.toLowerCase() : undefined,
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
@@ -193,6 +239,14 @@ app.put('/api/quizzes/:quizId', async (req, res) => {
         Object.keys(updateData).forEach(key =>
             updateData[key] === undefined && delete updateData[key]
         );
+
+        // Validate difficulty if provided
+        if (updateData.difficulty && !['easy', 'medium', 'hard'].includes(updateData.difficulty)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Difficulty must be easy, medium, or hard'
+            });
+        }
 
         const result = await quizzesCollection.updateOne(
             { _id: new ObjectId(req.params.quizId) },
@@ -257,14 +311,30 @@ app.get('/api/quizzes-stats', async (req, res) => {
         
         const stats = {
             total: quizzes.length,
-            byTopic: {}
+            byTopic: {},
+            byDifficulty: {
+                easy: 0,
+                medium: 0,
+                hard: 0
+            }
         };
 
         quizzes.forEach(quiz => {
+            // Count by topic
             if (!stats.byTopic[quiz.topicName]) {
-                stats.byTopic[quiz.topicName] = 0;
+                stats.byTopic[quiz.topicName] = {
+                    total: 0,
+                    easy: 0,
+                    medium: 0,
+                    hard: 0
+                };
             }
-            stats.byTopic[quiz.topicName]++;
+            stats.byTopic[quiz.topicName].total++;
+            
+            // Count by difficulty
+            const difficulty = quiz.difficulty || 'medium';
+            stats.byTopic[quiz.topicName][difficulty]++;
+            stats.byDifficulty[difficulty]++;
         });
 
         res.json({
@@ -278,6 +348,7 @@ app.get('/api/quizzes-stats', async (req, res) => {
         });
     }
 });
+
 
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
@@ -1837,6 +1908,7 @@ app.post('/api/quizzes/bulk', async (req, res) => {
             answerOptions: quiz.answerOptions,
             correctAnswerIndex: quiz.correctAnswerIndex,
             explanation: quiz.explanation,
+            difficulty: (quiz.difficulty || 'medium').toLowerCase(),
             order: quiz.order || 1,
             createdAt: new Date().toISOString()
         }));
@@ -1859,6 +1931,7 @@ app.post('/api/quizzes/bulk', async (req, res) => {
         });
     }
 });
+
 
 // ==================== START SERVER ====================
 connectDB().then(() => {

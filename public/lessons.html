@@ -1,70 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lessons - StructuReality Admin</title>
+    <title>Quizzes - StructuReality Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <style>
-        * {
-            font-family: "Poppins", sans-serif;
-        }
-
-        .stat-card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .stat-card-hover:hover {
-            transform: translateY(-4px);
-        }
-
-        .lesson-card {
-            transition: all 0.3s ease;
-        }
-
-        .lesson-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+        * { font-family: "Poppins", sans-serif; }
+        .stat-card-hover { transition: all 0.3s ease; }
+        .stat-card-hover:hover { transform: translateY(-4px); }
+        .quiz-card { transition: all 0.3s ease; }
+        .quiz-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.5); }
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .answer-option { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .answer-option input[type="text"] { flex: 1; }
+        .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
+        .difficulty-badge-easy { background: linear-gradient(135deg, #10b981, #34d399); }
+        .difficulty-badge-medium { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+        .difficulty-badge-hard { background: linear-gradient(135deg, #ef4444, #f87171); }
     </style>
 </head>
-
 <body class="bg-gray-50">
     <!-- Sidebar -->
-    <aside
-        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
         <div class="p-6 border-b border-indigo-700">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -76,36 +38,21 @@
                 </div>
             </div>
         </div>
-
         <nav class="mt-6 px-4">
-            <a href="index.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i>
-                <span class="font-medium">Dashboard</span>
+            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
             </a>
-
-            <a href="users.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-users w-5"></i>
-                <span class="font-medium">Users</span>
+            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
             </a>
-
-            <a href="lessons.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-book w-5"></i>
-                <span class="font-medium">Lessons</span>
+            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
             </a>
-
-            <a href="quizzes.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-question-circle w-5"></i>
-                <span class="font-medium">Quizzes</span>
+            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
             </a>
-
-            <a href="analytics.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
+            <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
             </a>
         </nav>
     </aside>
@@ -114,16 +61,14 @@
     <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons & topics</p>
+                <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
+                <p class="text-sm text-gray-500">Manage quiz questions with difficulty levels</p>
             </div>
-
             <div class="flex items-center space-x-4">
                 <button class="p-2 hover:bg-gray-100 rounded-lg transition">
                     <i class="fas fa-bell text-gray-600"></i>
                 </button>
-                <div
-                    class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
                     <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-indigo-700 text-sm"></i>
                     </div>
@@ -132,7 +77,6 @@
                         <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
                     </div>
                 </div>
-
                 <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
                     <i class="fas fa-sign-out-alt text-gray-600"></i>
                 </button>
@@ -143,65 +87,45 @@
     <!-- Main Content -->
     <main class="ml-64 p-8 mt-20">
         <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-book-open text-purple-600 text-xl"></i>
+                        <i class="fas fa-question-circle text-purple-600 text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Total Lessons</h3>
-                <p class="text-3xl font-bold text-gray-800" id="totalLessons">-</p>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Total Quizzes</h3>
+                <p class="text-3xl font-bold text-gray-800" id="totalQuizzes">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-seedling text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Arrays</h3>
-                <p class="text-3xl font-bold text-gray-800" id="arraysCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Easy Questions</h3>
+                <p class="text-3xl font-bold" id="easyCount">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-stream text-blue-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Queue</h3>
-                <p class="text-3xl font-bold text-gray-800" id="queueCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Medium Questions</h3>
+                <p class="text-3xl font-bold" id="mediumCount">-</p>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
+            <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-green-600 text-xl"></i>
+                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-fire text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Stacks</h3>
-                <p class="text-3xl font-bold text-gray-800" id="stacksCount">-</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-link text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Linked Lists</h3>
-                <p class="text-3xl font-bold text-gray-800" id="linkedlistsCount">-</p>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-project-diagram text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Trees & Graphs</h3>
-                <p class="text-3xl font-bold text-gray-800" id="othersCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Hard Questions</h3>
+                <p class="text-3xl font-bold" id="hardCount">-</p>
             </div>
         </div>
 
@@ -211,15 +135,13 @@
                 <div class="flex items-center space-x-4 flex-1">
                     <div class="flex-1">
                         <div class="relative">
-                            <i
-                                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchLessons" placeholder="Search lessons..."
-                                onkeyup="filterLessons()"
+                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="text" id="searchQuizzes" placeholder="Search quiz questions..." onkeyup="filterQuizzes()"
                                 class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
 
-                    <select id="topicFilter" onchange="filterLessons()"
+                    <select id="topicFilter" onchange="filterQuizzes()"
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="all">All Topics</option>
                         <option value="Arrays">Arrays</option>
@@ -229,89 +151,131 @@
                         <option value="Trees">Trees</option>
                         <option value="Graphs">Graphs</option>
                     </select>
+
+                    <select id="difficultyFilter" onchange="filterQuizzes()"
+                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="all">All Difficulties</option>
+                        <option value="easy">🟢 Easy</option>
+                        <option value="medium">🟡 Medium</option>
+                        <option value="hard">🔴 Hard</option>
+                    </select>
                 </div>
 
                 <div class="flex items-center space-x-3 ml-6">
-                    <button onclick="loadLessons()"
+                    <button onclick="loadQuizzes()"
                         class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                         <i class="fas fa-sync mr-2"></i>Refresh
                     </button>
-
-                    <button onclick="openAddLessonModal()"
+                    <button onclick="openAddQuizModal()"
                         class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Lesson
+                        <i class="fas fa-plus mr-2"></i>New Quiz
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Lessons Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="lessonsGrid">
-            <p class="text-center text-gray-500 col-span-3 p-8">Loading lessons...</p>
+        <!-- Quizzes Grid -->
+        <div class="grid grid-cols-1 gap-4" id="quizzesGrid">
+            <p class="text-center text-gray-500 col-span-3 p-8">Loading quizzes...</p>
         </div>
     </main>
 
-    <!-- Add Lesson Modal -->
-    <div id="addLessonModal" class="modal">
+    <!-- Add Quiz Modal -->
+    <div id="addQuizModal" class="modal">
         <div class="modal-content">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Add New Lesson</h2>
-                <button onclick="closeAddLessonModal()" class="text-gray-500 hover:text-gray-700">
+                <h2 class="text-2xl font-bold text-gray-800">Add New Quiz Question</h2>
+                <button onclick="closeAddQuizModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
 
-            <form id="addLessonForm" onsubmit="addLesson(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                    <select id="lessonTopic" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="">Select Topic</option>
-                        <option value="Arrays">Arrays</option>
-                        <option value="Queue">Queue</option>
-                        <option value="Stacks">Stacks</option>
-                        <option value="LinkedLists">Linked Lists</option>
-                        <option value="Trees">Trees</option>
-                        <option value="Graphs">Graphs</option>
-                    </select>
+            <form id="addQuizForm" onsubmit="addQuiz(event)">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                        <select id="quizTopic" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="">Select Topic</option>
+                            <option value="Arrays">Arrays</option>
+                            <option value="Queue">Queue</option>
+                            <option value="Stacks">Stacks</option>
+                            <option value="LinkedLists">Linked Lists</option>
+                            <option value="Trees">Trees</option>
+                            <option value="Graphs">Graphs</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty *</label>
+                        <select id="quizDifficulty" required
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="easy">🟢 Easy</option>
+                            <option value="medium" selected>🟡 Medium</option>
+                            <option value="hard">🔴 Hard</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
-                    <input type="text" id="lessonTitle" required placeholder="e.g., Introduction to Queues"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea id="lessonDescription" required placeholder="Brief description of the lesson"
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Question *</label>
+                    <textarea id="quizQuestion" required placeholder="Enter your question here"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                         rows="3"></textarea>
                 </div>
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                    <textarea id="lessonContent" placeholder="Full lesson content (supports TextMeshPro tags)"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                        rows="8"></textarea>
-                    <small class="text-gray-500">💡 Use TextMeshPro tags: &lt;b&gt;bold&lt;/b&gt;,
-                        &lt;i&gt;italic&lt;/i&gt;, &lt;size=24&gt;large&lt;/size&gt;</small>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Answer Options *</label>
+                    <div id="answerOptions">
+                        <div class="answer-option">
+                            <input type="radio" name="correctAnswer" value="0" required />
+                            <input type="text" placeholder="Option 1" required
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                            <span class="text-sm text-gray-500">✓ Correct</span>
+                        </div>
+                        <div class="answer-option">
+                            <input type="radio" name="correctAnswer" value="1" required />
+                            <input type="text" placeholder="Option 2" required
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                            <span class="text-sm text-gray-500">✓ Correct</span>
+                        </div>
+                        <div class="answer-option">
+                            <input type="radio" name="correctAnswer" value="2" required />
+                            <input type="text" placeholder="Option 3" required
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                            <span class="text-sm text-gray-500">✓ Correct</span>
+                        </div>
+                        <div class="answer-option">
+                            <input type="radio" name="correctAnswer" value="3" required />
+                            <input type="text" placeholder="Option 4" required
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                            <span class="text-sm text-gray-500">✓ Correct</span>
+                        </div>
+                    </div>
+                    <small class="text-gray-500">💡 Select the radio button next to the correct answer</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Explanation *</label>
+                    <textarea id="quizExplanation" required placeholder="Explain why the answer is correct"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        rows="3"></textarea>
                 </div>
 
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                    <input type="number" id="lessonOrder" value="1" min="1"
+                    <input type="number" id="quizOrder" value="1" min="1"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                 </div>
 
                 <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeAddLessonModal()"
+                    <button type="button" onclick="closeAddQuizModal()"
                         class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                         Cancel
                     </button>
                     <button type="submit"
                         class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        Add Lesson
+                        Add Quiz
                     </button>
                 </div>
             </form>
@@ -323,7 +287,7 @@
             ? 'http://localhost:3000/api'
             : 'https://structureality-admin.onrender.com/api';
 
-        let allLessons = [];
+        let allQuizzes = [];
 
         function logout() {
             localStorage.removeItem('adminUser');
@@ -332,13 +296,11 @@
 
         function checkAuth() {
             const adminUser = localStorage.getItem('adminUser');
-
             if (!adminUser || adminUser === 'undefined') {
                 localStorage.removeItem('adminUser');
                 window.location.href = 'login.html';
                 return null;
             }
-
             try {
                 return JSON.parse(adminUser);
             } catch (e) {
@@ -349,82 +311,91 @@
             }
         }
 
-        async function loadLessons() {
+        async function loadQuizzes() {
             try {
-                const response = await fetch(`${API_URL}/lessons`);
+                const response = await fetch(`${API_URL}/quizzes`);
                 const data = await response.json();
 
                 if (data.success) {
-                    allLessons = data.lessons || [];
+                    allQuizzes = data.quizzes || [];
                     updateStats();
-                    displayLessons(allLessons);
+                    displayQuizzes(allQuizzes);
                 }
             } catch (error) {
-                console.error('Error loading lessons:', error);
-                document.getElementById('lessonsGrid').innerHTML =
-                    '<p class="text-center text-red-500 col-span-3 p-8">Failed to load lessons</p>';
+                console.error('Error loading quizzes:', error);
+                document.getElementById('quizzesGrid').innerHTML =
+                    '<p class="text-center text-red-500 col-span-3 p-8">Failed to load quizzes</p>';
             }
         }
 
         function updateStats() {
-            document.getElementById('totalLessons').textContent = allLessons.length;
-            document.getElementById('arraysCount').textContent = allLessons.filter(l => l.topicName === 'Arrays').length;
-            document.getElementById('queueCount').textContent = allLessons.filter(l => l.topicName === 'Queue').length;
-            document.getElementById('stacksCount').textContent = allLessons.filter(l => l.topicName === 'Stacks').length;
-            document.getElementById('linkedlistsCount').textContent = allLessons.filter(l => l.topicName === 'LinkedLists').length;
-            document.getElementById('othersCount').textContent = allLessons.filter(l =>
-                !['Arrays', 'Queue', 'Stacks', 'LinkedLists'].includes(l.topicName)
-            ).length;
+            document.getElementById('totalQuizzes').textContent = allQuizzes.length;
+            document.getElementById('easyCount').textContent = allQuizzes.filter(q => q.difficulty === 'easy').length;
+            document.getElementById('mediumCount').textContent = allQuizzes.filter(q => q.difficulty === 'medium' || !q.difficulty).length;
+            document.getElementById('hardCount').textContent = allQuizzes.filter(q => q.difficulty === 'hard').length;
         }
 
-        function displayLessons(lessons) {
-            const container = document.getElementById('lessonsGrid');
+        function getDifficultyBadge(difficulty) {
+            const diff = (difficulty || 'medium').toLowerCase();
+            const badges = {
+                easy: '<span class="px-3 py-1 difficulty-badge-easy text-white rounded-full text-xs font-bold shadow-md">🟢 EASY</span>',
+                medium: '<span class="px-3 py-1 difficulty-badge-medium text-white rounded-full text-xs font-bold shadow-md">🟡 MEDIUM</span>',
+                hard: '<span class="px-3 py-1 difficulty-badge-hard text-white rounded-full text-xs font-bold shadow-md">🔴 HARD</span>'
+            };
+            return badges[diff] || badges.medium;
+        }
 
-            if (lessons.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 col-span-3 p-8">No lessons found. Add your first lesson!</p>';
+        function displayQuizzes(quizzes) {
+            const container = document.getElementById('quizzesGrid');
+
+            if (quizzes.length === 0) {
+                container.innerHTML = '<p class="text-center text-gray-500 col-span-3 p-8">No quizzes found. Add your first quiz question!</p>';
                 return;
             }
 
             const topicColors = {
-                'Arrays': { gradient: 'from-indigo-500 to-indigo-600', icon: 'fa-layer-group', badge: 'indigo' },
-                'Queue': { gradient: 'from-blue-500 to-blue-600', icon: 'fa-stream', badge: 'blue' },
-                'Stacks': { gradient: 'from-green-500 to-green-600', icon: 'fa-layer-group', badge: 'green' },
-                'LinkedLists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link', badge: 'purple' },
-                'Trees': { gradient: 'from-yellow-500 to-yellow-600', icon: 'fa-project-diagram', badge: 'yellow' },
-                'Graphs': { gradient: 'from-red-500 to-red-600', icon: 'fa-sitemap', badge: 'red' }
+                'Arrays': 'indigo', 'Queue': 'blue', 'Stacks': 'green',
+                'LinkedLists': 'purple', 'Trees': 'yellow', 'Graphs': 'red'
             };
 
             let html = '';
-            lessons.forEach(lesson => {
-                const color = topicColors[lesson.topicName] || topicColors['Queue'];
-                const contentPreview = lesson.content
-                    ? lesson.content.substring(0, 80) + '...'
-                    : 'No content added yet';
+            quizzes.forEach(quiz => {
+                const color = topicColors[quiz.topicName] || 'gray';
 
                 html += `
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 lesson-card overflow-hidden">
-              <div class="bg-gradient-to-r ${color.gradient} h-32 flex items-center justify-center">
-                <i class="fas ${color.icon} text-white text-4xl"></i>
-              </div>
-              <div class="p-6">
-                <div class="flex items-center justify-between mb-3">
-                  <span class="px-3 py-1 bg-${color.badge}-100 text-${color.badge}-700 rounded-full text-xs font-semibold">
-                    ${lesson.topicName}
-                  </span>
-                  <span class="text-xs text-gray-500">Order: ${lesson.order}</span>
-                </div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-2">${lesson.title}</h3>
-                <p class="text-sm text-gray-600 mb-2">${lesson.description}</p>
-                <p class="text-xs text-gray-400 mb-4"><i class="fas fa-file-alt mr-1"></i> ${contentPreview}</p>
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center space-x-2">
-                    <button onclick="viewLesson('${lesson._id}')" class="text-indigo-600 hover:text-indigo-700" title="View">
-                      <i class="fas fa-eye"></i>
-                    </button>
-                    <button onclick="deleteLesson('${lesson._id}')" class="text-red-600 hover:text-red-700" title="Delete">
-                      <i class="fas fa-trash"></i>
-                    </button>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 quiz-card p-6">
+              <div class="flex items-start justify-between mb-4">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-3">
+                    <span class="px-3 py-1 bg-${color}-100 text-${color}-700 rounded-full text-xs font-semibold">
+                      ${quiz.topicName}
+                    </span>
+                    ${getDifficultyBadge(quiz.difficulty)}
+                    <span class="text-xs text-gray-500">Order: ${quiz.order}</span>
                   </div>
+                  <h3 class="text-lg font-semibold text-gray-800 mb-3">${quiz.questionText}</h3>
+                  
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    ${quiz.answerOptions.map((opt, idx) => `
+                      <div class="flex items-center gap-2 p-2 rounded ${idx === quiz.correctAnswerIndex ? `bg-green-50 border border-green-200` : 'bg-gray-50'}">
+                        <span class="text-sm ${idx === quiz.correctAnswerIndex ? 'text-green-700 font-semibold' : 'text-gray-600'}">
+                          ${String.fromCharCode(65 + idx)}. ${opt}
+                        </span>
+                        ${idx === quiz.correctAnswerIndex ? '<i class="fas fa-check-circle text-green-600"></i>' : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                  
+                  <p class="text-sm text-gray-600 italic">💡 ${quiz.explanation}</p>
+                </div>
+                
+                <div class="flex flex-col items-center space-y-2 ml-4">
+                  <button onclick="viewQuiz('${quiz._id}')" class="text-indigo-600 hover:text-indigo-700" title="View">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                  <button onclick="deleteQuiz('${quiz._id}')" class="text-red-600 hover:text-red-700" title="Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
               </div>
             </div>
@@ -434,88 +405,106 @@
             container.innerHTML = html;
         }
 
-        function filterLessons() {
-            const searchTerm = document.getElementById('searchLessons').value.toLowerCase();
+        function filterQuizzes() {
+            const searchTerm = document.getElementById('searchQuizzes').value.toLowerCase();
             const topicFilter = document.getElementById('topicFilter').value;
+            const difficultyFilter = document.getElementById('difficultyFilter').value;
 
-            let filtered = allLessons.filter(lesson => {
+            let filtered = allQuizzes.filter(quiz => {
                 const matchesSearch =
-                    lesson.title.toLowerCase().includes(searchTerm) ||
-                    lesson.description.toLowerCase().includes(searchTerm);
+                    quiz.questionText.toLowerCase().includes(searchTerm) ||
+                    quiz.answerOptions.some(opt => opt.toLowerCase().includes(searchTerm));
 
-                const matchesTopic = topicFilter === 'all' || lesson.topicName === topicFilter;
+                const matchesTopic = topicFilter === 'all' || quiz.topicName === topicFilter;
+                const matchesDifficulty = difficultyFilter === 'all' || (quiz.difficulty || 'medium') === difficultyFilter;
 
-                return matchesSearch && matchesTopic;
+                return matchesSearch && matchesTopic && matchesDifficulty;
             });
 
-            displayLessons(filtered);
+            displayQuizzes(filtered);
         }
 
-        function openAddLessonModal() {
-            document.getElementById('addLessonModal').classList.add('active');
+        function openAddQuizModal() {
+            document.getElementById('addQuizModal').classList.add('active');
         }
 
-        function closeAddLessonModal() {
-            document.getElementById('addLessonModal').classList.remove('active');
-            document.getElementById('addLessonForm').reset();
+        function closeAddQuizModal() {
+            document.getElementById('addQuizModal').classList.remove('active');
+            document.getElementById('addQuizForm').reset();
         }
 
-        async function addLesson(event) {
+        async function addQuiz(event) {
             event.preventDefault();
 
-            const lessonData = {
-                topicName: document.getElementById('lessonTopic').value,
-                title: document.getElementById('lessonTitle').value,
-                description: document.getElementById('lessonDescription').value,
-                content: document.getElementById('lessonContent').value,
-                order: parseInt(document.getElementById('lessonOrder').value)
+            const answerInputs = document.querySelectorAll('#answerOptions input[type="text"]');
+            const answerOptions = Array.from(answerInputs).map(input => input.value);
+            const correctAnswerRadio = document.querySelector('input[name="correctAnswer"]:checked');
+
+            if (!correctAnswerRadio) {
+                alert('Please select the correct answer');
+                return;
+            }
+
+            const quizData = {
+                topicName: document.getElementById('quizTopic').value,
+                questionText: document.getElementById('quizQuestion').value,
+                answerOptions: answerOptions,
+                correctAnswerIndex: parseInt(correctAnswerRadio.value),
+                explanation: document.getElementById('quizExplanation').value,
+                difficulty: document.getElementById('quizDifficulty').value,
+                order: parseInt(document.getElementById('quizOrder').value)
             };
 
             try {
-                const response = await fetch(`${API_URL}/lessons`, {
+                const response = await fetch(`${API_URL}/quizzes`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(lessonData)
+                    body: JSON.stringify(quizData)
                 });
 
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('✅ Lesson added successfully!');
-                    closeAddLessonModal();
-                    loadLessons();
+                    alert('✅ Quiz question added successfully!');
+                    closeAddQuizModal();
+                    loadQuizzes();
                 } else {
-                    alert('Failed to add lesson: ' + data.error);
+                    alert('Failed to add quiz: ' + data.error);
                 }
             } catch (error) {
-                alert('Error adding lesson: ' + error.message);
+                alert('Error adding quiz: ' + error.message);
             }
         }
 
-        function viewLesson(lessonId) {
-            const lesson = allLessons.find(l => l._id === lessonId);
-            if (lesson) {
-                alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\n\nDescription: ${lesson.description}\n\nContent: ${lesson.content || 'No content'}`);
+        function viewQuiz(quizId) {
+            const quiz = allQuizzes.find(q => q._id === quizId);
+            if (quiz) {
+                const answersList = quiz.answerOptions.map((opt, idx) =>
+                    `${String.fromCharCode(65 + idx)}. ${opt} ${idx === quiz.correctAnswerIndex ? '✓ (Correct)' : ''}`
+                ).join('\n');
+
+                const diffEmoji = { easy: '🟢', medium: '🟡', hard: '🔴' };
+                const diff = (quiz.difficulty || 'medium').toLowerCase();
+
+                alert(`Question: ${quiz.questionText}\n\nTopic: ${quiz.topicName}\nDifficulty: ${diffEmoji[diff]} ${diff.toUpperCase()}\n\nAnswers:\n${answersList}\n\nExplanation: ${quiz.explanation}`);
             }
         }
 
-        async function deleteLesson(lessonId) {
-            if (!confirm('Are you sure you want to delete this lesson?')) return;
+        async function deleteQuiz(quizId) {
+            if (!confirm('Are you sure you want to delete this quiz question?')) return;
 
             try {
-                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`${API_URL}/quizzes/${quizId}`, { method: 'DELETE' });
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Lesson deleted successfully');
-                    loadLessons();
+                    alert('Quiz deleted successfully');
+                    loadQuizzes();
                 } else {
-                    alert('Failed to delete lesson: ' + data.error);
+                    alert('Failed to delete quiz: ' + data.error);
                 }
             } catch (error) {
-                alert('Error deleting lesson: ' + error.message);
+                alert('Error deleting quiz: ' + error.message);
             }
         }
 
@@ -524,10 +513,9 @@
             if (user) {
                 document.getElementById('adminUserDisplay').textContent = user.name || user.username;
                 document.getElementById('adminEmailDisplay').textContent = user.email;
-                loadLessons();
+                loadQuizzes();
             }
         });
     </script>
 </body>
-
 </html>
