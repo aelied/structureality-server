@@ -255,6 +255,12 @@
             </div>
         </div>
 
+        <!-- Debug Info (Remove after fixing) -->
+        <div id="debugInfo" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" style="display:none;">
+            <h4 class="font-semibold text-yellow-800 mb-2">🐛 Debug Info:</h4>
+            <pre id="debugContent" class="text-xs text-yellow-700"></pre>
+        </div>
+
         <!-- Search and Filters -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div class="flex items-center justify-between">
@@ -367,25 +373,13 @@
                                 ⭐ Important
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">💡 Click a button to insert a special box at cursor position. Separate paragraphs with double line breaks.</p>
+                        <p class="text-xs text-gray-500 mt-2">💡 Click a button to insert a special box at cursor position.</p>
                     </div>
 
-                    <textarea id="lessonContent" placeholder="Write your lesson content here...
-
-Example:
-This is a regular paragraph.
-
-[INFO]
-This will appear as a special info box with cyan background.
-
-Another regular paragraph.
-
-[TIP]
-This will appear as a tip box with yellow background."
+                    <textarea id="lessonContent" placeholder="Write your lesson content here..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
                         rows="12"></textarea>
                     
-                    <!-- Preview Button -->
                     <button type="button" onclick="togglePreview()" 
                         class="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
                         <i class="fas fa-eye mr-2"></i>Preview Content
@@ -412,6 +406,110 @@ This will appear as a tip box with yellow background."
                     <button type="submit"
                         class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                         Add Lesson
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Lesson Modal -->
+    <div id="editLessonModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Lesson</h2>
+                <button onclick="closeEditLessonModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form id="editLessonForm" onsubmit="updateLesson(event)">
+                <input type="hidden" id="editLessonId">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                    <select id="editLessonTopic" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="">Select Topic</option>
+                        <option value="Arrays">Arrays</option>
+                        <option value="Queue">Queue</option>
+                        <option value="Stacks">Stacks</option>
+                        <option value="LinkedLists">Linked Lists</option>
+                        <option value="Trees">Trees</option>
+                        <option value="Graphs">Graphs</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
+                    <input type="text" id="editLessonTitle" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                    <textarea id="editLessonDescription" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        rows="3"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
+                    
+                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                        <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Info Boxes:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <button type="button" onclick="insertInfoBox('INFO', true)"
+                                class="insert-box-btn info-box-info">
+                                ℹ️ Info
+                            </button>
+                            <button type="button" onclick="insertInfoBox('TIP', true)"
+                                class="insert-box-btn info-box-tip">
+                                💡 Tip
+                            </button>
+                            <button type="button" onclick="insertInfoBox('WARNING', true)"
+                                class="insert-box-btn info-box-warning">
+                                ⚠️ Warning
+                            </button>
+                            <button type="button" onclick="insertInfoBox('NOTE', true)"
+                                class="insert-box-btn info-box-note">
+                                📝 Note
+                            </button>
+                            <button type="button" onclick="insertInfoBox('IMPORTANT', true)"
+                                class="insert-box-btn info-box-important">
+                                ⭐ Important
+                            </button>
+                        </div>
+                    </div>
+
+                    <textarea id="editLessonContent"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
+                        rows="12"></textarea>
+                    
+                    <button type="button" onclick="togglePreview(true)" 
+                        class="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-eye mr-2"></i>Preview Content
+                    </button>
+                </div>
+
+                <div id="editContentPreview" style="display: none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Preview:</h3>
+                    <div id="editPreviewContent"></div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                    <input type="number" id="editLessonOrder" value="1" min="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditLessonModal()"
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Update Lesson
                     </button>
                 </div>
             </form>
@@ -450,8 +548,9 @@ This will appear as a tip box with yellow background."
         }
 
         // Insert info box at cursor position
-        function insertInfoBox(type) {
-            const textarea = document.getElementById('lessonContent');
+        function insertInfoBox(type, isEdit = false) {
+            const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
+            const textarea = document.getElementById(textareaId);
             const cursorPos = textarea.selectionStart;
             const textBefore = textarea.value.substring(0, cursorPos);
             const textAfter = textarea.value.substring(cursorPos);
@@ -461,27 +560,30 @@ This will appear as a tip box with yellow background."
             textarea.value = textBefore + template + textAfter;
             textarea.focus();
             
-            // Set cursor position after inserted text
             const newPos = cursorPos + template.length;
             textarea.setSelectionRange(newPos, newPos);
         }
 
         // Toggle preview
-        function togglePreview() {
-            const previewDiv = document.getElementById('contentPreview');
-            const content = document.getElementById('lessonContent').value;
+        function togglePreview(isEdit = false) {
+            const previewDivId = isEdit ? 'editContentPreview' : 'contentPreview';
+            const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
+            
+            const previewDiv = document.getElementById(previewDivId);
+            const content = document.getElementById(contentId).value;
             
             if (previewDiv.style.display === 'none') {
                 previewDiv.style.display = 'block';
-                renderPreview(content);
+                renderPreview(content, isEdit);
             } else {
                 previewDiv.style.display = 'none';
             }
         }
 
         // Render content preview
-        function renderPreview(content) {
-            const previewContent = document.getElementById('previewContent');
+        function renderPreview(content, isEdit = false) {
+            const previewContentId = isEdit ? 'editPreviewContent' : 'previewContent';
+            const previewContent = document.getElementById(previewContentId);
             previewContent.innerHTML = '';
             
             const paragraphs = content.split('\n\n').filter(p => p.trim());
@@ -518,27 +620,76 @@ This will appear as a tip box with yellow background."
                 const response = await fetch(`${API_URL}/lessons`);
                 const data = await response.json();
 
+                console.log('📚 API Response:', data);
+
                 if (data.success) {
                     allLessons = data.lessons || [];
+                    
+                    // Debug: Show topic distribution
+                    const topicCounts = {};
+                    allLessons.forEach(lesson => {
+                        const topic = lesson.topicName;
+                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                    });
+                    
+                    console.log('📊 Topic Distribution:', topicCounts);
+                    
+                    // Show debug info temporarily
+                    const debugDiv = document.getElementById('debugInfo');
+                    const debugContent = document.getElementById('debugContent');
+                    debugContent.textContent = `Total Lessons: ${allLessons.length}\n` + 
+                        JSON.stringify(topicCounts, null, 2);
+                    debugDiv.style.display = 'block';
+                    
+                    // Hide debug after 5 seconds
+                    setTimeout(() => {
+                        debugDiv.style.display = 'none';
+                    }, 5000);
+                    
                     updateStats();
                     displayLessons(allLessons);
+                } else {
+                    console.error('❌ API Error:', data);
                 }
             } catch (error) {
-                console.error('Error loading lessons:', error);
+                console.error('❌ Fetch Error:', error);
                 document.getElementById('lessonsGrid').innerHTML =
                     '<p class="text-center text-red-500 col-span-3 p-8">Failed to load lessons</p>';
             }
         }
 
         function updateStats() {
-            document.getElementById('totalLessons').textContent = allLessons.length;
-            document.getElementById('arraysCount').textContent = allLessons.filter(l => l.topicName === 'Arrays').length;
-            document.getElementById('queueCount').textContent = allLessons.filter(l => l.topicName === 'Queue').length;
-            document.getElementById('stacksCount').textContent = allLessons.filter(l => l.topicName === 'Stacks').length;
-            document.getElementById('linkedlistsCount').textContent = allLessons.filter(l => l.topicName === 'LinkedLists').length;
-            document.getElementById('othersCount').textContent = allLessons.filter(l =>
-                !['Arrays', 'Queue', 'Stacks', 'LinkedLists'].includes(l.topicName)
-            ).length;
+            console.log('📊 Updating stats for', allLessons.length, 'lessons');
+            
+            // Count exact topic names from database
+            const counts = {
+                total: allLessons.length,
+                Arrays: 0,
+                Queue: 0,
+                Stacks: 0,
+                LinkedLists: 0,
+                others: 0
+            };
+            
+            allLessons.forEach(lesson => {
+                const topic = lesson.topicName;
+                console.log('  Topic:', topic);
+                
+                if (topic === 'Arrays') counts.Arrays++;
+                else if (topic === 'Queue') counts.Queue++;
+                else if (topic === 'Stacks') counts.Stacks++;
+                else if (topic === 'LinkedLists') counts.LinkedLists++;
+                else counts.others++;
+            });
+            
+            console.log('📊 Final counts:', counts);
+            
+            document.getElementById('totalLessons').textContent = counts.total;
+            document.getElementById('arraysCount').textContent = counts.Arrays;
+            document.getElementById('queueCount').textContent = counts.Queue;
+            document.getElementById('stacksCount').textContent = counts.Stacks;
+            document.getElementById('linkedlistsCount').textContent = counts.LinkedLists;
+            document.getElementById('othersCount').textContent = counts.others;
         }
 
         function displayLessons(lessons) {
@@ -591,6 +742,9 @@ This will appear as a tip box with yellow background."
                   <div class="flex items-center space-x-2">
                     <button onclick="viewLesson('${lesson._id}')" class="text-indigo-600 hover:text-indigo-700" title="View">
                       <i class="fas fa-eye"></i>
+                    </button>
+                    <button onclick="editLesson('${lesson._id}')" class="text-green-600 hover:text-green-700" title="Edit">
+                      <i class="fas fa-edit"></i>
                     </button>
                     <button onclick="deleteLesson('${lesson._id}')" class="text-red-600 hover:text-red-700" title="Delete">
                       <i class="fas fa-trash"></i>
@@ -665,6 +819,61 @@ This will appear as a tip box with yellow background."
             }
         }
 
+        function editLesson(lessonId) {
+            const lesson = allLessons.find(l => l._id === lessonId);
+            if (!lesson) return;
+
+            // Populate edit form
+            document.getElementById('editLessonId').value = lesson._id;
+            document.getElementById('editLessonTopic').value = lesson.topicName;
+            document.getElementById('editLessonTitle').value = lesson.title;
+            document.getElementById('editLessonDescription').value = lesson.description;
+            document.getElementById('editLessonContent').value = lesson.content || '';
+            document.getElementById('editLessonOrder').value = lesson.order;
+
+            // Open modal
+            document.getElementById('editLessonModal').classList.add('active');
+        }
+
+        function closeEditLessonModal() {
+            document.getElementById('editLessonModal').classList.remove('active');
+            document.getElementById('editLessonForm').reset();
+            document.getElementById('editContentPreview').style.display = 'none';
+        }
+
+        async function updateLesson(event) {
+            event.preventDefault();
+
+            const lessonId = document.getElementById('editLessonId').value;
+            const lessonData = {
+                topicName: document.getElementById('editLessonTopic').value,
+                title: document.getElementById('editLessonTitle').value,
+                description: document.getElementById('editLessonDescription').value,
+                content: document.getElementById('editLessonContent').value,
+                order: parseInt(document.getElementById('editLessonOrder').value)
+            };
+
+            try {
+                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lessonData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    alert('✅ Lesson updated successfully!');
+                    closeEditLessonModal();
+                    loadLessons();
+                } else {
+                    alert('Failed to update lesson: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error updating lesson: ' + error.message);
+            }
+        }
+
         function viewLesson(lessonId) {
             const lesson = allLessons.find(l => l._id === lessonId);
             if (lesson) {
@@ -690,7 +899,7 @@ This will appear as a tip box with yellow background."
                 const data = await response.json();
 
                 if (data.success) {
-                    alert('Lesson deleted successfully');
+                    alert('✅ Lesson deleted successfully');
                     loadLessons();
                 } else {
                     alert('Failed to delete lesson: ' + data.error);
