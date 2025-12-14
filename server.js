@@ -971,13 +971,27 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // Only update the topics included in the request
-                // Preserve others
+                // Calculate progress: 70% for lessons, 30% for puzzle
+                let lessonProgress = 0;
+                let puzzleProgress = 0;
+                
+                // Assuming 5 lessons per topic (adjust as needed)
+                const totalLessonsForTopic = 5; // You may want to fetch this dynamically
+                if (topic.lessonsCompleted > 0) {
+                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
+                }
+                
+                if (topic.puzzleCompleted) {
+                    puzzleProgress = 30;
+                }
+                
+                const calculatedProgress = lessonProgress + puzzleProgress;
+                
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
                     puzzleCompleted: topic.puzzleCompleted === true,
                     score: parseInt(topic.puzzleScore || topic.score || 0),
-                    progressPercentage: parseFloat(topic.progressPercentage || 0),
+                    progressPercentage: calculatedProgress, // ✅ Use calculated value
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
                     lessonsCompleted: parseInt(topic.lessonsCompleted || 0)
