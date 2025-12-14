@@ -983,18 +983,17 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // ✅ FIX: Fetch the ACTUAL lesson count for this specific topic
-                const totalLessonsForTopic = lessonCounts[topic.topicName] || 1; // Default to 1 if not found
+                // ✅ FIX: Calculate progress using actual lesson counts from database
+                const totalLessonsForTopic = lessonCounts[topic.topicName] || 5; // Default to 5 if not found
                 
                 let lessonProgress = 0;
                 let puzzleProgress = 0;
                 
-                // ✅ NEW LOGIC: If all lessons are completed, give full 70%
-                if (topic.lessonsCompleted >= totalLessonsForTopic) {
-                    lessonProgress = 70; // Full lesson credit
-                } else if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
-                    // Partial credit: scale to 70% based on completion ratio
+                // 70% weight for lessons
+                if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
                     lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
+                    // Cap at 70% max from lessons
+                    lessonProgress = Math.min(70, lessonProgress);
                 }
                 
                 // 30% weight for puzzle
