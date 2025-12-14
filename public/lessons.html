@@ -279,7 +279,7 @@
                         class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="all">All Topics</option>
                         <option value="Arrays">Arrays</option>
-                        <option value="Queue">Queue</option>
+                        <option value="Queues">Queues</option>
                         <option value="Stacks">Stacks</option>
                         <option value="LinkedLists">Linked Lists</option>
                         <option value="Trees">Trees</option>
@@ -324,7 +324,7 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         <option value="">Select Topic</option>
                         <option value="Arrays">Arrays</option>
-                        <option value="Queue">Queue</option>
+                        <option value="Queues">Queues</option>
                         <option value="Stacks">Stacks</option>
                         <option value="LinkedLists">Linked Lists</option>
                         <option value="Trees">Trees</option>
@@ -431,7 +431,7 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                         <option value="">Select Topic</option>
                         <option value="Arrays">Arrays</option>
-                        <option value="Queue">Queue</option>
+                        <option value="Queues">Queues</option>
                         <option value="Stacks">Stacks</option>
                         <option value="LinkedLists">Linked Lists</option>
                         <option value="Trees">Trees</option>
@@ -661,7 +661,7 @@
         function updateStats() {
             console.log('📊 Updating stats for', allLessons.length, 'lessons');
             
-            // Count exact topic names from database
+            // Count exact topic names from database (handles both singular and plural)
             const counts = {
                 total: allLessons.length,
                 Arrays: 0,
@@ -675,10 +675,12 @@
                 const topic = lesson.topicName;
                 console.log('  Topic:', topic);
                 
+                // Handle both singular and plural forms
                 if (topic === 'Arrays') counts.Arrays++;
-                else if (topic === 'Queue') counts.Queue++;
+                else if (topic === 'Queue' || topic === 'Queues') counts.Queue++;
                 else if (topic === 'Stacks') counts.Stacks++;
-                else if (topic === 'LinkedLists') counts.LinkedLists++;
+                else if (topic === 'LinkedLists' || topic === 'Linked Lists') counts.LinkedLists++;
+                else if (topic === 'Trees' || topic === 'Graphs') counts.others++;
                 else counts.others++;
             });
             
@@ -703,8 +705,10 @@
             const topicColors = {
                 'Arrays': { gradient: 'from-indigo-500 to-indigo-600', icon: 'fa-layer-group', badge: 'indigo' },
                 'Queue': { gradient: 'from-blue-500 to-blue-600', icon: 'fa-stream', badge: 'blue' },
+                'Queues': { gradient: 'from-blue-500 to-blue-600', icon: 'fa-stream', badge: 'blue' },
                 'Stacks': { gradient: 'from-green-500 to-green-600', icon: 'fa-layer-group', badge: 'green' },
                 'LinkedLists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link', badge: 'purple' },
+                'Linked Lists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link', badge: 'purple' },
                 'Trees': { gradient: 'from-yellow-500 to-yellow-600', icon: 'fa-project-diagram', badge: 'yellow' },
                 'Graphs': { gradient: 'from-red-500 to-red-600', icon: 'fa-sitemap', badge: 'red' }
             };
