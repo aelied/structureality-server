@@ -983,34 +983,30 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // ✅ FIX: Calculate progress using actual lesson counts from database
-                const totalLessonsForTopic = lessonCounts[topic.topicName] || 5; // Default to 5 if not found
+                const totalLessonsForTopic = lessonCounts[topic.topicName] || 1;
                 
-                let lessonProgress = 0;
-                let puzzleProgress = 0;
+                let progressPercentage = 0;
                 
-                // 70% weight for lessons
-                if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
-                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
-                    // Cap at 70% max from lessons
-                    lessonProgress = Math.min(70, lessonProgress);
-                }
-                
-                // 30% weight for puzzle
+                // ✅ NEW LOGIC: If puzzle is completed, everything is done = 100%
                 if (topic.puzzleCompleted) {
-                    puzzleProgress = 30;
+                    progressPercentage = 100; // Puzzle completion means lessons were done too
+                } 
+                // Otherwise, calculate based on lesson completion only (70% max)
+                else if (topic.lessonsCompleted >= totalLessonsForTopic) {
+                    progressPercentage = 70; // All lessons done, but no puzzle yet
+                } 
+                else if (topic.lessonsCompleted > 0) {
+                    // Partial lesson completion (scales to 70%)
+                    progressPercentage = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
                 }
                 
-                // ✅ Calculate final progress percentage
-                const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
-                
-                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzle = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
+                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons, puzzle=${topic.puzzleCompleted}, progress=${progressPercentage.toFixed(1)}%`);
                 
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
                     puzzleCompleted: topic.puzzleCompleted === true,
                     score: parseInt(topic.puzzleScore || topic.score || 0),
-                    progressPercentage: calculatedProgress, // ✅ Use calculated value
+                    progressPercentage: progressPercentage,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
                     lessonsCompleted: parseInt(topic.lessonsCompleted || 0)
@@ -1153,16 +1149,46 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
 
+        // Fetch lesson counts for accurate progress calculation
+        const lessonCounts = {};
+        const allLessons = await lessonsCollection.find({}).toArray();
+        
+        allLessons.forEach(lesson => {
+            const normalizedTopic = lesson.topicName.trim();
+            if (!lessonCounts[normalizedTopic]) {
+                lessonCounts[normalizedTopic] = 0;
+            }
+            lessonCounts[normalizedTopic]++;
+        });
+
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
                 const topic = user.progress[topicName];
+                
+                const totalLessonsForTopic = lessonCounts[topicName] || 1;
+                let progressPercentage = 0;
+                
+                // ✅ Puzzle completed = everything done = 100%
+                if (topic.puzzleCompleted) {
+                    progressPercentage = 100;
+                } 
+                // All lessons done = 70%
+                else if (topic.lessonsCompleted >= totalLessonsForTopic) {
+                    progressPercentage = 70;
+                } 
+                // Partial lessons
+                else if (topic.lessonsCompleted > 0) {
+                    progressPercentage = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
+                }
+                
                 topics.push({
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
                     puzzleCompleted: topic.puzzleCompleted || false,
                     puzzleScore: topic.score || 0,
-                    progressPercentage: topic.progressPercentage || 0,
+                    score: topic.score || 0,
+                    progressPercentage: progressPercentage,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
                     lessonsCompleted: topic.lessonsCompleted || 0
