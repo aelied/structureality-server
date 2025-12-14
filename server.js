@@ -954,8 +954,6 @@ app.put('/api/progress/:username', async (req, res) => {
         const progressData = req.body;
         console.log('📥 Progress sync:', username);
 
-        // --- DATA LOSS FIX START ---
-        // Fetch existing user first to get current progress
         const existingUser = await usersCollection.findOne({ username: username });
 
         if (!existingUser) {
@@ -968,24 +966,45 @@ app.put('/api/progress/:username', async (req, res) => {
         // Initialize with existing progress or empty object
         const mergedProgress = existingUser.progress || {};
 
+        // ✅ FIX: Fetch lesson counts from database to calculate accurate progress
+        const lessonCounts = {};
+        const allLessons = await lessonsCollection.find({}).toArray();
+        
+        allLessons.forEach(lesson => {
+            const normalizedTopic = lesson.topicName.trim();
+            if (!lessonCounts[normalizedTopic]) {
+                lessonCounts[normalizedTopic] = 0;
+            }
+            lessonCounts[normalizedTopic]++;
+        });
+
+        console.log('📚 Lesson counts per topic:', lessonCounts);
+
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // Calculate progress: 70% for lessons, 30% for puzzle
+                // ✅ FIX: Calculate progress using actual lesson counts from database
+                const totalLessonsForTopic = lessonCounts[topic.topicName] || 5; // Default to 5 if not found
+                
                 let lessonProgress = 0;
                 let puzzleProgress = 0;
                 
-                // Assuming 5 lessons per topic (adjust as needed)
-                const totalLessonsForTopic = 5; // You may want to fetch this dynamically
-                if (topic.lessonsCompleted > 0) {
+                // 70% weight for lessons
+                if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
                     lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
+                    // Cap at 70% max from lessons
+                    lessonProgress = Math.min(70, lessonProgress);
                 }
                 
+                // 30% weight for puzzle
                 if (topic.puzzleCompleted) {
                     puzzleProgress = 30;
                 }
                 
-                const calculatedProgress = lessonProgress + puzzleProgress;
+                // ✅ Calculate final progress percentage
+                const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
+                
+                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzle = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
                 
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
@@ -998,66 +1017,54 @@ app.put('/api/progress/:username', async (req, res) => {
                 };
             });
         }
-        // --- DATA LOSS FIX END ---
 
-        let newStreak = existingUser.streak || 0; // Default to 0 if undefined
-        if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1; // Start streak if new user
+        // Streak calculation
+        let newStreak = existingUser.streak || 0;
+        if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
 
         const now = new Date();
 
         if (existingUser.lastActivity) {
             const lastActivity = new Date(existingUser.lastActivity);
 
-            // --- STREAK FIX START ---
-            // Use Calendar Date comparison instead of 24h window
-
-            // Helper to get date string YYYY-MM-DD
             const toDateString = (d) => d.toISOString().split('T')[0];
 
             const todayStr = toDateString(now);
             const lastActiveStr = toDateString(lastActivity);
 
             const msPerDay = 1000 * 60 * 60 * 24;
-            // Floor dates to ignore time component
             const todayDate = new Date(todayStr);
             const lastActiveDate = new Date(lastActiveStr);
 
             const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
 
             if (diffDays === 1) {
-                // Yesterday was active -> Increment
                 newStreak = (existingUser.streak || 0) + 1;
-                console.log(`🔥 Streak incremented to ${newStreak} (Yesterday: ${lastActiveStr}, Today: ${todayStr})`);
+                console.log(`🔥 Streak incremented to ${newStreak}`);
             } else if (diffDays === 0) {
-                // Already active today -> Keep same
                 newStreak = existingUser.streak || 1;
-                console.log(`✓ Streak maintained at ${newStreak} (Active today)`);
+                console.log(`✓ Streak maintained at ${newStreak}`);
             } else {
-                // Missed a day or more -> Reset
                 if (existingUser.streak > 0) {
-                    console.log(`❌ Streak broken. Reset to 1 (Last active: ${lastActiveStr}, Today: ${todayStr}, Diff: ${diffDays} days)`);
+                    console.log(`❌ Streak broken. Reset to 1`);
                 }
                 newStreak = 1;
             }
-            // --- STREAK FIX END ---
         } else {
             newStreak = 1;
         }
 
-        // Use the MERGED progress dictionary
         const updateData = {
             progress: mergedProgress,
             streak: newStreak,
             completedTopics: parseInt(progressData.completedTopics || 0),
             lastUpdated: progressData.lastUpdated || new Date().toISOString(),
             lastActivity: now.toISOString(),
-            // Only update name/email if provided
         };
 
         if (progressData.name) updateData.name = progressData.name;
         if (progressData.email) updateData.email = progressData.email;
 
-        // Only use specific fields in $set to be safer, though we merged 'progress' object above
         const result = await usersCollection.updateOne(
             { username: username },
             { $set: updateData },
