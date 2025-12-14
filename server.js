@@ -966,7 +966,7 @@ app.put('/api/progress/:username', async (req, res) => {
         // Initialize with existing progress or empty object
         const mergedProgress = existingUser.progress || {};
 
-        // ✅ Fetch lesson counts from database to calculate accurate progress
+        // ✅ FIX: Fetch lesson counts from database to calculate accurate progress
         const lessonCounts = {};
         const allLessons = await lessonsCollection.find({}).toArray();
         
@@ -983,52 +983,35 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                const totalLessonsForTopic = lessonCounts[topic.topicName] || 1;
+                // ✅ FIX: Fetch the ACTUAL lesson count for this specific topic
+                const totalLessonsForTopic = lessonCounts[topic.topicName] || 1; // Default to 1 if not found
                 
-                // ✅ NEW LOGIC: Calculate progress with difficulty tracking
                 let lessonProgress = 0;
                 let puzzleProgress = 0;
                 
-                // Lessons = 50% max
+                // ✅ NEW LOGIC: If all lessons are completed, give full 70%
                 if (topic.lessonsCompleted >= totalLessonsForTopic) {
-                    lessonProgress = 50;
-                } else if (topic.lessonsCompleted > 0) {
-                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 50;
+                    lessonProgress = 70; // Full lesson credit
+                } else if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
+                    // Partial credit: scale to 70% based on completion ratio
+                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
                 }
                 
-                // Puzzles = 50% max (12.5% per difficulty)
-                const difficultyScores = topic.difficultyScores || {
-                    easy: 0,
-                    medium: 0,
-                    hard: 0,
-                    mixed: 0
-                };
+                // 30% weight for puzzle
+                if (topic.puzzleCompleted) {
+                    puzzleProgress = 30;
+                }
                 
-                // Each difficulty contributes 12.5% if completed (score >= 70%)
-                if (difficultyScores.easy >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.medium >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.hard >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.mixed >= 70) puzzleProgress += 12.5;
+                // ✅ Calculate final progress percentage
+                const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
                 
-                const totalProgress = lessonProgress + puzzleProgress;
-                
-                console.log(`📊 ${topic.topicName}:`);
-                console.log(`   Lessons: ${topic.lessonsCompleted}/${totalLessonsForTopic} = ${lessonProgress.toFixed(1)}%`);
-                console.log(`   Difficulties: E=${difficultyScores.easy}% M=${difficultyScores.medium}% H=${difficultyScores.hard}% Mix=${difficultyScores.mixed}%`);
-                console.log(`   Puzzle Progress: ${puzzleProgress.toFixed(1)}%`);
-                console.log(`   Total: ${totalProgress.toFixed(1)}%`);
+                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzle = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
                 
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
-                    puzzleCompleted: puzzleProgress >= 50, // All difficulties done
-                    score: Math.max(
-                        difficultyScores.easy || 0,
-                        difficultyScores.medium || 0,
-                        difficultyScores.hard || 0,
-                        difficultyScores.mixed || 0
-                    ), // Highest score
-                    difficultyScores: difficultyScores, // ✅ Store individual scores
-                    progressPercentage: totalProgress,
+                    puzzleCompleted: topic.puzzleCompleted === true,
+                    score: parseInt(topic.puzzleScore || topic.score || 0),
+                    progressPercentage: calculatedProgress, // ✅ Use calculated value
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
                     lessonsCompleted: parseInt(topic.lessonsCompleted || 0)
@@ -1044,12 +1027,16 @@ app.put('/api/progress/:username', async (req, res) => {
 
         if (existingUser.lastActivity) {
             const lastActivity = new Date(existingUser.lastActivity);
+
             const toDateString = (d) => d.toISOString().split('T')[0];
+
             const todayStr = toDateString(now);
             const lastActiveStr = toDateString(lastActivity);
+
             const msPerDay = 1000 * 60 * 60 * 24;
             const todayDate = new Date(todayStr);
             const lastActiveDate = new Date(lastActiveStr);
+
             const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
 
             if (diffDays === 1) {
@@ -1167,59 +1154,16 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
 
-        // Fetch lesson counts for accurate progress calculation
-        const lessonCounts = {};
-        const allLessons = await lessonsCollection.find({}).toArray();
-        
-        allLessons.forEach(lesson => {
-            const normalizedTopic = lesson.topicName.trim();
-            if (!lessonCounts[normalizedTopic]) {
-                lessonCounts[normalizedTopic] = 0;
-            }
-            lessonCounts[normalizedTopic]++;
-        });
-
         const topics = [];
         if (user.progress) {
             Object.keys(user.progress).forEach(topicName => {
                 const topic = user.progress[topicName];
-                
-                const totalLessonsForTopic = lessonCounts[topicName] || 1;
-                
-                // ✅ Recalculate progress with difficulty tracking
-                let lessonProgress = 0;
-                let puzzleProgress = 0;
-                
-                // Lessons = 50%
-                if (topic.lessonsCompleted >= totalLessonsForTopic) {
-                    lessonProgress = 50;
-                } else if (topic.lessonsCompleted > 0) {
-                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 50;
-                }
-                
-                // Puzzles = 50% (12.5% per difficulty)
-                const difficultyScores = topic.difficultyScores || {
-                    easy: 0,
-                    medium: 0,
-                    hard: 0,
-                    mixed: 0
-                };
-                
-                if (difficultyScores.easy >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.medium >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.hard >= 70) puzzleProgress += 12.5;
-                if (difficultyScores.mixed >= 70) puzzleProgress += 12.5;
-                
-                const totalProgress = lessonProgress + puzzleProgress;
-                
                 topics.push({
                     topicName: topicName,
                     tutorialCompleted: topic.tutorialCompleted || false,
-                    puzzleCompleted: puzzleProgress >= 50,
+                    puzzleCompleted: topic.puzzleCompleted || false,
                     puzzleScore: topic.score || 0,
-                    score: topic.score || 0,
-                    difficultyScores: difficultyScores, // ✅ NEW: Return difficulty scores
-                    progressPercentage: totalProgress,
+                    progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
                     lessonsCompleted: topic.lessonsCompleted || 0
