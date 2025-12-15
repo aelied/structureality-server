@@ -948,6 +948,7 @@ app.put('/api/users/:username/change-password', async (req, res) => {
 });
 
 // ==================== PROGRESS SYNC ====================
+// ==================== PROGRESS SYNC ====================
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
@@ -966,7 +967,7 @@ app.put('/api/progress/:username', async (req, res) => {
         // Initialize with existing progress or empty object
         const mergedProgress = existingUser.progress || {};
 
-        // ✅ NEW: Fetch lesson counts from database to calculate accurate progress
+        // ✅ Fetch lesson counts from database
         const lessonCounts = {};
         const allLessons = await lessonsCollection.find({}).toArray();
         
@@ -983,7 +984,6 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // ✅ Calculate progress using actual lesson counts from database
                 const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
                 
                 let lessonProgress = 0;
@@ -995,7 +995,7 @@ app.put('/api/progress/:username', async (req, res) => {
                     lessonProgress = Math.min(50, lessonProgress);
                 }
                 
-                // ✅ NEW: 50% weight for puzzle difficulties (12.5% each)
+                // 50% weight for puzzle difficulties (12.5% each)
                 if (topic.difficultyScores) {
                     const difficulties = ['easy', 'medium', 'hard', 'mixed'];
                     difficulties.forEach(diff => {
@@ -1005,30 +1005,19 @@ app.put('/api/progress/:username', async (req, res) => {
                     });
                 }
                 
-                // ✅ Calculate final progress percentage
                 const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
                 
                 console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzles = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
                 
-                // ✅ Initialize difficultyScores if not present
-                const difficultyScores = topic.difficultyScores || {
-                    easy: 0,
-                    medium: 0,
-                    hard: 0,
-                    mixed: 0
-                };
-                
-                // Inside the progress sync endpoint, update the topic merge section:
-
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
-                    puzzleCompleted: puzzleProgress >= 50, // All difficulties done
+                    puzzleCompleted: puzzleProgress >= 50,
                     score: parseInt(topic.puzzleScore || topic.score || 0),
                     progressPercentage: calculatedProgress,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
                     lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
-                    difficultyScores: topic.difficultyScores || { // ✅ ADD THIS
+                    difficultyScores: topic.difficultyScores || {
                         easy: 0,
                         medium: 0,
                         hard: 0,
@@ -1037,57 +1026,8 @@ app.put('/api/progress/:username', async (req, res) => {
                 };
             });
         }
-        app.post('/api/admin/migrate-difficulty-scores', async (req, res) => {
-            try {
-                console.log('🔄 Starting difficultyScores migration...');
-                
-                const users = await usersCollection.find({}).toArray();
-                let updated = 0;
-                
-                for (const user of users) {
-                    if (user.progress) {
-                        const updates = {};
-                        
-                        Object.keys(user.progress).forEach(topicName => {
-                            // If difficultyScores doesn't exist, add it
-                            if (!user.progress[topicName].difficultyScores) {
-                                updates[`progress.${topicName}.difficultyScores`] = {
-                                    easy: 0,
-                                    medium: 0,
-                                    hard: 0,
-                                    mixed: 0
-                                };
-                            }
-                        });
-                        
-                        if (Object.keys(updates).length > 0) {
-                            await usersCollection.updateOne(
-                                { _id: user._id },
-                                { $set: updates }
-                            );
-                            updated++;
-                            console.log(`✅ Updated user: ${user.username}`);
-                        }
-                    }
-                }
-                
-                console.log(`✅ Migration complete: ${updated} users updated`);
-                
-                res.json({
-                    success: true,
-                    message: 'Migration completed',
-                    usersUpdated: updated
-                });
-            } catch (error) {
-                console.error('❌ Migration error:', error);
-                res.status(500).json({
-                    success: false,
-                    error: 'Migration failed',
-                    details: error.message
-                });
-            }
-        });
-        // Streak calculation (unchanged)
+
+        // Streak calculation
         let newStreak = existingUser.streak || 0;
         if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
 
@@ -1149,6 +1089,57 @@ app.put('/api/progress/:username', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to sync progress',
+            details: error.message
+        });
+    }
+});
+
+app.post('/api/admin/migrate-difficulty-scores', async (req, res) => {
+    try {
+        console.log('🔄 Starting difficultyScores migration...');
+        
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+        
+        for (const user of users) {
+            if (user.progress) {
+                const updates = {};
+                
+                Object.keys(user.progress).forEach(topicName => {
+                    // If difficultyScores doesn't exist, add it
+                    if (!user.progress[topicName].difficultyScores) {
+                        updates[`progress.${topicName}.difficultyScores`] = {
+                            easy: 0,
+                            medium: 0,
+                            hard: 0,
+                            mixed: 0
+                        };
+                    }
+                });
+                
+                if (Object.keys(updates).length > 0) {
+                    await usersCollection.updateOne(
+                        { _id: user._id },
+                        { $set: updates }
+                    );
+                    updated++;
+                    console.log(`✅ Updated user: ${user.username}`);
+                }
+            }
+        }
+        
+        console.log(`✅ Migration complete: ${updated} users updated`);
+        
+        res.json({
+            success: true,
+            message: 'Migration completed',
+            usersUpdated: updated
+        });
+    } catch (error) {
+        console.error('❌ Migration error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Migration failed',
             details: error.message
         });
     }
