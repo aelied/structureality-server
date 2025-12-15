@@ -692,15 +692,10 @@ app.post('/api/users', async (req, res) => {
             userData.registerDate = new Date().toISOString();
         }
 
-        // Initialize empty progress structure if missing
+        // ✅ CRITICAL FIX: New users should have EMPTY progress, not initialized topics
+        // This ensures only Arrays is unlocked, and all other topics are locked
         if (!userData.progress) {
-            userData.progress = {
-                Queue: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 },
-                Stacks: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 },
-                LinkedLists: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 },
-                Trees: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 },
-                Graphs: { tutorialCompleted: false, puzzleCompleted: false, score: 0, lessonsCompleted: 0, progressPercentage: 0, lastAccessed: '', timeSpent: 0 }
-            };
+            userData.progress = {}; // ✅ Empty object, not pre-filled topics
         }
 
         const existingUser = await usersCollection.findOne({
@@ -719,7 +714,7 @@ app.post('/api/users', async (req, res) => {
         }
 
         const result = await usersCollection.insertOne(userData);
-        console.log(`✅ New user registered: ${userData.username}`);
+        console.log(`✅ New user registered: ${userData.username} (with empty progress)`);
 
         res.status(201).json({
             success: true,
