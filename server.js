@@ -966,7 +966,7 @@ app.put('/api/progress/:username', async (req, res) => {
         // Initialize with existing progress or empty object
         const mergedProgress = existingUser.progress || {};
 
-        // ✅ FIX: Fetch lesson counts from database to calculate accurate progress
+        // ✅ NEW: Fetch lesson counts from database to calculate accurate progress
         const lessonCounts = {};
         const allLessons = await lessonsCollection.find({}).toArray();
         
@@ -983,42 +983,55 @@ app.put('/api/progress/:username', async (req, res) => {
         // Merge new topic data into existing progress
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
-                // ✅ FIX: Calculate progress using actual lesson counts from database
-                const totalLessonsForTopic = lessonCounts[topic.topicName] || 5; // Default to 5 if not found
+                // ✅ Calculate progress using actual lesson counts from database
+                const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
                 
                 let lessonProgress = 0;
                 let puzzleProgress = 0;
                 
-                // 70% weight for lessons
+                // 50% weight for lessons
                 if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
-                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 70;
-                    // Cap at 70% max from lessons
-                    lessonProgress = Math.min(70, lessonProgress);
+                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 50;
+                    lessonProgress = Math.min(50, lessonProgress);
                 }
                 
-                // 30% weight for puzzle
-                if (topic.puzzleCompleted) {
-                    puzzleProgress = 30;
+                // ✅ NEW: 50% weight for puzzle difficulties (12.5% each)
+                if (topic.difficultyScores) {
+                    const difficulties = ['easy', 'medium', 'hard', 'mixed'];
+                    difficulties.forEach(diff => {
+                        if (topic.difficultyScores[diff] >= 70) {
+                            puzzleProgress += 12.5;
+                        }
+                    });
                 }
                 
                 // ✅ Calculate final progress percentage
                 const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
                 
-                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzle = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
+                console.log(`📊 ${topic.topicName}: ${topic.lessonsCompleted}/${totalLessonsForTopic} lessons = ${lessonProgress.toFixed(1)}%, puzzles = ${puzzleProgress}%, total = ${calculatedProgress.toFixed(1)}%`);
+                
+                // ✅ Initialize difficultyScores if not present
+                const difficultyScores = topic.difficultyScores || {
+                    easy: 0,
+                    medium: 0,
+                    hard: 0,
+                    mixed: 0
+                };
                 
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
-                    puzzleCompleted: topic.puzzleCompleted === true,
+                    puzzleCompleted: puzzleProgress >= 50, // All difficulties done
                     score: parseInt(topic.puzzleScore || topic.score || 0),
-                    progressPercentage: calculatedProgress, // ✅ Use calculated value
+                    progressPercentage: calculatedProgress,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
-                    lessonsCompleted: parseInt(topic.lessonsCompleted || 0)
+                    lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
+                    difficultyScores: difficultyScores // ✅ NEW
                 };
             });
         }
 
-        // Streak calculation
+        // Streak calculation (unchanged)
         let newStreak = existingUser.streak || 0;
         if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
 
@@ -1026,16 +1039,12 @@ app.put('/api/progress/:username', async (req, res) => {
 
         if (existingUser.lastActivity) {
             const lastActivity = new Date(existingUser.lastActivity);
-
             const toDateString = (d) => d.toISOString().split('T')[0];
-
             const todayStr = toDateString(now);
             const lastActiveStr = toDateString(lastActivity);
-
             const msPerDay = 1000 * 60 * 60 * 24;
             const todayDate = new Date(todayStr);
             const lastActiveDate = new Date(lastActiveStr);
-
             const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
 
             if (diffDays === 1) {
@@ -1088,6 +1097,99 @@ app.put('/api/progress/:username', async (req, res) => {
         });
     }
 });
+
+app.post('/api/progress/:username/difficulty', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, difficulty, score } = req.body;
+
+        console.log(`🎯 Difficulty score update: ${username} - ${topicName} - ${difficulty} - ${score}%`);
+
+        if (!topicName || !difficulty || score === undefined) {
+            return res.status(400).json({
+                success: false,
+                error: 'topicName, difficulty, and score are required'
+            });
+        }
+
+        const user = await usersCollection.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Update the specific difficulty score
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.difficultyScores.${difficulty}`]: parseInt(score),
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+
+        // Recalculate progress percentage
+        const updatedUser = await usersCollection.findOne({ username });
+        const topicProgress = updatedUser.progress[topicName];
+        
+        // Get lesson count
+        const lessonCount = await lessonsCollection.countDocuments({ topicName: topicName });
+        
+        // Calculate lesson progress (50%)
+        let lessonProgress = 0;
+        if (lessonCount > 0) {
+            lessonProgress = (topicProgress.lessonsCompleted / lessonCount) * 50;
+            lessonProgress = Math.min(50, lessonProgress);
+        }
+        
+        // Calculate puzzle progress (50% - 12.5% per difficulty)
+        let puzzleProgress = 0;
+        const difficulties = ['easy', 'medium', 'hard', 'mixed'];
+        difficulties.forEach(diff => {
+            if (topicProgress.difficultyScores && topicProgress.difficultyScores[diff] >= 70) {
+                puzzleProgress += 12.5;
+            }
+        });
+        
+        const totalProgress = Math.min(100, lessonProgress + puzzleProgress);
+        const allDifficultiesDone = puzzleProgress >= 50;
+        
+        // Update progress percentage and puzzleCompleted flag
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.progressPercentage`]: totalProgress,
+                    [`progress.${topicName}.puzzleCompleted`]: allDifficultiesDone
+                }
+            }
+        );
+
+        console.log(`✅ Difficulty score updated: ${topicName} ${difficulty} = ${score}%, Total progress: ${totalProgress}%`);
+
+        res.json({
+            success: true,
+            message: 'Difficulty score updated',
+            topicName,
+            difficulty,
+            score: parseInt(score),
+            totalProgress: totalProgress,
+            puzzleCompleted: allDifficultiesDone
+        });
+    } catch (error) {
+        console.error('Error updating difficulty score:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update difficulty score',
+            details: error.message
+        });
+    }
+});
+
 
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
