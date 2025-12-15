@@ -1401,7 +1401,9 @@ app.get('/api/progress/:username', async (req, res) => {
         }
 
         const topics = [];
-        if (user.progress) {
+        
+        // ✅ FIX: If user has no progress, return EMPTY array (not null)
+        if (user.progress && typeof user.progress === 'object') {
             Object.keys(user.progress).forEach(topicName => {
                 const topic = user.progress[topicName];
                 topics.push({
@@ -1413,7 +1415,6 @@ app.get('/api/progress/:username', async (req, res) => {
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
                     lessonsCompleted: topic.lessonsCompleted || 0,
-                    // ✅ CRITICAL FIX: Include difficultyScores in response!
                     difficultyScores: topic.difficultyScores || {
                         easy: 0,
                         medium: 0,
@@ -1424,6 +1425,7 @@ app.get('/api/progress/:username', async (req, res) => {
             });
         }
 
+        // ✅ CRITICAL: Always return success with data (even if empty)
         res.json({
             success: true,
             data: {
@@ -1433,10 +1435,14 @@ app.get('/api/progress/:username', async (req, res) => {
                 streak: user.streak || 0,
                 completedTopics: user.completedTopics || 0,
                 lastUpdated: user.lastUpdated || '',
-                topics: topics
+                topics: topics // ✅ Will be empty array [] for new users
             }
         });
+        
+        console.log(`📤 Sent progress for ${user.username}: ${topics.length} topics`);
+        
     } catch (error) {
+        console.error('❌ Error fetching progress:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to fetch progress'
