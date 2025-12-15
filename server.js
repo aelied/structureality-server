@@ -1043,12 +1043,13 @@ app.put('/api/progress/:username', async (req, res) => {
                     lessonProgress = Math.min(50, lessonProgress);
                 }
                 
-                // ✅ 50% weight for puzzles - Count how many difficulties are completed (>= 70%)
+                // ✅ 50% weight for puzzles - Count how many difficulties are completed (> 0%)
+                // ANY score above 0 means the difficulty was attempted and completed
                 const difficulties = ['easy', 'medium', 'hard', 'mixed'];
                 let completedDifficulties = 0;
                 
                 difficulties.forEach(diff => {
-                    if (finalDifficultyScores[diff] >= 70) {
+                    if (finalDifficultyScores[diff] > 0) {
                         completedDifficulties++;
                         puzzleProgress += 12.5; // Each difficulty = 12.5%
                     }
@@ -1276,13 +1277,13 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             lessonProgress = Math.min(50, lessonProgress);
         }
         
-        // ✅ Calculate puzzle progress - Count completed difficulties (>= 70%)
+        // ✅ Calculate puzzle progress - Count completed difficulties (> 0%)
         let puzzleProgress = 0;
         let completedDifficulties = 0;
         const difficulties = ['easy', 'medium', 'hard', 'mixed'];
         
         difficulties.forEach(diff => {
-            if (topicProgress.difficultyScores && topicProgress.difficultyScores[diff] >= 70) {
+            if (topicProgress.difficultyScores && topicProgress.difficultyScores[diff] > 0) {
                 puzzleProgress += 12.5;
                 completedDifficulties++;
             }
