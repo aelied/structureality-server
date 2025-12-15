@@ -943,6 +943,7 @@ app.put('/api/users/:username/change-password', async (req, res) => {
 });
 
 // ==================== PROGRESS SYNC ====================
+// ==================== FIXED PROGRESS SYNC ====================
 app.put('/api/progress/:username', async (req, res) => {
     try {
         const { username } = req.params;
@@ -958,7 +959,7 @@ app.put('/api/progress/:username', async (req, res) => {
             });
         }
 
-        // Initialize with existing progress or empty object
+        // ✅ FIX: Start with EXISTING progress to preserve data
         const mergedProgress = existingUser.progress || {};
 
         // ✅ Fetch lesson counts from database
@@ -975,7 +976,7 @@ app.put('/api/progress/:username', async (req, res) => {
 
         console.log('📚 Lesson counts per topic:', lessonCounts);
 
-        // ✅ CALCULATE STREAK FIRST (before using it)
+        // ✅ CALCULATE STREAK
         let newStreak = existingUser.streak || 0;
         if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
 
@@ -1007,13 +1008,30 @@ app.put('/api/progress/:username', async (req, res) => {
             newStreak = 1;
         }
 
-        // ✅ NOW process topics (after streak is calculated)
+        // ✅ FIX: Process topics while PRESERVING existing data
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
                 const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
                 
-                // ✅ CRITICAL FIX: Get existing difficulty scores or initialize
+                // ✅ CRITICAL FIX: Get EXISTING topic data
                 const existingTopic = mergedProgress[topic.topicName] || {};
+                
+                // ✅ FIX: Use EXISTING lesson count if incoming is 0 or missing
+                // This prevents puzzle submissions from erasing lesson progress
+                let finalLessonsCompleted;
+                if (topic.lessonsCompleted === undefined || topic.lessonsCompleted === 0) {
+                    // If incoming data has no lesson info, keep existing
+                    finalLessonsCompleted = existingTopic.lessonsCompleted || 0;
+                    console.log(`   ⚠️ No lesson data in request - preserving: ${finalLessonsCompleted}`);
+                } else {
+                    // If incoming data has lesson info, use it (but don't go backwards)
+                    finalLessonsCompleted = Math.max(
+                        topic.lessonsCompleted,
+                        existingTopic.lessonsCompleted || 0
+                    );
+                }
+                
+                // ✅ Merge difficulty scores (keep highest)
                 const existingDifficultyScores = existingTopic.difficultyScores || {
                     easy: 0,
                     medium: 0,
@@ -1021,7 +1039,6 @@ app.put('/api/progress/:username', async (req, res) => {
                     mixed: 0
                 };
                 
-                // ✅ Merge incoming difficulty scores with existing ones (keep highest)
                 const finalDifficultyScores = {
                     easy: Math.max(existingDifficultyScores.easy, topic.difficultyScores?.easy || 0),
                     medium: Math.max(existingDifficultyScores.medium, topic.difficultyScores?.medium || 0),
@@ -1029,42 +1046,43 @@ app.put('/api/progress/:username', async (req, res) => {
                     mixed: Math.max(existingDifficultyScores.mixed, topic.difficultyScores?.mixed || 0)
                 };
                 
+                // ✅ NOW calculate progress with correct lesson count
                 let lessonProgress = 0;
                 let puzzleProgress = 0;
                 
-                // 50% weight for lessons
-                if (topic.lessonsCompleted > 0 && totalLessonsForTopic > 0) {
-                    lessonProgress = (topic.lessonsCompleted / totalLessonsForTopic) * 50;
+                // 50% weight for lessons (using PRESERVED count)
+                if (finalLessonsCompleted > 0 && totalLessonsForTopic > 0) {
+                    lessonProgress = (finalLessonsCompleted / totalLessonsForTopic) * 50;
                     lessonProgress = Math.min(50, lessonProgress);
                 }
                 
-                // ✅ 50% weight for puzzles - Count how many difficulties are completed (> 0%)
-                // ANY score above 0 means the difficulty was attempted and completed
+                // 50% weight for puzzles
                 const difficulties = ['easy', 'medium', 'hard', 'mixed'];
                 let completedDifficulties = 0;
                 
                 difficulties.forEach(diff => {
                     if (finalDifficultyScores[diff] > 0) {
                         completedDifficulties++;
-                        puzzleProgress += 12.5; // Each difficulty = 12.5%
+                        puzzleProgress += 12.5;
                     }
                 });
                 
                 const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
                 
                 console.log(`📊 ${topic.topicName}:`);
-                console.log(`   Lessons: ${topic.lessonsCompleted}/${totalLessonsForTopic} = ${lessonProgress.toFixed(1)}%`);
+                console.log(`   Lessons: ${finalLessonsCompleted}/${totalLessonsForTopic} = ${lessonProgress.toFixed(1)}%`);
                 console.log(`   Puzzle Scores: Easy=${finalDifficultyScores.easy}%, Med=${finalDifficultyScores.medium}%, Hard=${finalDifficultyScores.hard}%, Mix=${finalDifficultyScores.mixed}%`);
                 console.log(`   Completed Difficulties: ${completedDifficulties}/4`);
                 console.log(`   Puzzle Progress: ${puzzleProgress}%`);
                 console.log(`   Total: ${calculatedProgress.toFixed(1)}%`);
                 
-                // ✅ Use the preserved/merged difficulty scores
+                // ✅ Save with PRESERVED lesson count
                 mergedProgress[topic.topicName] = {
-                    tutorialCompleted: topic.tutorialCompleted === true,
-                    puzzleCompleted: completedDifficulties >= 4, // All 4 difficulties done
+                    tutorialCompleted: topic.tutorialCompleted === true || existingTopic.tutorialCompleted === true,
+                    puzzleCompleted: completedDifficulties >= 4,
                     score: Math.max(
                         parseInt(topic.puzzleScore || topic.score || 0),
+                        existingTopic.score || 0,
                         finalDifficultyScores.easy,
                         finalDifficultyScores.medium,
                         finalDifficultyScores.hard,
@@ -1072,9 +1090,12 @@ app.put('/api/progress/:username', async (req, res) => {
                     ),
                     progressPercentage: calculatedProgress,
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
-                    timeSpent: parseFloat(topic.timeSpent || 0),
-                    lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
-                    difficultyScores: finalDifficultyScores // ✅ USE MERGED SCORES!
+                    timeSpent: Math.max(
+                        parseFloat(topic.timeSpent || 0),
+                        parseFloat(existingTopic.timeSpent || 0)
+                    ),
+                    lessonsCompleted: finalLessonsCompleted, // ✅ PRESERVED VALUE!
+                    difficultyScores: finalDifficultyScores
                 };
             });
         }
