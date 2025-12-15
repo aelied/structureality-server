@@ -1361,7 +1361,14 @@ app.get('/api/progress/:username', async (req, res) => {
                     progressPercentage: topic.progressPercentage || 0,
                     lastAccessed: topic.lastAccessed || '',
                     timeSpent: topic.timeSpent || 0,
-                    lessonsCompleted: topic.lessonsCompleted || 0
+                    lessonsCompleted: topic.lessonsCompleted || 0,
+                    // ✅ CRITICAL FIX: Include difficultyScores in response!
+                    difficultyScores: topic.difficultyScores || {
+                        easy: 0,
+                        medium: 0,
+                        hard: 0,
+                        mixed: 0
+                    }
                 });
             });
         }
