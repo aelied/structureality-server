@@ -1018,6 +1018,8 @@ app.put('/api/progress/:username', async (req, res) => {
                     mixed: 0
                 };
                 
+                // Inside the progress sync endpoint, update the topic merge section:
+
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: topic.tutorialCompleted === true,
                     puzzleCompleted: puzzleProgress >= 50, // All difficulties done
@@ -1026,11 +1028,65 @@ app.put('/api/progress/:username', async (req, res) => {
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: parseFloat(topic.timeSpent || 0),
                     lessonsCompleted: parseInt(topic.lessonsCompleted || 0),
-                    difficultyScores: difficultyScores // ✅ NEW
+                    difficultyScores: topic.difficultyScores || { // ✅ ADD THIS
+                        easy: 0,
+                        medium: 0,
+                        hard: 0,
+                        mixed: 0
+                    }
                 };
             });
         }
-
+        app.post('/api/admin/migrate-difficulty-scores', async (req, res) => {
+            try {
+                console.log('🔄 Starting difficultyScores migration...');
+                
+                const users = await usersCollection.find({}).toArray();
+                let updated = 0;
+                
+                for (const user of users) {
+                    if (user.progress) {
+                        const updates = {};
+                        
+                        Object.keys(user.progress).forEach(topicName => {
+                            // If difficultyScores doesn't exist, add it
+                            if (!user.progress[topicName].difficultyScores) {
+                                updates[`progress.${topicName}.difficultyScores`] = {
+                                    easy: 0,
+                                    medium: 0,
+                                    hard: 0,
+                                    mixed: 0
+                                };
+                            }
+                        });
+                        
+                        if (Object.keys(updates).length > 0) {
+                            await usersCollection.updateOne(
+                                { _id: user._id },
+                                { $set: updates }
+                            );
+                            updated++;
+                            console.log(`✅ Updated user: ${user.username}`);
+                        }
+                    }
+                }
+                
+                console.log(`✅ Migration complete: ${updated} users updated`);
+                
+                res.json({
+                    success: true,
+                    message: 'Migration completed',
+                    usersUpdated: updated
+                });
+            } catch (error) {
+                console.error('❌ Migration error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Migration failed',
+                    details: error.message
+                });
+            }
+        });
         // Streak calculation (unchanged)
         let newStreak = existingUser.streak || 0;
         if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
@@ -1121,6 +1177,23 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             });
         }
 
+        // ✅ Initialize difficultyScores if it doesn't exist
+        if (!user.progress || !user.progress[topicName] || !user.progress[topicName].difficultyScores) {
+            await usersCollection.updateOne(
+                { username },
+                {
+                    $set: {
+                        [`progress.${topicName}.difficultyScores`]: {
+                            easy: 0,
+                            medium: 0,
+                            hard: 0,
+                            mixed: 0
+                        }
+                    }
+                }
+            );
+        }
+
         // Update the specific difficulty score
         await usersCollection.updateOne(
             { username },
@@ -1164,7 +1237,8 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             {
                 $set: {
                     [`progress.${topicName}.progressPercentage`]: totalProgress,
-                    [`progress.${topicName}.puzzleCompleted`]: allDifficultiesDone
+                    [`progress.${topicName}.puzzleCompleted`]: allDifficultiesDone,
+                    [`progress.${topicName}.score`]: Math.max(topicProgress.score || 0, parseInt(score))
                 }
             }
         );
