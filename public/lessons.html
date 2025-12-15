@@ -255,6 +255,12 @@
             </div>
         </div>
 
+        <!-- Debug Info (Remove after fixing) -->
+        <div id="debugInfo" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" style="display:none;">
+            <h4 class="font-semibold text-yellow-800 mb-2">🐛 Debug Info:</h4>
+            <pre id="debugContent" class="text-xs text-yellow-700"></pre>
+        </div>
+
         <!-- Search and Filters -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div class="flex items-center justify-between">
@@ -339,15 +345,15 @@
                         rows="3"></textarea>
                 </div>
 
-                <div class="mb-4">
+               <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
                     
-                    <!-- Info Box Buttons -->
+                    <!-- Add Info Box Buttons -->
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                        <p class="text-sm font-medium text-gray-700 mb-3">Add Content Blocks:</p>
+                        <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
                         <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
                             <button type="button" onclick="addContentBlock('TEXT')"
-                                class="insert-box-btn bg-gray-200 text-gray-700 border-gray-400">
+                                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
                                 📝 Text
                             </button>
                             <button type="button" onclick="addContentBlock('INFO')"
@@ -371,13 +377,29 @@
                                 ⭐ Important
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">💡 Click to add content blocks. Use arrows to reorder!</p>
+                        <p class="text-xs text-gray-500 mt-2">💡 Click to add a new content section. Drag to reorder.</p>
                     </div>
 
                     <!-- Content Blocks Container -->
-                    <div id="contentBlocks" class="space-y-3 mb-4 min-h-[100px] p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg">
-                        <p class="text-gray-400 text-center py-8">No content blocks yet. Click buttons above to add content!</p>
+                    <div id="contentBlocksContainer" class="space-y-3 mb-4">
+                        <!-- Blocks will be added here -->
                     </div>
+                </div>
+
+                    <textarea id="lessonContent" placeholder="Write your lesson content here..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
+                        rows="12"></textarea>
+                    
+                    <button type="button" onclick="togglePreview()" 
+                        class="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-eye mr-2"></i>Preview Content
+                    </button>
+                </div>
+
+                <!-- Preview Area -->
+                <div id="contentPreview" style="display: none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Preview:</h3>
+                    <div id="previewContent"></div>
                 </div>
 
                 <div class="mb-6">
@@ -444,38 +466,44 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
                     
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                        <p class="text-sm font-medium text-gray-700 mb-3">Add Content Blocks:</p>
-                        <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
-                            <button type="button" onclick="addContentBlock('TEXT', true)"
-                                class="insert-box-btn bg-gray-200 text-gray-700 border-gray-400">
-                                📝 Text
-                            </button>
-                            <button type="button" onclick="addContentBlock('INFO', true)"
+                        <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Info Boxes:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                            <button type="button" onclick="insertInfoBox('INFO', true)"
                                 class="insert-box-btn info-box-info">
                                 ℹ️ Info
                             </button>
-                            <button type="button" onclick="addContentBlock('TIP', true)"
+                            <button type="button" onclick="insertInfoBox('TIP', true)"
                                 class="insert-box-btn info-box-tip">
                                 💡 Tip
                             </button>
-                            <button type="button" onclick="addContentBlock('WARNING', true)"
+                            <button type="button" onclick="insertInfoBox('WARNING', true)"
                                 class="insert-box-btn info-box-warning">
                                 ⚠️ Warning
                             </button>
-                            <button type="button" onclick="addContentBlock('NOTE', true)"
+                            <button type="button" onclick="insertInfoBox('NOTE', true)"
                                 class="insert-box-btn info-box-note">
                                 📝 Note
                             </button>
-                            <button type="button" onclick="addContentBlock('IMPORTANT', true)"
+                            <button type="button" onclick="insertInfoBox('IMPORTANT', true)"
                                 class="insert-box-btn info-box-important">
                                 ⭐ Important
                             </button>
                         </div>
                     </div>
 
-                    <div id="editContentBlocks" class="space-y-3 mb-4 min-h-[100px] p-4 bg-white border-2 border-dashed border-gray-300 rounded-lg">
-                        <p class="text-gray-400 text-center py-8">No content blocks yet. Click buttons above to add content!</p>
-                    </div>
+                    <textarea id="editLessonContent"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
+                        rows="12"></textarea>
+                    
+                    <button type="button" onclick="togglePreview(true)" 
+                        class="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                        <i class="fas fa-eye mr-2"></i>Preview Content
+                    </button>
+                </div>
+
+                <div id="editContentPreview" style="display: none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
+                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Preview:</h3>
+                    <div id="editPreviewContent"></div>
                 </div>
 
                 <div class="mb-6">
@@ -504,9 +532,6 @@
             : 'https://structureality-admin.onrender.com/api';
 
         let allLessons = [];
-        let contentBlocks = []; // For add modal
-        let editContentBlocks = []; // For edit modal
-        let blockIdCounter = 0;
 
         function logout() {
             localStorage.removeItem('adminUser');
@@ -532,150 +557,72 @@
             }
         }
 
-        // Add a content block
-        function addContentBlock(type, isEdit = false) {
-            const blockId = `block_${blockIdCounter++}`;
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
+        // Insert info box at cursor position
+        function insertInfoBox(type, isEdit = false) {
+            const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
+            const textarea = document.getElementById(textareaId);
+            const cursorPos = textarea.selectionStart;
+            const textBefore = textarea.value.substring(0, cursorPos);
+            const textAfter = textarea.value.substring(cursorPos);
             
-            const block = {
-                id: blockId,
-                type: type,
-                content: ''
-            };
+            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
             
-            blocks.push(block);
-            renderContentBlocks(isEdit);
+            textarea.value = textBefore + template + textAfter;
+            textarea.focus();
             
-            // Focus on the new textarea
-            setTimeout(() => {
-                const textarea = document.getElementById(`${blockId}_textarea`);
-                if (textarea) textarea.focus();
-            }, 100);
+            const newPos = cursorPos + template.length;
+            textarea.setSelectionRange(newPos, newPos);
         }
 
-        // Remove a content block
-        function removeContentBlock(blockId, isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            const index = blocks.findIndex(b => b.id === blockId);
-            if (index > -1) {
-                blocks.splice(index, 1);
-                renderContentBlocks(isEdit);
+        // Toggle preview
+        function togglePreview(isEdit = false) {
+            const previewDivId = isEdit ? 'editContentPreview' : 'contentPreview';
+            const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
+            
+            const previewDiv = document.getElementById(previewDivId);
+            const content = document.getElementById(contentId).value;
+            
+            if (previewDiv.style.display === 'none') {
+                previewDiv.style.display = 'block';
+                renderPreview(content, isEdit);
+            } else {
+                previewDiv.style.display = 'none';
             }
         }
 
-        // Move block up
-        function moveBlockUp(blockId, isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            const index = blocks.findIndex(b => b.id === blockId);
-            if (index > 0) {
-                [blocks[index], blocks[index - 1]] = [blocks[index - 1], blocks[index]];
-                renderContentBlocks(isEdit);
-            }
-        }
-
-        // Move block down
-        function moveBlockDown(blockId, isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            const index = blocks.findIndex(b => b.id === blockId);
-            if (index < blocks.length - 1) {
-                [blocks[index], blocks[index + 1]] = [blocks[index + 1], blocks[index]];
-                renderContentBlocks(isEdit);
-            }
-        }
-
-        // Update block content
-        function updateBlockContent(blockId, content, isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            const block = blocks.find(b => b.id === blockId);
-            if (block) {
-                block.content = content;
-            }
-        }
-
-        // Render content blocks
-        function renderContentBlocks(isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            const containerId = isEdit ? 'editContentBlocks' : 'contentBlocks';
-            const container = document.getElementById(containerId);
+        // Render content preview
+        function renderPreview(content, isEdit = false) {
+            const previewContentId = isEdit ? 'editPreviewContent' : 'previewContent';
+            const previewContent = document.getElementById(previewContentId);
+            previewContent.innerHTML = '';
             
-            if (blocks.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center py-8">No content blocks yet. Click buttons above to add content!</p>';
-                return;
-            }
+            const paragraphs = content.split('\n\n').filter(p => p.trim());
             
-            const typeStyles = {
-                TEXT: { class: 'bg-white border-gray-300', label: '📝 Text Block', icon: '📝' },
-                INFO: { class: 'info-box-info', label: 'ℹ️ Info Box', icon: 'ℹ️' },
-                TIP: { class: 'info-box-tip', label: '💡 Tip Box', icon: '💡' },
-                WARNING: { class: 'info-box-warning', label: '⚠️ Warning Box', icon: '⚠️' },
-                NOTE: { class: 'info-box-note', label: '📝 Note Box', icon: '📝' },
-                IMPORTANT: { class: 'info-box-important', label: '⭐ Important Box', icon: '⭐' }
-            };
-            
-            let html = '';
-            blocks.forEach((block, index) => {
-                const style = typeStyles[block.type] || typeStyles.TEXT;
-                html += `
-                    <div class="border-2 border-gray-200 rounded-lg p-4 ${style.class}" data-block-id="${block.id}">
-                        <div class="flex items-center justify-between mb-2">
-                            <span class="font-semibold text-sm">${style.label}</span>
-                            <div class="flex items-center space-x-2">
-                                <button type="button" onclick="moveBlockUp('${block.id}', ${isEdit})" 
-                                    class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled opacity-50' : ''}>
-                                    <i class="fas fa-arrow-up text-xs"></i>
-                                </button>
-                                <button type="button" onclick="moveBlockDown('${block.id}', ${isEdit})" 
-                                    class="p-1 hover:bg-gray-200 rounded" ${index === blocks.length - 1 ? 'disabled opacity-50' : ''}>
-                                    <i class="fas fa-arrow-down text-xs"></i>
-                                </button>
-                                <button type="button" onclick="removeContentBlock('${block.id}', ${isEdit})" 
-                                    class="p-1 hover:bg-red-100 text-red-600 rounded">
-                                    <i class="fas fa-trash text-xs"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <textarea 
-                            id="${block.id}_textarea"
-                            placeholder="Enter your content here..."
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
-                            rows="4"
-                            oninput="updateBlockContent('${block.id}', this.value, ${isEdit})"
-                        >${block.content}</textarea>
-                    </div>
-                `;
+            paragraphs.forEach(para => {
+                const div = document.createElement('div');
+                
+                if (para.startsWith('[INFO]')) {
+                    div.className = 'info-box-preview info-box-info';
+                    div.innerHTML = '<strong>ℹ️ Info</strong><br><br>' + para.substring(6).trim();
+                } else if (para.startsWith('[TIP]')) {
+                    div.className = 'info-box-preview info-box-tip';
+                    div.innerHTML = '<strong>💡 Tip</strong><br><br>' + para.substring(5).trim();
+                } else if (para.startsWith('[WARNING]')) {
+                    div.className = 'info-box-preview info-box-warning';
+                    div.innerHTML = '<strong>⚠️ Warning</strong><br><br>' + para.substring(9).trim();
+                } else if (para.startsWith('[NOTE]')) {
+                    div.className = 'info-box-preview info-box-note';
+                    div.innerHTML = '<strong>📝 Note</strong><br><br>' + para.substring(6).trim();
+                } else if (para.startsWith('[IMPORTANT]')) {
+                    div.className = 'info-box-preview info-box-important';
+                    div.innerHTML = '<strong>⭐ Important</strong><br><br>' + para.substring(11).trim();
+                } else {
+                    div.className = 'p-4 bg-white rounded-lg mb-3 border border-gray-200';
+                    div.textContent = para;
+                }
+                
+                previewContent.appendChild(div);
             });
-            
-            container.innerHTML = html;
-        }
-
-        // Serialize blocks to JSON string for storage
-        function serializeBlocks(isEdit = false) {
-            const blocks = isEdit ? editContentBlocks : contentBlocks;
-            return JSON.stringify(blocks.map(b => ({ type: b.type, content: b.content })));
-        }
-
-        // Parse stored content back to blocks
-        function parseContentToBlocks(content) {
-            try {
-                const parsed = JSON.parse(content);
-                if (Array.isArray(parsed)) {
-                    return parsed.map(b => ({
-                        id: `block_${blockIdCounter++}`,
-                        type: b.type || 'TEXT',
-                        content: b.content || ''
-                    }));
-                }
-            } catch (e) {
-                // Legacy format or plain text - convert to single text block
-                if (content && content.trim()) {
-                    return [{
-                        id: `block_${blockIdCounter++}`,
-                        type: 'TEXT',
-                        content: content
-                    }];
-                }
-            }
-            return [];
         }
 
         async function loadLessons() {
@@ -683,10 +630,36 @@
                 const response = await fetch(`${API_URL}/lessons`);
                 const data = await response.json();
 
+                console.log('📚 API Response:', data);
+
                 if (data.success) {
                     allLessons = data.lessons || [];
+                    
+                    // Debug: Show topic distribution
+                    const topicCounts = {};
+                    allLessons.forEach(lesson => {
+                        const topic = lesson.topicName;
+                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+                    });
+                    
+                    console.log('📊 Topic Distribution:', topicCounts);
+                    
+                    // Show debug info temporarily
+                    const debugDiv = document.getElementById('debugInfo');
+                    const debugContent = document.getElementById('debugContent');
+                    debugContent.textContent = `Total Lessons: ${allLessons.length}\n` + 
+                        JSON.stringify(topicCounts, null, 2);
+                    debugDiv.style.display = 'block';
+                    
+                    // Hide debug after 5 seconds
+                    setTimeout(() => {
+                        debugDiv.style.display = 'none';
+                    }, 5000);
+                    
                     updateStats();
                     displayLessons(allLessons);
+                } else {
+                    console.error('❌ API Error:', data);
                 }
             } catch (error) {
                 console.error('❌ Fetch Error:', error);
@@ -696,6 +669,9 @@
         }
 
         function updateStats() {
+            console.log('📊 Updating stats for', allLessons.length, 'lessons');
+            
+            // Count exact topic names from database (handles both singular and plural)
             const counts = {
                 total: allLessons.length,
                 Arrays: 0,
@@ -707,6 +683,9 @@
             
             allLessons.forEach(lesson => {
                 const topic = lesson.topicName;
+                console.log('  Topic:', topic);
+                
+                // Handle both singular and plural forms
                 if (topic === 'Arrays') counts.Arrays++;
                 else if (topic === 'Queue' || topic === 'Queues') counts.Queue++;
                 else if (topic === 'Stacks') counts.Stacks++;
@@ -714,6 +693,8 @@
                 else if (topic === 'Trees' || topic === 'Graphs') counts.others++;
                 else counts.others++;
             });
+            
+            console.log('📊 Final counts:', counts);
             
             document.getElementById('totalLessons').textContent = counts.total;
             document.getElementById('arraysCount').textContent = counts.Arrays;
@@ -750,11 +731,11 @@
                     : 'No content added yet';
 
                 const hasSpecialBoxes = lesson.content && 
-                    (lesson.content.includes('"type":"INFO"') || 
-                     lesson.content.includes('"type":"TIP"') || 
-                     lesson.content.includes('"type":"WARNING"') ||
-                     lesson.content.includes('"type":"NOTE"') ||
-                     lesson.content.includes('"type":"IMPORTANT"'));
+                    (lesson.content.includes('[INFO]') || 
+                     lesson.content.includes('[TIP]') || 
+                     lesson.content.includes('[WARNING]') ||
+                     lesson.content.includes('[NOTE]') ||
+                     lesson.content.includes('[IMPORTANT]'));
 
                 html += `
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 lesson-card overflow-hidden">
@@ -811,17 +792,13 @@
         }
 
         function openAddLessonModal() {
-            contentBlocks = [];
-            blockIdCounter = 0;
-            renderContentBlocks(false);
             document.getElementById('addLessonModal').classList.add('active');
         }
 
         function closeAddLessonModal() {
             document.getElementById('addLessonModal').classList.remove('active');
             document.getElementById('addLessonForm').reset();
-            contentBlocks = [];
-            renderContentBlocks(false);
+            document.getElementById('contentPreview').style.display = 'none';
         }
 
         async function addLesson(event) {
@@ -831,7 +808,7 @@
                 topicName: document.getElementById('lessonTopic').value,
                 title: document.getElementById('lessonTitle').value,
                 description: document.getElementById('lessonDescription').value,
-                content: serializeBlocks(false),
+                content: document.getElementById('lessonContent').value,
                 order: parseInt(document.getElementById('lessonOrder').value)
             };
 
@@ -860,23 +837,22 @@
             const lesson = allLessons.find(l => l._id === lessonId);
             if (!lesson) return;
 
+            // Populate edit form
             document.getElementById('editLessonId').value = lesson._id;
             document.getElementById('editLessonTopic').value = lesson.topicName;
             document.getElementById('editLessonTitle').value = lesson.title;
             document.getElementById('editLessonDescription').value = lesson.description;
+            document.getElementById('editLessonContent').value = lesson.content || '';
             document.getElementById('editLessonOrder').value = lesson.order;
 
-            editContentBlocks = parseContentToBlocks(lesson.content || '');
-            renderContentBlocks(true);
-
+            // Open modal
             document.getElementById('editLessonModal').classList.add('active');
         }
 
         function closeEditLessonModal() {
             document.getElementById('editLessonModal').classList.remove('active');
             document.getElementById('editLessonForm').reset();
-            editContentBlocks = [];
-            renderContentBlocks(true);
+            document.getElementById('editContentPreview').style.display = 'none';
         }
 
         async function updateLesson(event) {
@@ -887,7 +863,7 @@
                 topicName: document.getElementById('editLessonTopic').value,
                 title: document.getElementById('editLessonTitle').value,
                 description: document.getElementById('editLessonDescription').value,
-                content: serializeBlocks(true),
+                content: document.getElementById('editLessonContent').value,
                 order: parseInt(document.getElementById('editLessonOrder').value)
             };
 
@@ -914,21 +890,17 @@
 
         function viewLesson(lessonId) {
             const lesson = allLessons.find(l => l._id === lessonId);
-            if (!lesson) return;
-            
-            const blocks = parseContentToBlocks(lesson.content || '');
-            let contentDisplay = '';
-            
-            blocks.forEach(block => {
-                const emoji = {
-                    INFO: 'ℹ️', TIP: '💡', WARNING: '⚠️', 
-                    NOTE: '📝', IMPORTANT: '⭐', TEXT: '📝'
-                }[block.type] || '📝';
+            if (lesson) {
+                const hasSpecialBoxes = lesson.content && 
+                    (lesson.content.includes('[INFO]') || 
+                     lesson.content.includes('[TIP]') || 
+                     lesson.content.includes('[WARNING]') ||
+                     lesson.content.includes('[NOTE]') ||
+                     lesson.content.includes('[IMPORTANT]'));
                 
-                contentDisplay += `\n${emoji} ${block.type}: ${block.content}\n`;
-            });
-            
-            alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\n\nDescription: ${lesson.description}\n\nContent Blocks:${contentDisplay || '\nNo content blocks'}`);
+                const specialNote = hasSpecialBoxes ? '\n\n✨ This lesson contains special info boxes!' : '';
+                alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\n\nDescription: ${lesson.description}\n\nContent: ${lesson.content || 'No content'}${specialNote}`);
+            }
         }
 
         async function deleteLesson(lessonId) {
