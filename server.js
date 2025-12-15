@@ -1168,8 +1168,33 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             });
         }
 
-        // ✅ Initialize difficultyScores if it doesn't exist
-        if (!user.progress || !user.progress[topicName] || !user.progress[topicName].difficultyScores) {
+        // ✅ CRITICAL FIX: Initialize progress and difficultyScores if missing
+        if (!user.progress || !user.progress[topicName]) {
+            console.log(`⚠️ Topic ${topicName} not found in progress, initializing...`);
+            await usersCollection.updateOne(
+                { username },
+                {
+                    $set: {
+                        [`progress.${topicName}`]: {
+                            tutorialCompleted: false,
+                            puzzleCompleted: false,
+                            score: 0,
+                            progressPercentage: 0,
+                            lastAccessed: new Date().toISOString(),
+                            timeSpent: 0,
+                            lessonsCompleted: 0,
+                            difficultyScores: {
+                                easy: 0,
+                                medium: 0,
+                                hard: 0,
+                                mixed: 0
+                            }
+                        }
+                    }
+                }
+            );
+        } else if (!user.progress[topicName].difficultyScores) {
+            console.log(`⚠️ difficultyScores missing for ${topicName}, adding...`);
             await usersCollection.updateOne(
                 { username },
                 {
@@ -1185,8 +1210,8 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             );
         }
 
-        // Update the specific difficulty score
-        await usersCollection.updateOne(
+        // ✅ NOW update the specific difficulty score
+        const updateResult = await usersCollection.updateOne(
             { username },
             {
                 $set: {
@@ -1196,7 +1221,9 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             }
         );
 
-        // Recalculate progress percentage
+        console.log(`📝 Update result: matched=${updateResult.matchedCount}, modified=${updateResult.modifiedCount}`);
+
+        // ✅ Fetch updated user to recalculate progress
         const updatedUser = await usersCollection.findOne({ username });
         const topicProgress = updatedUser.progress[topicName];
         
@@ -1205,7 +1232,7 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
         
         // Calculate lesson progress (50%)
         let lessonProgress = 0;
-        if (lessonCount > 0) {
+        if (lessonCount > 0 && topicProgress.lessonsCompleted > 0) {
             lessonProgress = (topicProgress.lessonsCompleted / lessonCount) * 50;
             lessonProgress = Math.min(50, lessonProgress);
         }
@@ -1222,7 +1249,7 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
         const totalProgress = Math.min(100, lessonProgress + puzzleProgress);
         const allDifficultiesDone = puzzleProgress >= 50;
         
-        // Update progress percentage and puzzleCompleted flag
+        // ✅ Update progress percentage and puzzleCompleted flag
         await usersCollection.updateOne(
             { username },
             {
@@ -1234,7 +1261,8 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             }
         );
 
-        console.log(`✅ Difficulty score updated: ${topicName} ${difficulty} = ${score}%, Total progress: ${totalProgress}%`);
+        console.log(`✅ Difficulty score updated: ${topicName} ${difficulty} = ${score}%`);
+        console.log(`📊 Lesson progress: ${lessonProgress}%, Puzzle progress: ${puzzleProgress}%, Total: ${totalProgress}%`);
 
         res.json({
             success: true,
@@ -1246,7 +1274,7 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             puzzleCompleted: allDifficultiesDone
         });
     } catch (error) {
-        console.error('Error updating difficulty score:', error);
+        console.error('❌ Error updating difficulty score:', error);
         res.status(500).json({
             success: false,
             error: 'Failed to update difficulty score',
