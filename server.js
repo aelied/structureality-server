@@ -980,7 +980,39 @@ app.put('/api/progress/:username', async (req, res) => {
 
         console.log('📚 Lesson counts per topic:', lessonCounts);
 
-        // Merge new topic data into existing progress
+        // ✅ CALCULATE STREAK FIRST (before using it)
+        let newStreak = existingUser.streak || 0;
+        if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
+
+        const now = new Date();
+
+        if (existingUser.lastActivity) {
+            const lastActivity = new Date(existingUser.lastActivity);
+            const toDateString = (d) => d.toISOString().split('T')[0];
+            const todayStr = toDateString(now);
+            const lastActiveStr = toDateString(lastActivity);
+            const msPerDay = 1000 * 60 * 60 * 24;
+            const todayDate = new Date(todayStr);
+            const lastActiveDate = new Date(lastActiveStr);
+            const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
+
+            if (diffDays === 1) {
+                newStreak = (existingUser.streak || 0) + 1;
+                console.log(`🔥 Streak incremented to ${newStreak}`);
+            } else if (diffDays === 0) {
+                newStreak = existingUser.streak || 1;
+                console.log(`✓ Streak maintained at ${newStreak}`);
+            } else {
+                if (existingUser.streak > 0) {
+                    console.log(`❌ Streak broken. Reset to 1`);
+                }
+                newStreak = 1;
+            }
+        } else {
+            newStreak = 1;
+        }
+
+        // ✅ NOW process topics (after streak is calculated)
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
                 const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
@@ -994,7 +1026,7 @@ app.put('/api/progress/:username', async (req, res) => {
                     lessonProgress = Math.min(50, lessonProgress);
                 }
                 
-                // ✅ FIXED: Count ANY completion (score > 0), no 70% threshold
+                // ✅ 50% weight for puzzles - ANY score > 0 counts (12.5% per difficulty)
                 if (topic.difficultyScores) {
                     const difficulties = ['easy', 'medium', 'hard', 'mixed'];
                     difficulties.forEach(diff => {
@@ -1003,7 +1035,6 @@ app.put('/api/progress/:username', async (req, res) => {
                             puzzleProgress += 12.5;
                         }
                     });
-                    
                 }
                 
                 const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
@@ -1026,71 +1057,12 @@ app.put('/api/progress/:username', async (req, res) => {
                     }
                 };
             });
-            let newStreak = existingUser.streak || 0;
-            if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
-    
-            const now = new Date();
-    
-            if (existingUser.lastActivity) {
-                const lastActivity = new Date(existingUser.lastActivity);
-                const toDateString = (d) => d.toISOString().split('T')[0];
-                const todayStr = toDateString(now);
-                const lastActiveStr = toDateString(lastActivity);
-                const msPerDay = 1000 * 60 * 60 * 24;
-                const todayDate = new Date(todayStr);
-                const lastActiveDate = new Date(lastActiveStr);
-                const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
-    
-                if (diffDays === 1) {
-                    newStreak = (existingUser.streak || 0) + 1;
-                    console.log(`🔥 Streak incremented to ${newStreak}`);
-                } else if (diffDays === 0) {
-                    newStreak = existingUser.streak || 1;
-                    console.log(`✓ Streak maintained at ${newStreak}`);
-                } else {
-                    if (existingUser.streak > 0) {
-                        console.log(`❌ Streak broken. Reset to 1`);
-                    }
-                    newStreak = 1;
-                }
-            } else {
-                newStreak = 1;
-            }
-    
-            // NOW the updateData can use newStreak:
-            const updateData = {
-                progress: mergedProgress,
-                streak: newStreak,  // ← This will now work!
-                completedTopics: parseInt(progressData.completedTopics || 0),
-                lastUpdated: progressData.lastUpdated || new Date().toISOString(),
-                lastActivity: now.toISOString(),
-            };
-    
-            if (progressData.name) updateData.name = progressData.name;
-            if (progressData.email) updateData.email = progressData.email;
-    
-            const result = await usersCollection.updateOne(
-                { username: username },
-                { $set: updateData },
-                { upsert: false }
-            );
-    
-            console.log(`✅ Progress synced: ${username}, Streak: ${newStreak}`);
-    
-            res.json({
-                success: true,
-                message: 'Progress synced successfully',
-                syncedTopics: progressData.topics ? progressData.topics.length : 0,
-                streak: newStreak
-            });
         }
 
-        // ... rest of the function (streak calculation, etc.)
-        // Keep everything else the same!
-
+        // ✅ NOW the updateData can safely use newStreak
         const updateData = {
             progress: mergedProgress,
-            streak: newStreak,
+            streak: newStreak,  // ← Now defined!
             completedTopics: parseInt(progressData.completedTopics || 0),
             lastUpdated: progressData.lastUpdated || new Date().toISOString(),
             lastActivity: now.toISOString(),
@@ -1113,6 +1085,7 @@ app.put('/api/progress/:username', async (req, res) => {
             syncedTopics: progressData.topics ? progressData.topics.length : 0,
             streak: newStreak
         });
+
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
