@@ -1152,12 +1152,24 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
         const { username } = req.params;
         const { topicName, difficulty, score } = req.body;
 
-        console.log(`🎯 Difficulty score update: ${username} - ${topicName} - ${difficulty} - ${score}%`);
+        // ✅ FIX 1: Normalize difficulty to lowercase
+        const normalizedDifficulty = (difficulty || '').toLowerCase().trim();
+        
+        console.log(`🎯 Difficulty score update: ${username} - ${topicName} - ${normalizedDifficulty} - ${score}%`);
 
-        if (!topicName || !difficulty || score === undefined) {
+        if (!topicName || !normalizedDifficulty || score === undefined) {
             return res.status(400).json({
                 success: false,
                 error: 'topicName, difficulty, and score are required'
+            });
+        }
+
+        // ✅ FIX 2: Validate normalized difficulty
+        const validDifficulties = ['easy', 'medium', 'hard', 'mixed'];
+        if (!validDifficulties.includes(normalizedDifficulty)) {
+            return res.status(400).json({
+                success: false,
+                error: `Invalid difficulty: ${difficulty}. Must be one of: ${validDifficulties.join(', ')}`
             });
         }
 
@@ -1210,12 +1222,12 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             );
         }
 
-        // Update the specific difficulty score
+        // ✅ FIX 3: Use normalized difficulty in the update path
         const updateResult = await usersCollection.updateOne(
             { username },
             {
                 $set: {
-                    [`progress.${topicName}.difficultyScores.${difficulty}`]: parseInt(score),
+                    [`progress.${topicName}.difficultyScores.${normalizedDifficulty}`]: parseInt(score),
                     [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
                 }
             }
@@ -1237,11 +1249,10 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             lessonProgress = Math.min(50, lessonProgress);
         }
         
-        // ✅ FIXED: Calculate puzzle progress - ANY score > 0 counts
+        // ✅ Calculate puzzle progress - ANY score > 0 counts (12.5% per difficulty)
         let puzzleProgress = 0;
         const difficulties = ['easy', 'medium', 'hard', 'mixed'];
         difficulties.forEach(diff => {
-            // Changed from >= 70 to > 0
             if (topicProgress.difficultyScores && topicProgress.difficultyScores[diff] > 0) {
                 puzzleProgress += 12.5;
             }
@@ -1262,14 +1273,14 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
             }
         );
 
-        console.log(`✅ Difficulty score updated: ${topicName} ${difficulty} = ${score}%`);
+        console.log(`✅ Difficulty score updated: ${topicName} ${normalizedDifficulty} = ${score}%`);
         console.log(`📊 Lesson progress: ${lessonProgress}%, Puzzle progress: ${puzzleProgress}%, Total: ${totalProgress}%`);
 
         res.json({
             success: true,
             message: 'Difficulty score updated',
             topicName,
-            difficulty,
+            difficulty: normalizedDifficulty, // ✅ Return normalized value
             score: parseInt(score),
             totalProgress: totalProgress,
             puzzleCompleted: allDifficultiesDone
@@ -1283,7 +1294,6 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
         });
     }
 });
-
 
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
