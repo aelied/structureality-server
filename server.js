@@ -1356,6 +1356,33 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
 
         const lessonsCount = parseInt(lessonsCompleted);
 
+        // ✅ CRITICAL: Initialize progress if it doesn't exist
+        if (!user.progress || !user.progress[topicName]) {
+            await usersCollection.updateOne(
+                { username },
+                {
+                    $set: {
+                        [`progress.${topicName}`]: {
+                            tutorialCompleted: false,
+                            puzzleCompleted: false,
+                            score: 0,
+                            progressPercentage: 0,
+                            lastAccessed: new Date().toISOString(),
+                            timeSpent: 0,
+                            lessonsCompleted: 0,
+                            difficultyScores: {
+                                easy: 0,
+                                medium: 0,
+                                hard: 0,
+                                mixed: 0
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+        // ✅ Update lesson count
         await usersCollection.updateOne(
             { username },
             {
@@ -1368,11 +1395,60 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
 
         console.log(`✅ Lessons updated for ${username}: ${topicName} = ${lessonsCount}`);
 
+        // ✅ CRITICAL: Now recalculate progress percentage
+        const updatedUser = await usersCollection.findOne({ username });
+        const topicProgress = updatedUser.progress[topicName];
+        
+        // Get total lesson count from database
+        const totalLessonCount = await lessonsCollection.countDocuments({ topicName: topicName });
+        
+        console.log(`📚 Total lessons for ${topicName}: ${totalLessonCount}`);
+        
+        // Calculate lesson progress (50%)
+        let lessonProgress = 0;
+        if (totalLessonCount > 0 && lessonsCount > 0) {
+            lessonProgress = (lessonsCount / totalLessonCount) * 50;
+            lessonProgress = Math.min(50, lessonProgress);
+        }
+        
+        // Calculate puzzle progress (50%)
+        let puzzleProgress = 0;
+        let completedDifficulties = 0;
+        const difficulties = ['easy', 'medium', 'hard', 'mixed'];
+        
+        if (topicProgress.difficultyScores) {
+            difficulties.forEach(diff => {
+                if (topicProgress.difficultyScores[diff] > 0) {
+                    puzzleProgress += 12.5;
+                    completedDifficulties++;
+                }
+            });
+        }
+        
+        const totalProgress = Math.min(100, lessonProgress + puzzleProgress);
+        
+        // ✅ Update progress percentage
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.progressPercentage`]: totalProgress
+                }
+            }
+        );
+
+        console.log(`📊 Progress recalculated for ${topicName}:`);
+        console.log(`   Lessons: ${lessonsCount}/${totalLessonCount} = ${lessonProgress.toFixed(1)}%`);
+        console.log(`   Puzzle: ${puzzleProgress}% (${completedDifficulties}/4 difficulties)`);
+        console.log(`   Total: ${totalProgress.toFixed(1)}%`);
+
         res.json({
             success: true,
             message: 'Lesson completion updated',
             topicName,
-            lessonsCompleted: lessonsCount
+            lessonsCompleted: lessonsCount,
+            totalLessons: totalLessonCount,
+            progressPercentage: totalProgress
         });
     } catch (error) {
         console.error('Error updating lessons:', error);
