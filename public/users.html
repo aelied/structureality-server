@@ -58,7 +58,13 @@
                 <span class="font-medium">Lessons</span>
             </a>
 
-            <a href="analytics.html"
+            <a href="quizzes.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
+                <i class="fas fa-question-circle w-5"></i>
+                <span class="font-medium">Quizzes</span>
+            </a>
+
+            <a href="analytics.html" id="analyticsLink"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
                 <i class="fas fa-chart-line w-5"></i>
                 <span class="font-medium">Analytics</span>
@@ -71,7 +77,7 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Users</h2>
-                <p class="text-sm text-gray-500">Manage system users</p>
+                <p class="text-sm text-gray-500">Manage system users <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span></p>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -153,6 +159,7 @@
             : 'https://structureality-admin.onrender.com/api';
 
         let allUsersData = [];
+        let currentUser = null;
 
         function logout() {
             localStorage.removeItem('adminUser');
@@ -162,7 +169,6 @@
         function checkAuth() {
             const adminUser = localStorage.getItem('adminUser');
 
-            // Check for null (key not found) or the corrupted string "undefined"
             if (!adminUser || adminUser === 'undefined') {
                 localStorage.removeItem('adminUser');
                 window.location.href = 'login.html';
@@ -170,13 +176,48 @@
             }
 
             try {
-                return JSON.parse(adminUser);
+                const user = JSON.parse(adminUser);
+                if (!user.role) {
+                    user.role = 'admin'; // Default to admin for backward compatibility
+                }
+                return user;
             } catch (e) {
                 console.error("Failed to parse adminUser JSON:", e);
-                // Clear the corrupted item and redirect on parse failure
                 localStorage.removeItem('adminUser');
                 window.location.href = 'login.html';
                 return null;
+            }
+        }
+
+        function isInstructor(user) {
+            return user && user.role === 'instructor';
+        }
+
+        function isAdmin(user) {
+            return user && (user.role === 'admin' || !user.role);
+        }
+
+        function canDeleteUsers(user) {
+            return isAdmin(user);
+        }
+
+        function updateNavigationForRole(user) {
+            // Hide analytics link for instructors
+            const analyticsLink = document.getElementById('analyticsLink');
+            if (analyticsLink && isInstructor(user)) {
+                analyticsLink.style.display = 'none';
+            }
+
+            // Show role indicator
+            const roleIndicator = document.getElementById('roleIndicator');
+            if (roleIndicator) {
+                if (isInstructor(user)) {
+                    roleIndicator.textContent = '👨‍🏫 Instructor View';
+                    roleIndicator.className = 'ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold';
+                } else {
+                    roleIndicator.textContent = '👑 Admin View';
+                    roleIndicator.className = 'ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold';
+                }
             }
         }
 
@@ -205,6 +246,8 @@
                 return;
             }
 
+            const showActions = canDeleteUsers(currentUser);
+
             let html = `
           <table class="w-full">
             <thead>
@@ -215,7 +258,7 @@
                 <th class="px-6 py-4">Progress</th>
                 <th class="px-6 py-4">Last Active</th>
                 <th class="px-6 py-4">Status</th>
-                <th class="px-6 py-4">Actions</th>
+                ${showActions ? '<th class="px-6 py-4">Actions</th>' : ''}
               </tr>
             </thead>
             <tbody class="text-sm divide-y divide-gray-100">
@@ -288,6 +331,7 @@
                   ${statusColors[status].text}
                 </span>
               </td>
+              ${showActions ? `
               <td class="px-6 py-4">
                 <div class="flex items-center space-x-2">
                   <button onclick="viewUser('${user.username}')" class="text-indigo-600 hover:text-indigo-700" title="View Details">
@@ -298,6 +342,7 @@
                   </button>
                 </div>
               </td>
+              ` : ''}
             </tr>
           `;
             });
@@ -320,7 +365,6 @@
 
                 if (statusFilter === 'all') return true;
 
-                // Determine user status
                 if (!user.topics || user.topics.length === 0) {
                     return statusFilter === 'inactive';
                 }
@@ -350,6 +394,11 @@
         }
 
         async function deleteUser(username) {
+            if (!canDeleteUsers(currentUser)) {
+                alert('You do not have permission to delete users.');
+                return;
+            }
+
             if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
 
             try {
@@ -384,10 +433,11 @@
 
         // Initialize
         window.addEventListener('load', () => {
-            const user = checkAuth();
-            if (user) {
-                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-                document.getElementById('adminEmailDisplay').textContent = user.email;
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
+                document.getElementById('adminEmailDisplay').textContent = currentUser.email;
+                updateNavigationForRole(currentUser);
                 loadUsers();
             }
         });

@@ -666,12 +666,15 @@ app.post('/api/admin/login', async (req, res) => {
             });
         }
 
-        console.log(`🔐 Admin logged in: ${admin.username}`);
+        console.log(`🔐 Admin logged in: ${admin.username} (Role: ${admin.role || 'admin'})`);
         const { password: _, ...adminWithoutPassword } = admin;
         res.json({
             success: true,
             message: 'Admin login successful',
-            admin: adminWithoutPassword
+            admin: {
+                ...adminWithoutPassword,
+                role: admin.role || 'admin' // Default to 'admin' if no role set
+            }
         });
     } catch (error) {
         console.error('❌ Admin login error:', error);
@@ -683,6 +686,101 @@ app.post('/api/admin/login', async (req, res) => {
     }
 });
 
+app.post('/api/admin/migrate-roles', async (req, res) => {
+    try {
+        console.log('🔄 Starting role migration...');
+        
+        // Update all admins without a role field to be 'admin'
+        const result = await adminsCollection.updateMany(
+            { role: { $exists: false } },
+            { $set: { role: 'admin' } }
+        );
+        
+        console.log(`✅ Migration complete: ${result.modifiedCount} admins updated to 'admin' role`);
+        
+        res.json({
+            success: true,
+            message: 'Role migration completed',
+            adminsUpdated: result.modifiedCount
+        });
+    } catch (error) {
+        console.error('❌ Migration error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Migration failed',
+            details: error.message
+        });
+    }
+});
+
+// 3. ADD CREATE INSTRUCTOR ENDPOINT (Add after migration endpoint)
+app.post('/api/admin/create-instructor', async (req, res) => {
+    try {
+        const { username, password, email, name } = req.body;
+        
+        if (!username || !password || !email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Username, password, and email are required'
+            });
+        }
+        
+        // Check if username already exists
+        const existingAdmin = await adminsCollection.findOne({ username });
+        if (existingAdmin) {
+            return res.status(400).json({
+                success: false,
+                error: 'Username already exists'
+            });
+        }
+        
+        const instructorData = {
+            username,
+            password,
+            email,
+            name: name || username,
+            role: 'instructor',
+            createdAt: new Date().toISOString()
+        };
+        
+        const result = await adminsCollection.insertOne(instructorData);
+        
+        console.log(`✅ New instructor created: ${username}`);
+        
+        res.json({
+            success: true,
+            message: 'Instructor created successfully',
+            instructorId: result.insertedId
+        });
+    } catch (error) {
+        console.error('❌ Error creating instructor:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to create instructor',
+            details: error.message
+        });
+    }
+});
+
+// 4. ADD GET ALL ADMINS ENDPOINT (for admin management UI - optional)
+app.get('/api/admins', async (req, res) => {
+    try {
+        const admins = await adminsCollection.find({})
+            .project({ password: 0 }) // Don't send passwords
+            .toArray();
+
+        res.json({
+            success: true,
+            count: admins.length,
+            admins: admins
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch admins'
+        });
+    }
+});
 // ==================== USER ENDPOINTS ====================
 app.post('/api/users', async (req, res) => {
     try {

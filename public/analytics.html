@@ -590,6 +590,44 @@
         loadAnalytics();
       }
     });
+    function checkAuth() {
+    const adminUser = localStorage.getItem('adminUser');
+
+    if (!adminUser || adminUser === 'undefined') {
+        localStorage.removeItem('adminUser');
+        window.location.href = 'login.html';
+        return null;
+    }
+
+    try {
+        const user = JSON.parse(adminUser);
+        // Add role to user object if not present (for backward compatibility)
+        if (!user.role) {
+            user.role = 'admin';
+        }
+        return user;
+    } catch (e) {
+        console.error("Failed to parse adminUser JSON:", e);
+        localStorage.removeItem('adminUser');
+        window.location.href = 'login.html';
+        return null;
+    }
+}
+function isInstructor(user) {
+    return user && user.role === 'instructor';
+}
+
+function isAdmin(user) {
+    return user && (user.role === 'admin' || !user.role); // Default to admin if no role
+}
+
+function canDeleteUsers(user) {
+    return isAdmin(user);
+}
+
+function canAccessAnalytics(user) {
+    return isAdmin(user);
+}
   </script>
 </body>
 

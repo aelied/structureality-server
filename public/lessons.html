@@ -103,10 +103,24 @@
             cursor: pointer;
             font-weight: 500;
             transition: all 0.2s;
+            font-size: 0.875rem;
         }
 
         .insert-box-btn:hover {
             transform: scale(1.05);
+        }
+
+        /* FIX: Content Builder buttons */
+        .content-builder-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-builder-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
     </style>
 </head>
@@ -152,7 +166,7 @@
                 <span class="font-medium">Quizzes</span>
             </a>
 
-            <a href="analytics.html"
+            <a href="analytics.html" id="analyticsLink"
                 class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
                 <i class="fas fa-chart-line w-5"></i>
                 <span class="font-medium">Analytics</span>
@@ -165,7 +179,7 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons & topics with special info boxes</p>
+                <p class="text-sm text-gray-500">Manage lessons & topics with special info boxes <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span></p>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -255,12 +269,6 @@
             </div>
         </div>
 
-        <!-- Debug Info (Remove after fixing) -->
-        <div id="debugInfo" class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6" style="display:none;">
-            <h4 class="font-semibold text-yellow-800 mb-2">🐛 Debug Info:</h4>
-            <pre id="debugContent" class="text-xs text-yellow-700"></pre>
-        </div>
-
         <!-- Search and Filters -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
             <div class="flex items-center justify-between">
@@ -348,12 +356,12 @@
                <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
                     
-                    <!-- Add Info Box Buttons -->
+                    <!-- Add Info Box Buttons - FIXED -->
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
                         <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
-                        <div class="grid grid-cols-2 md:grid-cols-6 gap-2">
+                        <div class="content-builder-grid">
                             <button type="button" onclick="addContentBlock('TEXT')"
-                                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
+                                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
                                 📝 Text
                             </button>
                             <button type="button" onclick="addContentBlock('INFO')"
@@ -384,7 +392,6 @@
                     <div id="contentBlocksContainer" class="space-y-3 mb-4">
                         <!-- Blocks will be added here -->
                     </div>
-                </div>
 
                     <textarea id="lessonContent" placeholder="Write your lesson content here..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
@@ -467,7 +474,7 @@
                     
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
                         <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Info Boxes:</p>
-                        <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
+                        <div class="content-builder-grid">
                             <button type="button" onclick="insertInfoBox('INFO', true)"
                                 class="insert-box-btn info-box-info">
                                 ℹ️ Info
@@ -532,6 +539,7 @@
             : 'https://structureality-admin.onrender.com/api';
 
         let allLessons = [];
+        let currentUser = null;
 
         function logout() {
             localStorage.removeItem('adminUser');
@@ -548,7 +556,11 @@
             }
 
             try {
-                return JSON.parse(adminUser);
+                const user = JSON.parse(adminUser);
+                if (!user.role) {
+                    user.role = 'admin';
+                }
+                return user;
             } catch (e) {
                 console.error("Failed to parse adminUser JSON:", e);
                 localStorage.removeItem('adminUser');
@@ -557,7 +569,39 @@
             }
         }
 
-        // Insert info box at cursor position
+        function isInstructor(user) {
+            return user && user.role === 'instructor';
+        }
+
+        function isAdmin(user) {
+            return user && (user.role === 'admin' || !user.role);
+        }
+
+        function updateNavigationForRole(user) {
+            const analyticsLink = document.getElementById('analyticsLink');
+            if (analyticsLink && isInstructor(user)) {
+                analyticsLink.style.display = 'none';
+            }
+
+            const roleIndicator = document.getElementById('roleIndicator');
+            if (roleIndicator) {
+                if (isInstructor(user)) {
+                    roleIndicator.textContent = '👨‍🏫 Instructor View';
+                    roleIndicator.className = 'ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold';
+                } else {
+                    roleIndicator.textContent = '👑 Admin View';
+                    roleIndicator.className = 'ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold';
+                }
+            }
+        }
+
+        function addContentBlock(type) {
+            // Placeholder for content block functionality
+            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
+            const textarea = document.getElementById('lessonContent');
+            textarea.value += template;
+        }
+
         function insertInfoBox(type, isEdit = false) {
             const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
             const textarea = document.getElementById(textareaId);
@@ -574,7 +618,6 @@
             textarea.setSelectionRange(newPos, newPos);
         }
 
-        // Toggle preview
         function togglePreview(isEdit = false) {
             const previewDivId = isEdit ? 'editContentPreview' : 'contentPreview';
             const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
@@ -590,7 +633,6 @@
             }
         }
 
-        // Render content preview
         function renderPreview(content, isEdit = false) {
             const previewContentId = isEdit ? 'editPreviewContent' : 'previewContent';
             const previewContent = document.getElementById(previewContentId);
@@ -630,36 +672,10 @@
                 const response = await fetch(`${API_URL}/lessons`);
                 const data = await response.json();
 
-                console.log('📚 API Response:', data);
-
                 if (data.success) {
                     allLessons = data.lessons || [];
-                    
-                    // Debug: Show topic distribution
-                    const topicCounts = {};
-                    allLessons.forEach(lesson => {
-                        const topic = lesson.topicName;
-                        topicCounts[topic] = (topicCounts[topic] || 0) + 1;
-                    });
-                    
-                    console.log('📊 Topic Distribution:', topicCounts);
-                    
-                    // Show debug info temporarily
-                    const debugDiv = document.getElementById('debugInfo');
-                    const debugContent = document.getElementById('debugContent');
-                    debugContent.textContent = `Total Lessons: ${allLessons.length}\n` + 
-                        JSON.stringify(topicCounts, null, 2);
-                    debugDiv.style.display = 'block';
-                    
-                    // Hide debug after 5 seconds
-                    setTimeout(() => {
-                        debugDiv.style.display = 'none';
-                    }, 5000);
-                    
                     updateStats();
                     displayLessons(allLessons);
-                } else {
-                    console.error('❌ API Error:', data);
                 }
             } catch (error) {
                 console.error('❌ Fetch Error:', error);
@@ -669,9 +685,6 @@
         }
 
         function updateStats() {
-            console.log('📊 Updating stats for', allLessons.length, 'lessons');
-            
-            // Count exact topic names from database (handles both singular and plural)
             const counts = {
                 total: allLessons.length,
                 Arrays: 0,
@@ -683,9 +696,7 @@
             
             allLessons.forEach(lesson => {
                 const topic = lesson.topicName;
-                console.log('  Topic:', topic);
                 
-                // Handle both singular and plural forms
                 if (topic === 'Arrays') counts.Arrays++;
                 else if (topic === 'Queue' || topic === 'Queues') counts.Queue++;
                 else if (topic === 'Stacks') counts.Stacks++;
@@ -693,8 +704,6 @@
                 else if (topic === 'Trees' || topic === 'Graphs') counts.others++;
                 else counts.others++;
             });
-            
-            console.log('📊 Final counts:', counts);
             
             document.getElementById('totalLessons').textContent = counts.total;
             document.getElementById('arraysCount').textContent = counts.Arrays;
@@ -837,7 +846,6 @@
             const lesson = allLessons.find(l => l._id === lessonId);
             if (!lesson) return;
 
-            // Populate edit form
             document.getElementById('editLessonId').value = lesson._id;
             document.getElementById('editLessonTopic').value = lesson.topicName;
             document.getElementById('editLessonTitle').value = lesson.title;
@@ -845,7 +853,6 @@
             document.getElementById('editLessonContent').value = lesson.content || '';
             document.getElementById('editLessonOrder').value = lesson.order;
 
-            // Open modal
             document.getElementById('editLessonModal').classList.add('active');
         }
 
@@ -924,10 +931,11 @@
         }
 
         window.addEventListener('load', () => {
-            const user = checkAuth();
-            if (user) {
-                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-                document.getElementById('adminEmailDisplay').textContent = user.email;
+            currentUser = checkAuth();
+            if (currentUser) {
+                document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
+                document.getElementById('adminEmailDisplay').textContent = currentUser.email;
+                updateNavigationForRole(currentUser);
                 loadLessons();
             }
         });
