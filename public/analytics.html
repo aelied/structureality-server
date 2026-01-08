@@ -1,634 +1,500 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StructuReality - Analytics</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * {
-      font-family: "Poppins", sans-serif;
-    }
-
-    .card-hover {
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StructuReality - Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            font-family: "Poppins", sans-serif;
+        }
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
-
 <body class="bg-gray-100">
-  <!-- Sidebar -->
-  <aside
-    class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-cube text-indigo-700 text-xl"></i>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold">StructuReality</h1>
-          <p class="text-xs text-indigo-300">Admin Portal</p>
-        </div>
-      </div>
-    </div>
-    <nav class="mt-6 px-4">
-      <a href="index.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-        <i class="fas fa-home w-5"></i>
-        <span class="font-medium">Dashboard</span>
-      </a>
-      <a href="users.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-        <i class="fas fa-users w-5"></i>
-        <span class="font-medium">Users</span>
-      </a>
-      <a href="lessons.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-        <i class="fas fa-book w-5"></i>
-        <span class="font-medium">Lessons</span>
-      </a>
-      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-        <i class="fas fa-chart-line w-5"></i>
-        <span class="font-medium">Analytics</span>
-      </a>
-    </nav>
-  </aside>
-  <!-- Navbar -->
-  <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-800">Analytics</h2>
-        <p class="text-sm text-gray-500">Platform performance insights</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <button onclick="loadAnalytics()"
-          class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
-          <i class="fas fa-sync mr-2"></i>Refresh Data
-        </button>
-        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-          <i class="fas fa-bell text-gray-600"></i>
-        </button>
-        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-          <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-indigo-700 text-sm"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-            <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-          </div>
-        </div>
-        <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
-          <i class="fas fa-sign-out-alt text-gray-600"></i>
-        </button>
-      </div>
-    </div>
-  </nav>
-  <!-- Main Content -->
-  <main class="ml-64 mt-20 p-8">
-    <!-- Loading State -->
-    <div id="loadingState" class="text-center py-20">
-      <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
-      <p class="text-gray-600">Loading analytics data...</p>
-    </div>
-    <!-- Analytics Content -->
-    <div id="analyticsContent" style="display: none;">
-      <!-- Key Metrics -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
-            </div>
-            <span id="completionTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-              --
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
-          <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-clock text-purple-600 text-xl"></i>
-            </div>
-            <span id="sessionTrend" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">
-              --
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">Avg. Time per User</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
-          <p class="text-xs text-gray-400 mt-2">total time / users</p>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
-            </div>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
-          <p class="text-xs text-gray-400 mt-2">all users combined</p>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500">
-          <div class="flex items-center justify-between mb-4">
-            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-              <i class="fas fa-star text-orange-600 text-xl"></i>
-            </div>
-            <span id="engagementTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-              --
-            </span>
-          </div>
-          <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
-          <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
-          <p class="text-xs text-gray-400 mt-2">engagement score</p>
-        </div>
-      </div>
-      <!-- Charts Row 1 -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-          <div class="flex items-center justify-between mb-6">
-            <h3 class="text-lg font-semibold text-gray-800">User Activity (Last 7 Days)</h3>
-          </div>
-          <canvas id="activityChart" height="80"></canvas>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            Topic Popularity
-          </h3>
-          <canvas id="topicChart"></canvas>
-          <div class="mt-6 space-y-3" id="topicLegend">
-            <!-- Will be populated dynamically -->
-          </div>
-        </div>
-      </div>
-      <!-- Charts Row 2 -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            User Progress Distribution
-          </h3>
-          <canvas id="progressChart" height="120"></canvas>
-        </div>
-        <div class="bg-white rounded-xl shadow-sm p-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-6">
-            Streak Distribution
-          </h3>
-          <canvas id="streakChart" height="120"></canvas>
-        </div>
-      </div>
-      <!-- Performance Table -->
-      <div class="bg-white rounded-xl shadow-sm mb-8">
-        <div class="p-6 border-b border-gray-100">
-          <h3 class="text-lg font-semibold text-gray-800">
-            Lesson Performance
-          </h3>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead>
-              <tr class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
-                <th class="px-6 py-4">Lesson Name</th>
-                <th class="px-6 py-4">Topic</th>
-                <th class="px-6 py-4">Completions</th>
-                <th class="px-6 py-4">Avg. Score</th>
-                <th class="px-6 py-4">Avg. Time</th>
-                <th class="px-6 py-4">Rating</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
-              <tr>
-                <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                  Loading lesson performance data...
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </main>
-  <script>
-    const API_URL = window.location.hostname === 'localhost'
-      ? 'http://localhost:3000/api'
-      : 'https://structureality-admin.onrender.com/api';
-    let activityChart, topicChart, progressChart, streakChart;
-    function logout() {
-      localStorage.removeItem('adminUser');
-      window.location.href = 'login.html';
-    }
-    function checkAuth() {
-      const adminUser = localStorage.getItem('adminUser');
-      if (!adminUser || adminUser === 'undefined') {
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-      }
-      try {
-        return JSON.parse(adminUser);
-      } catch (e) {
-        console.error("Failed to parse adminUser JSON:", e);
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-      }
-    }
-
-    function formatTime(seconds) {
-      if (!seconds || seconds === 0) return '0m';
-
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-
-      if (hours > 0) {
-        return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-      }
-      return `${minutes}m`;
-    }
-
-    async function loadAnalytics() {
-      try {
-        document.getElementById('loadingState').style.display = 'block';
-        document.getElementById('analyticsContent').style.display = 'none';
-
-        const response = await fetch(`${API_URL}/analytics`);
-        const result = await response.json();
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to load analytics');
-        }
-
-        const data = result.data;
-
-        // Update key metrics
-        document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
-
-        // Format avgTimePerUser (seconds to "Xh Ym" or "Xm")
-        document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
-
-        // Format totalTimeSpent (seconds to "Xh Ym" or "Xm")
-        document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
-
-        document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
-
-        // Update trend indicators
-        document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
-        document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low'; // > 15 mins
-        document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
-
-        // Update charts
-        updateActivityChart(data.activity);
-        updateTopicChart(data.topicPopularity);
-        updateProgressChart(data.progressDistribution);
-        updateStreakChart(data.streakDistribution);
-        updateLessonPerformanceTable(data.lessonPerformance);
-
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('analyticsContent').style.display = 'block';
-      } catch (error) {
-        console.error('Error loading analytics:', error);
-        document.getElementById('loadingState').innerHTML = `
-              <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
-              <p class="text-gray-600">Failed to load analytics data</p>
-              <button onclick="loadAnalytics()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                Retry
-              </button>
-            `;
-      }
-    }
-
-    function updateActivityChart(activityData) {
-      const ctx = document.getElementById("activityChart").getContext("2d");
-
-      if (activityChart) {
-        activityChart.destroy();
-      }
-      activityChart = new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: activityData.labels,
-          datasets: [
-            {
-              label: "Active Users",
-              data: activityData.activeUsers,
-              borderColor: "#6366f1",
-              backgroundColor: "rgba(99, 102, 241, 0.1)",
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-            },
-            {
-              label: "Lessons Completed",
-              data: activityData.lessonsCompleted,
-              borderColor: "#10b981",
-              backgroundColor: "rgba(16, 185, 129, 0.1)",
-              tension: 0.4,
-              fill: true,
-              borderWidth: 2,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: true,
-              position: "bottom",
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-    }
-    function updateTopicChart(topicPopularity) {
-      const ctx = document.getElementById("topicChart").getContext("2d");
-
-      if (topicChart) {
-        topicChart.destroy();
-      }
-      const topics = ['Arrays', 'Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
-      const labels = ['Arrays', 'Queue', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
-      const data = topics.map(t => topicPopularity[t] || 0);
-      const colors = ["#6366f1", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"];
-      topicChart = new Chart(ctx, {
-        type: "doughnut",
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              data: data,
-              backgroundColor: colors,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-      // Update legend
-      let legendHtml = '';
-      labels.forEach((label, i) => {
-        legendHtml += `
-            <div class="flex items-center justify-between text-sm">
-              <div class="flex items-center space-x-2">
-                <div class="w-3 h-3 rounded-full" style="background-color: ${colors[i]}"></div>
-                <span class="text-gray-700">${label}</span>
-              </div>
-              <span class="font-semibold text-gray-800">${data[i]}%</span>
-            </div>
-          `;
-      });
-      document.getElementById('topicLegend').innerHTML = legendHtml;
-    }
-    function updateProgressChart(progressData) {
-      const ctx = document.getElementById("progressChart").getContext("2d");
-
-      if (progressChart) {
-        progressChart.destroy();
-      }
-      progressChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
-          datasets: [
-            {
-              label: "Number of Users",
-              data: [
-                progressData['0-20'],
-                progressData['21-40'],
-                progressData['41-60'],
-                progressData['61-80'],
-                progressData['81-100']
-              ],
-              backgroundColor: [
-                "rgba(239, 68, 68, 0.8)",
-                "rgba(251, 146, 60, 0.8)",
-                "rgba(234, 179, 8, 0.8)",
-                "rgba(34, 197, 94, 0.8)",
-                "rgba(16, 185, 129, 0.8)",
-              ],
-              borderRadius: 6,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-    }
-    function updateStreakChart(streakData) {
-      const ctx = document.getElementById("streakChart").getContext("2d");
-
-      if (streakChart) {
-        streakChart.destroy();
-      }
-      streakChart = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: [
-            "1-3 days",
-            "4-7 days",
-            "8-14 days",
-            "15-30 days",
-            "30+ days",
-          ],
-          datasets: [
-            {
-              label: "Number of Users",
-              data: [
-                streakData['1-3'],
-                streakData['4-7'],
-                streakData['8-14'],
-                streakData['15-30'],
-                streakData['30+']
-              ],
-              backgroundColor: "rgba(168, 85, 247, 0.8)",
-              borderRadius: 6,
-              borderWidth: 0,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: true,
-          plugins: {
-            legend: {
-              display: false,
-            },
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              grid: {
-                display: true,
-                color: "rgba(0, 0, 0, 0.05)",
-              },
-            },
-            x: {
-              grid: {
-                display: false,
-              },
-            },
-          },
-        },
-      });
-    }
-    function updateLessonPerformanceTable(lessonData) {
-      const tbody = document.getElementById('lessonPerformanceTable');
-
-      if (lessonData.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-              <td colspan="6" class="px-6 py-8 text-center text-gray-500">
-                No lesson performance data available
-              </td>
-            </tr>
-          `;
-        return;
-      }
-      let html = '';
-      lessonData.forEach(lesson => {
-        html += `
-            <tr class="hover:bg-gray-50 transition">
-              <td class="px-6 py-4">
-                <p class="font-medium text-gray-800">${lesson.name}</p>
-              </td>
-              <td class="px-6 py-4">
-                <span class="px-3 py-1 bg-${lesson.color}-100 text-${lesson.color}-700 rounded-full text-xs font-semibold">
-                  ${lesson.topic}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-gray-700">${lesson.completions}</td>
-              <td class="px-6 py-4">
-                <span class="font-semibold text-gray-800">${lesson.avgScore}</span>
-              </td>
-              <td class="px-6 py-4 text-gray-700">${lesson.avgTime}</td>
-              <td class="px-6 py-4">
-                <div class="flex items-center space-x-1">
-                  <i class="fas fa-star text-yellow-400 text-sm"></i>
-                  <span class="text-gray-800 font-medium">${lesson.rating}</span>
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+        <div class="p-6 border-b border-indigo-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
                 </div>
-              </td>
-            </tr>
-          `;
-      });
-      tbody.innerHTML = html;
-    }
-    // Initialize
-    window.addEventListener('load', () => {
-      const user = checkAuth();
-      if (user) {
-        document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-        document.getElementById('adminEmailDisplay').textContent = user.email;
-        loadAnalytics();
-      }
-    });
-    function checkAuth() {
-    const adminUser = localStorage.getItem('adminUser');
+                <div>
+                    <h1 class="text-xl font-bold">StructuReality</h1>
+                    <p class="text-xs text-indigo-300">Admin Portal</p>
+                </div>
+            </div>
+        </div>
+        <nav class="mt-6 px-4">
+            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-users w-5"></i>
+                <span class="font-medium">Users</span>
+            </a>
+            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-book w-5"></i>
+                <span class="font-medium">Lessons</span>
+            </a>
+            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-question-circle w-5"></i>
+                <span class="font-medium">Quizzes</span>
+            </a>
+            <a href="analytics.html" id="analyticsLink" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="font-medium">Analytics</span>
+            </a>
+        </nav>
+    </aside>
 
-    if (!adminUser || adminUser === 'undefined') {
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-    }
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+        <div class="px-8 py-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">Analytics</h2>
+                <p class="text-sm text-gray-500">Platform performance insights</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="refreshAnalytics()" id="refreshBtn" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
+                    <i class="fas fa-sync mr-2"></i>Refresh Data
+                </button>
+                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-bell text-gray-600"></i>
+                </button>
+                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-700 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
+                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+                    </div>
+                </div>
+                <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
+                    <i class="fas fa-sign-out-alt text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
 
-    try {
-        const user = JSON.parse(adminUser);
-        // Add role to user object if not present (for backward compatibility)
-        if (!user.role) {
-            user.role = 'admin';
+    <!-- Main Content -->
+    <main class="ml-64 mt-20 p-8">
+        <!-- Access Denied Message (hidden by default) -->
+        <div id="accessDenied" class="hidden">
+            <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-lock text-red-600 text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
+                <p class="text-gray-600 mb-6">You don't have permission to view analytics. This page is only accessible to administrators.</p>
+                <a href="index.html" class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    <i class="fas fa-home mr-2"></i>Return to Dashboard
+                </a>
+            </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-20">
+            <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
+            <p class="text-gray-600">Loading analytics data...</p>
+        </div>
+
+        <!-- Analytics Content -->
+        <div id="analyticsContent" style="display: none;">
+            <!-- Key Metrics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
+                        </div>
+                        <span id="completionTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
+                    <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-purple-600 text-xl"></i>
+                        </div>
+                        <span id="sessionTrend" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">--</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Avg. Time per User</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
+                    <p class="text-xs text-gray-400 mt-2">total time / users</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
+                    <p class="text-xs text-gray-400 mt-2">all users combined</p>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-star text-orange-600 text-xl"></i>
+                        </div>
+                        <span id="engagementTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
+                    </div>
+                    <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
+                    <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
+                    <p class="text-xs text-gray-400 mt-2">engagement score</p>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h3 class="text-lg font-semibold text-gray-800">User Activity (Last 7 Days)</h3>
+                    </div>
+                    <canvas id="activityChart" height="80"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Topic Popularity</h3>
+                    <canvas id="topicChart"></canvas>
+                    <div class="mt-6 space-y-3" id="topicLegend"></div>
+                </div>
+            </div>
+
+            <!-- Charts Row 2 -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">User Progress Distribution</h3>
+                    <canvas id="progressChart" height="120"></canvas>
+                </div>
+                <div class="bg-white rounded-xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Streak Distribution</h3>
+                    <canvas id="streakChart" height="120"></canvas>
+                </div>
+            </div>
+
+            <!-- Performance Table -->
+            <div class="bg-white rounded-xl shadow-sm mb-8">
+                <div class="p-6 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Lesson Performance</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
+                                <th class="px-6 py-4">Lesson Name</th>
+                                <th class="px-6 py-4">Topic</th>
+                                <th class="px-6 py-4">Completions</th>
+                                <th class="px-6 py-4">Avg. Score</th>
+                                <th class="px-6 py-4">Avg. Time</th>
+                                <th class="px-6 py-4">Rating</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading lesson performance data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : 'https://structureality-admin.onrender.com/api';
+
+        let activityChart, topicChart, progressChart, streakChart;
+        let currentUsername = null;
+
+        function logout() {
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
         }
-        return user;
-    } catch (e) {
-        console.error("Failed to parse adminUser JSON:", e);
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-    }
-}
-function isInstructor(user) {
-    return user && user.role === 'instructor';
-}
 
-function isAdmin(user) {
-    return user && (user.role === 'admin' || !user.role); // Default to admin if no role
-}
+        function checkAuth() {
+            const adminUser = localStorage.getItem('adminUser');
+            if (!adminUser || adminUser === 'undefined') {
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+            try {
+                const user = JSON.parse(adminUser);
+                if (!user.role) {
+                    user.role = 'admin';
+                }
+                return user;
+            } catch (e) {
+                console.error("Failed to parse adminUser JSON:", e);
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
 
-function canDeleteUsers(user) {
-    return isAdmin(user);
-}
+        function isInstructor(user) {
+            return user && user.role === 'instructor';
+        }
 
-function canAccessAnalytics(user) {
-    return isAdmin(user);
-}
-  </script>
+        function isAdmin(user) {
+            return user && (user.role === 'admin' || !user.role);
+        }
+
+        function canAccessAnalytics(user) {
+            return isAdmin(user);
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || seconds === 0) return '0m';
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) {
+                return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
+            }
+            return `${minutes}m`;
+        }
+
+        function refreshAnalytics() {
+            if (currentUsername) {
+                loadAnalytics(currentUsername);
+            }
+        }
+
+        async function loadAnalytics(username) {
+            try {
+                currentUsername = username;
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('analyticsContent').style.display = 'none';
+                document.getElementById('accessDenied').classList.add('hidden');
+
+                const response = await fetch(`${API_URL}/analytics?username=${username}`);
+                const result = await response.json();
+
+                if (!result.success) {
+                    if (response.status === 403) {
+                        document.getElementById('accessDenied').classList.remove('hidden');
+                        document.getElementById('loadingState').style.display = 'none';
+                        console.log('❌ Access denied by server');
+                        return;
+                    }
+                    throw new Error(result.error || 'Failed to load analytics');
+                }
+
+                const data = result.data;
+
+                // Update key metrics
+                document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
+                document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
+                document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
+                document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
+
+                // Update trend indicators
+                document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
+                document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low';
+                document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
+
+                // Update charts
+                updateActivityChart(data.activity);
+                updateTopicChart(data.topicPopularity);
+                updateProgressChart(data.progressDistribution);
+                updateStreakChart(data.streakDistribution);
+                updateLessonPerformanceTable(data.lessonPerformance);
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('analyticsContent').style.display = 'block';
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
+                    <p class="text-gray-600">Failed to load analytics data</p>
+                    <button onclick="loadAnalytics('${username}')" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        Retry
+                    </button>
+                `;
+            }
+        }
+
+        function updateActivityChart(activityData) {
+            const ctx = document.getElementById("activityChart").getContext("2d");
+            if (activityChart) activityChart.destroy();
+            activityChart = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: activityData.labels,
+                    datasets: [{
+                        label: "Active Users",
+                        data: activityData.activeUsers,
+                        borderColor: "#6366f1",
+                        backgroundColor: "rgba(99, 102, 241, 0.1)",
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }, {
+                        label: "Lessons Completed",
+                        data: activityData.lessonsCompleted,
+                        borderColor: "#10b981",
+                        backgroundColor: "rgba(16, 185, 129, 0.1)",
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: true, position: "bottom" } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateTopicChart(topicPopularity) {
+            const ctx = document.getElementById("topicChart").getContext("2d");
+            if (topicChart) topicChart.destroy();
+            const topics = ['Arrays', 'Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+            const labels = ['Arrays', 'Queue', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
+            const data = topics.map(t => topicPopularity[t] || 0);
+            const colors = ["#6366f1", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"];
+            topicChart = new Chart(ctx, {
+                type: "doughnut",
+                data: {
+                    labels: labels,
+                    datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } }
+                }
+            });
+            let legendHtml = '';
+            labels.forEach((label, i) => {
+                legendHtml += `
+                    <div class="flex items-center justify-between text-sm">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full" style="background-color: ${colors[i]}"></div>
+                            <span class="text-gray-700">${label}</span>
+                        </div>
+                        <span class="font-semibold text-gray-800">${data[i]}%</span>
+                    </div>
+                `;
+            });
+            document.getElementById('topicLegend').innerHTML = legendHtml;
+        }
+
+        function updateProgressChart(progressData) {
+            const ctx = document.getElementById("progressChart").getContext("2d");
+            if (progressChart) progressChart.destroy();
+            progressChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
+                    datasets: [{
+                        label: "Number of Users",
+                        data: [progressData['0-20'], progressData['21-40'], progressData['41-60'], progressData['61-80'], progressData['81-100']],
+                        backgroundColor: ["rgba(239, 68, 68, 0.8)", "rgba(251, 146, 60, 0.8)", "rgba(234, 179, 8, 0.8)", "rgba(34, 197, 94, 0.8)", "rgba(16, 185, 129, 0.8)"],
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateStreakChart(streakData) {
+            const ctx = document.getElementById("streakChart").getContext("2d");
+            if (streakChart) streakChart.destroy();
+            streakChart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: ["1-3 days", "4-7 days", "8-14 days", "15-30 days", "30+ days"],
+                    datasets: [{
+                        label: "Number of Users",
+                        data: [streakData['1-3'], streakData['4-7'], streakData['8-14'], streakData['15-30'], streakData['30+']],
+                        backgroundColor: "rgba(168, 85, 247, 0.8)",
+                        borderRadius: 6,
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateLessonPerformanceTable(lessonData) {
+            const tbody = document.getElementById('lessonPerformanceTable');
+            if (lessonData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No lesson performance data available</td></tr>';
+                return;
+            }
+            let html = '';
+            lessonData.forEach(lesson => {
+                html += `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4"><p class="font-medium text-gray-800">${lesson.name}</p></td>
+                        <td class="px-6 py-4"><span class="px-3 py-1 bg-${lesson.color}-100 text-${lesson.color}-700 rounded-full text-xs font-semibold">${lesson.topic}</span></td>
+                        <td class="px-6 py-4 text-gray-700">${lesson.completions}</td>
+                        <td class="px-6 py-4"><span class="font-semibold text-gray-800">${lesson.avgScore}</span></td>
+                        <td class="px-6 py-4 text-gray-700">${lesson.avgTime}</td>
+                        <td class="px-6 py-4"><div class="flex items-center space-x-1"><i class="fas fa-star text-yellow-400 text-sm"></i><span class="text-gray-800 font-medium">${lesson.rating}</span></div></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            const user = checkAuth();
+            if (user) {
+                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+                document.getElementById('adminEmailDisplay').textContent = user.email;
+
+                if (!canAccessAnalytics(user)) {
+                    document.getElementById('accessDenied').classList.remove('hidden');
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('refreshBtn').style.display = 'none';
+                    console.log('❌ Access denied: User does not have analytics permissions');
+                } else {
+                    loadAnalytics(user.username);
+                }
+            }
+        });
+    </script>
 </body>
-
 </html>

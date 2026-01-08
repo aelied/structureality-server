@@ -2087,7 +2087,34 @@ app.get('/api/stats', async (req, res) => {
 
 // ==================== ANALYTICS ====================
 app.get('/api/analytics', async (req, res) => {
+    
     try {
+        const { username } = req.query;
+        
+        // ✅ ROLE-BASED ACCESS CONTROL: Only admins can access analytics
+        if (username) {
+            const admin = await adminsCollection.findOne({ username });
+            
+            if (!admin) {
+                console.log(`❌ Analytics access denied: User not found - ${username}`);
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied. Only administrators can view analytics.'
+                });
+            }
+            
+            if (admin.role === 'instructor') {
+                console.log(`❌ Analytics access denied: Instructor attempted access - ${username}`);
+                return res.status(403).json({
+                    success: false,
+                    error: 'Access denied. Only administrators can view analytics.'
+                });
+            }
+            
+            console.log(`✅ Analytics access granted: Admin ${username}`);
+        } else {
+            console.log(`⚠️ Analytics accessed without username parameter`);
+        }
         const users = await usersCollection.find({}).toArray();
         const lessons = await lessonsCollection.find({}).toArray();
 
