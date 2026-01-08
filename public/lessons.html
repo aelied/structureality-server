@@ -578,11 +578,7 @@
         }
 
         function updateNavigationForRole(user) {
-            const analyticsLink = document.getElementById('analyticsLink');
-            if (analyticsLink && isInstructor(user)) {
-                analyticsLink.style.display = 'none';
-            }
-
+            // Show role indicator
             const roleIndicator = document.getElementById('roleIndicator');
             if (roleIndicator) {
                 if (isInstructor(user)) {

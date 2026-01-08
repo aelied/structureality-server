@@ -202,12 +202,6 @@
         }
 
         function updateNavigationForRole(user) {
-            // Hide analytics link for instructors
-            const analyticsLink = document.getElementById('analyticsLink');
-            if (analyticsLink && isInstructor(user)) {
-                analyticsLink.style.display = 'none';
-            }
-
             // Show role indicator
             const roleIndicator = document.getElementById('roleIndicator');
             if (roleIndicator) {
