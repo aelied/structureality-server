@@ -790,9 +790,22 @@ app.post('/api/users', async (req, res) => {
             userData.registerDate = new Date().toISOString();
         }
 
-        // ✅ NEW: Add instructor field
+        
+        // ✅ NEW: Add difficulty level field
+        if (!userData.difficultyLevel) {
+            userData.difficultyLevel = 'beginner'; // Default to beginner
+        }
+
+        // Validate difficulty level
+        if (!['beginner', 'intermediate'].includes(userData.difficultyLevel)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Difficulty level must be "beginner" or "intermediate"'
+            });
+        }
+
         if (!userData.instructor) {
-            userData.instructor = null; // No instructor assigned
+            userData.instructor = null;
         }
 
         if (!userData.progress) {
@@ -815,7 +828,7 @@ app.post('/api/users', async (req, res) => {
         }
 
         const result = await usersCollection.insertOne(userData);
-        console.log(`✅ New user registered: ${userData.username} (Instructor: ${userData.instructor || 'None'})`);
+        console.log(`✅ New user registered: ${userData.username} (Level: ${userData.difficultyLevel}, Instructor: ${userData.instructor || 'None'})`);
 
         res.status(201).json({
             success: true,
@@ -831,6 +844,7 @@ app.post('/api/users', async (req, res) => {
         });
     }
 });
+
 app.post('/api/login', async (req, res) => {
     try {
         // ✅ FIX: Accept loginIdentifier OR fallback to old format
@@ -1718,24 +1732,34 @@ app.get('/api/lessons', async (req, res) => {
     }
 });
 
-app.get('/api/lessons/:topicName', async (req, res) => {
+app.get('/api/lessons/:topicName/:difficultyLevel?', async (req, res) => {
     try {
-        const lessons = await lessonsCollection.find({
-            topicName: req.params.topicName
-        })
+        const { topicName, difficultyLevel } = req.params;
+        
+        let query = { topicName: topicName };
+        
+        // Filter by difficulty level if provided
+        if (difficultyLevel && ['beginner', 'intermediate'].includes(difficultyLevel.toLowerCase())) {
+            query.difficultyLevel = difficultyLevel.toLowerCase();
+        }
+        
+        const lessons = await lessonsCollection.find(query)
             .sort({ order: 1 })
             .toArray();
 
         res.json({
             success: true,
-            topicName: req.params.topicName,
+            topicName: topicName,
+            difficultyLevel: difficultyLevel || 'all',
             count: lessons.length,
             lessons: lessons
         });
     } catch (error) {
+        console.error('Error fetching topic lessons:', error);
         res.status(500).json({
             success: false,
-            error: 'Failed to fetch lessons'
+            error: 'Failed to fetch lessons',
+            details: error.message
         });
     }
 });
@@ -1748,6 +1772,7 @@ app.post('/api/lessons', async (req, res) => {
             description: req.body.description,
             content: req.body.content || '',
             order: req.body.order || 1,
+            difficultyLevel: (req.body.difficultyLevel || 'beginner').toLowerCase(), // ✅ NEW
             createdAt: new Date().toISOString()
         };
 
@@ -1758,8 +1783,16 @@ app.post('/api/lessons', async (req, res) => {
             });
         }
 
+        // Validate difficulty level
+        if (!['beginner', 'intermediate'].includes(lessonData.difficultyLevel)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Difficulty level must be "beginner" or "intermediate"'
+            });
+        }
+
         const result = await lessonsCollection.insertOne(lessonData);
-        console.log(`✅ New lesson added: ${lessonData.title} (${lessonData.topicName})`);
+        console.log(`✅ New lesson added: ${lessonData.title} (${lessonData.topicName} - ${lessonData.difficultyLevel})`);
 
         res.status(201).json({
             success: true,
@@ -1775,7 +1808,6 @@ app.post('/api/lessons', async (req, res) => {
         });
     }
 });
-
 app.put('/api/lessons/:lessonId', async (req, res) => {
     try {
         const updateData = {
@@ -1783,8 +1815,17 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
             description: req.body.description,
             content: req.body.content,
             order: req.body.order,
+            difficultyLevel: req.body.difficultyLevel ? req.body.difficultyLevel.toLowerCase() : undefined, // ✅ NEW
             updatedAt: new Date().toISOString()
         };
+
+        // Validate difficulty level if provided
+        if (updateData.difficultyLevel && !['beginner', 'intermediate'].includes(updateData.difficultyLevel)) {
+            return res.status(400).json({
+                success: false,
+                error: 'Difficulty level must be "beginner" or "intermediate"'
+            });
+        }
 
         Object.keys(updateData).forEach(key =>
             updateData[key] === undefined && delete updateData[key]
@@ -1814,6 +1855,7 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
         });
     }
 });
+
 
 app.post('/api/lessons/complete', async (req, res) => {
     try {
