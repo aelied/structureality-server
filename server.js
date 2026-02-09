@@ -790,10 +790,13 @@ app.post('/api/users', async (req, res) => {
             userData.registerDate = new Date().toISOString();
         }
 
-        // ✅ CRITICAL FIX: New users should have EMPTY progress, not initialized topics
-        // This ensures only Arrays is unlocked, and all other topics are locked
+        // ✅ NEW: Add instructor field
+        if (!userData.instructor) {
+            userData.instructor = null; // No instructor assigned
+        }
+
         if (!userData.progress) {
-            userData.progress = {}; // ✅ Empty object, not pre-filled topics
+            userData.progress = {};
         }
 
         const existingUser = await usersCollection.findOne({
@@ -812,7 +815,7 @@ app.post('/api/users', async (req, res) => {
         }
 
         const result = await usersCollection.insertOne(userData);
-        console.log(`✅ New user registered: ${userData.username} (with empty progress)`);
+        console.log(`✅ New user registered: ${userData.username} (Instructor: ${userData.instructor || 'None'})`);
 
         res.status(201).json({
             success: true,
@@ -828,7 +831,6 @@ app.post('/api/users', async (req, res) => {
         });
     }
 });
-
 app.post('/api/login', async (req, res) => {
     try {
         // ✅ FIX: Accept loginIdentifier OR fallback to old format
@@ -903,7 +905,14 @@ app.post('/api/login', async (req, res) => {
 
 app.get('/api/users', async (req, res) => {
     try {
-        const users = await usersCollection.find({})
+        const { instructor } = req.query; // Get instructor filter from query params
+        
+        let query = {};
+        if (instructor) {
+            query.instructor = instructor;
+        }
+        
+        const users = await usersCollection.find(query)
             .project({ password: 0 })
             .toArray();
 
@@ -2081,6 +2090,116 @@ app.get('/api/stats', async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to fetch statistics'
+        });
+    }
+});
+
+// ==================== INSTRUCTOR MANAGEMENT ====================
+
+// Get all instructors (for dropdown in registration)
+app.get('/api/instructors', async (req, res) => {
+    try {
+        const instructors = await adminsCollection.find({ role: 'instructor' })
+            .project({ password: 0 }) // Don't send passwords
+            .toArray();
+
+        res.json({
+            success: true,
+            count: instructors.length,
+            instructors: instructors.map(i => ({
+                _id: i._id,
+                username: i.username,
+                name: i.name || i.username,
+                email: i.email
+            }))
+        });
+    } catch (error) {
+        console.error('Error fetching instructors:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch instructors'
+        });
+    }
+});
+
+// Get students by instructor
+app.get('/api/instructors/:instructorUsername/students', async (req, res) => {
+    try {
+        const { instructorUsername } = req.params;
+        
+        // Verify instructor exists
+        const instructor = await adminsCollection.findOne({ 
+            username: instructorUsername,
+            role: 'instructor'
+        });
+        
+        if (!instructor) {
+            return res.status(404).json({
+                success: false,
+                error: 'Instructor not found'
+            });
+        }
+        
+        // Get all students under this instructor
+        const students = await usersCollection.find({ 
+            instructor: instructorUsername 
+        })
+        .project({ password: 0 })
+        .toArray();
+
+        res.json({
+            success: true,
+            instructor: instructorUsername,
+            count: students.length,
+            students: students
+        });
+    } catch (error) {
+        console.error('Error fetching instructor students:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch students'
+        });
+    }
+});
+
+app.delete('/api/admins/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        
+        // Check if instructor exists
+        const instructor = await adminsCollection.findOne({ 
+            username: username,
+            role: 'instructor'
+        });
+        
+        if (!instructor) {
+            return res.status(404).json({
+                success: false,
+                error: 'Instructor not found'
+            });
+        }
+        
+        // Delete the instructor
+        await adminsCollection.deleteOne({ username: username });
+        
+        // Optional: Set students' instructor field to null
+        await usersCollection.updateMany(
+            { instructor: username },
+            { $set: { instructor: null } }
+        );
+        
+        console.log(`🗑️ Instructor deleted: ${username}`);
+        
+        res.json({
+            success: true,
+            message: 'Instructor deleted successfully'
+        });
+    } catch (error) {
+        console.error('❌ Error deleting instructor:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete instructor',
+            details: error.message
         });
     }
 });
