@@ -493,6 +493,13 @@
                 } else {
                     loadAnalytics(user.username);
                 }
+
+                if (isInstructor(currentUser)) {
+            const instructorsLink = document.getElementById('instructorsLink');
+            if (instructorsLink) {
+                instructorsLink.style.display = 'none';
+            }
+        }
             }
         });
     </script>

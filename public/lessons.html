@@ -933,6 +933,13 @@
                 document.getElementById('adminEmailDisplay').textContent = currentUser.email;
                 updateNavigationForRole(currentUser);
                 loadLessons();
+
+                if (isInstructor(currentUser)) {
+            const instructorsLink = document.getElementById('instructorsLink');
+            if (instructorsLink) {
+                instructorsLink.style.display = 'none';
+            }
+        }
             }
         });
     </script>
