@@ -1637,7 +1637,92 @@ app.post('/api/admin/recalculate-progress', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+app.post('/api/admin/fix-lesson-difficulty', async (req, res) => {
+    try {
+        console.log('🔄 Fixing missing difficultyLevel on lessons...');
 
+        // Find all lessons without a difficultyLevel field
+        const lessonsToFix = await lessonsCollection.find({
+            $or: [
+                { difficultyLevel: { $exists: false } },
+                { difficultyLevel: null },
+                { difficultyLevel: '' }
+            ]
+        }).toArray();
+
+        console.log(`📚 Found ${lessonsToFix.length} lessons missing difficultyLevel`);
+
+        if (lessonsToFix.length === 0) {
+            return res.json({
+                success: true,
+                message: 'All lessons already have difficultyLevel set',
+                updated: 0
+            });
+        }
+
+        // Set them all to 'beginner' (your existing lessons are beginner level)
+        const result = await lessonsCollection.updateMany(
+            {
+                $or: [
+                    { difficultyLevel: { $exists: false } },
+                    { difficultyLevel: null },
+                    { difficultyLevel: '' }
+                ]
+            },
+            { $set: { difficultyLevel: 'beginner' } }
+        );
+
+        console.log(`✅ Fixed ${result.modifiedCount} lessons → difficultyLevel: "beginner"`);
+
+        // Now re-run the tutorialCompleted fix so users get unlocked
+        console.log('🔄 Re-running tutorialCompleted fix...');
+        const users = await usersCollection.find({}).toArray();
+        let usersFixed = 0;
+        let topicsFixed = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+
+            const userLevel = user.difficultyLevel || 'beginner';
+            const updates = {};
+
+            for (const topicName of Object.keys(user.progress)) {
+                const topic = user.progress[topicName];
+                if (topic.tutorialCompleted) continue;
+
+                const totalLessons = await lessonsCollection.countDocuments({
+                    topicName: topicName,
+                    difficultyLevel: userLevel
+                });
+
+                console.log(`  ${user.username} - ${topicName}: ${topic.lessonsCompleted}/${totalLessons}`);
+
+                if (totalLessons > 0 && topic.lessonsCompleted >= totalLessons) {
+                    updates[`progress.${topicName}.tutorialCompleted`] = true;
+                    topicsFixed++;
+                    console.log(`  ✅ ${user.username} - ${topicName}: tutorialCompleted=true`);
+                }
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                usersFixed++;
+            }
+        }
+
+        res.json({
+            success: true,
+            message: 'Lessons fixed and tutorialCompleted updated',
+            lessonsUpdated: result.modifiedCount,
+            usersFixed: usersFixed,
+            topicsFixed: topicsFixed
+        });
+
+    } catch (error) {
+        console.error('❌ Fix error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
