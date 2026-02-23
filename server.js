@@ -76,91 +76,97 @@ async function connectDB() {
 }
 
 
-// ==================== UPDATED QUIZ ENDPOINTS WITH DIFFICULTY ====================
-
-// Get quizzes by topic and difficulty (UPDATED)
-app.get('/api/quizzes/:topicName/:difficulty?', async (req, res) => {
-    try {
-        const { topicName, difficulty } = req.params;
-        
-        let query = { topicName: topicName };
-        
-        // Filter by difficulty if provided
-        if (difficulty && ['easy', 'medium', 'hard'].includes(difficulty.toLowerCase())) {
-            query.difficulty = difficulty.toLowerCase();
-        }
-        
-        const quizzes = await quizzesCollection.find(query)
-            .sort({ difficulty: 1, order: 1 })  // Sort by difficulty then order
-            .toArray();
-
-        res.json({
-            success: true,
-            topicName: topicName,
-            difficulty: difficulty || 'all',
-            count: quizzes.length,
-            quizzes: quizzes
-        });
-    } catch (error) {
-        console.error('Error fetching topic quizzes:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch quizzes',
-            details: error.message
-        });
-    }
-});
 
 // ==================== QUIZ ENDPOINTS ====================
 
-// Get all quizzes
+// 1. GET ALL QUIZZES (no params)
 app.get('/api/quizzes', async (req, res) => {
     try {
         const quizzes = await quizzesCollection.find({})
             .sort({ topicName: 1, order: 1 })
             .toArray();
-
-        res.json({
-            success: true,
-            count: quizzes.length,
-            quizzes: quizzes
-        });
+        res.json({ success: true, count: quizzes.length, quizzes });
     } catch (error) {
-        console.error('Error fetching quizzes:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch quizzes',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
     }
 });
 
-// Get quizzes by topic
+// 2. NAMED SPECIFIC ROUTES — must come BEFORE any wildcard /:topicName routes
+// Summary of quiz counts per difficulty for a topic
+app.get('/api/quizzes/:topicName/summary', async (req, res) => {
+    try {
+        const { topicName } = req.params;
+        const quizzes = await quizzesCollection.find({ topicName }).toArray();
+        const summary = {
+            easy:   quizzes.filter(q => q.difficulty === 'easy').length,
+            medium: quizzes.filter(q => q.difficulty === 'medium').length,
+            hard:   quizzes.filter(q => q.difficulty === 'hard').length,
+            mixed:  quizzes.filter(q => q.difficulty === 'mixed').length,
+            total:  quizzes.length
+        };
+        res.json({ success: true, topicName, summary });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Mixed mode — random selection across easy/medium/hard
+app.get('/api/quizzes/:topicName/mixed', async (req, res) => {
+    try {
+        const { topicName } = req.params;
+        const count = parseInt(req.query.count) || 10;
+        const allQuizzes = await quizzesCollection.find({
+            topicName,
+            difficulty: { $in: ['easy', 'medium', 'hard'] }
+        }).toArray();
+
+        if (allQuizzes.length === 0) {
+            return res.json({ success: true, topicName, difficulty: 'mixed', count: 0, quizzes: [] });
+        }
+
+        const shuffled = allQuizzes.sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, Math.min(count, shuffled.length));
+        res.json({ success: true, topicName, difficulty: 'mixed', count: selected.length, quizzes: selected });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 3. WILDCARD ROUTES — after named routes
+// Get all quizzes for a topic (no difficulty filter)
 app.get('/api/quizzes/:topicName', async (req, res) => {
     try {
-        const quizzes = await quizzesCollection.find({
-            topicName: req.params.topicName
-        })
+        const quizzes = await quizzesCollection.find({ topicName: req.params.topicName })
             .sort({ order: 1 })
             .toArray();
-
-        res.json({
-            success: true,
-            topicName: req.params.topicName,
-            count: quizzes.length,
-            quizzes: quizzes
-        });
+        res.json({ success: true, topicName: req.params.topicName, count: quizzes.length, quizzes });
     } catch (error) {
-        console.error('Error fetching topic quizzes:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch quizzes',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
     }
 });
 
-// Add new quiz question
+// Get quizzes for a topic filtered by difficulty
+app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
+    try {
+        const { topicName, difficulty } = req.params;
+        const validDifficulties = ['easy', 'medium', 'hard', 'mixed'];
+
+        let query = { topicName };
+        if (validDifficulties.includes(difficulty.toLowerCase())) {
+            query.difficulty = difficulty.toLowerCase();
+        }
+
+        const quizzes = await quizzesCollection.find(query)
+            .sort({ difficulty: 1, order: 1 })
+            .toArray();
+
+        res.json({ success: true, topicName, difficulty, count: quizzes.length, quizzes });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
+    }
+});
+
+// 4. ADD quiz
 app.post('/api/quizzes', async (req, res) => {
     try {
         const quizData = {
@@ -169,60 +175,34 @@ app.post('/api/quizzes', async (req, res) => {
             answerOptions: req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
             explanation: req.body.explanation,
-            difficulty: (req.body.difficulty || 'medium').toLowerCase(), // Default to medium
+            difficulty: (req.body.difficulty || 'medium').toLowerCase(),
             order: req.body.order || 1,
             createdAt: new Date().toISOString()
         };
 
-        // Validation
-        if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions || 
+        if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions ||
             quizData.correctAnswerIndex === undefined || !quizData.explanation) {
-            return res.status(400).json({
-                success: false,
-                error: 'Topic name, question, answers, correct answer index, and explanation are required'
-            });
+            return res.status(400).json({ success: false, error: 'Topic name, question, answers, correct answer index, and explanation are required' });
         }
-
-        if (!['easy', 'medium', 'hard'].includes(quizData.difficulty)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Difficulty must be easy, medium, or hard'
-            });
+        if (!['easy', 'medium', 'hard', 'mixed'].includes(quizData.difficulty)) {
+            return res.status(400).json({ success: false, error: 'Difficulty must be easy, medium, hard, or mixed' });
         }
-
         if (!Array.isArray(quizData.answerOptions) || quizData.answerOptions.length < 2) {
-            return res.status(400).json({
-                success: false,
-                error: 'At least 2 answer options are required'
-            });
+            return res.status(400).json({ success: false, error: 'At least 2 answer options are required' });
         }
-
         if (quizData.correctAnswerIndex < 0 || quizData.correctAnswerIndex >= quizData.answerOptions.length) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid correct answer index'
-            });
+            return res.status(400).json({ success: false, error: 'Invalid correct answer index' });
         }
 
         const result = await quizzesCollection.insertOne(quizData);
         console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName} - ${quizData.difficulty})`);
-
-        res.status(201).json({
-            success: true,
-            message: 'Quiz question added successfully',
-            quizId: result.insertedId
-        });
+        res.status(201).json({ success: true, message: 'Quiz question added successfully', quizId: result.insertedId });
     } catch (error) {
-        console.error('Error adding quiz:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to add quiz question',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to add quiz question', details: error.message });
     }
 });
 
-// Update quiz question
+// 5. UPDATE quiz
 app.put('/api/quizzes/:quizId', async (req, res) => {
     try {
         const updateData = {
@@ -234,121 +214,86 @@ app.put('/api/quizzes/:quizId', async (req, res) => {
             order: req.body.order,
             updatedAt: new Date().toISOString()
         };
+        Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
 
-        // Remove undefined fields
-        Object.keys(updateData).forEach(key =>
-            updateData[key] === undefined && delete updateData[key]
-        );
-
-        // Validate difficulty if provided
-        if (updateData.difficulty && !['easy', 'medium', 'hard'].includes(updateData.difficulty)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Difficulty must be easy, medium, or hard'
-            });
+        if (updateData.difficulty && !['easy', 'medium', 'hard', 'mixed'].includes(updateData.difficulty)) {
+            return res.status(400).json({ success: false, error: 'Difficulty must be easy, medium, hard, or mixed' });
         }
 
         const result = await quizzesCollection.updateOne(
             { _id: new ObjectId(req.params.quizId) },
             { $set: updateData }
         );
-
         if (result.matchedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Quiz question not found'
-            });
+            return res.status(404).json({ success: false, error: 'Quiz question not found' });
         }
-
-        console.log(`✅ Quiz updated: ${req.params.quizId}`);
-        res.json({
-            success: true,
-            message: 'Quiz question updated successfully'
-        });
+        res.json({ success: true, message: 'Quiz question updated successfully' });
     } catch (error) {
-        console.error('Error updating quiz:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to update quiz question',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to update quiz question', details: error.message });
     }
 });
 
-// Delete quiz question
+// 6. DELETE quiz
 app.delete('/api/quizzes/:quizId', async (req, res) => {
     try {
-        const result = await quizzesCollection.deleteOne({
-            _id: new ObjectId(req.params.quizId)
-        });
-
+        const result = await quizzesCollection.deleteOne({ _id: new ObjectId(req.params.quizId) });
         if (result.deletedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'Quiz question not found'
-            });
+            return res.status(404).json({ success: false, error: 'Quiz question not found' });
         }
-
-        console.log(`🗑️ Quiz deleted: ${req.params.quizId}`);
-        res.json({
-            success: true,
-            message: 'Quiz question deleted successfully'
-        });
+        res.json({ success: true, message: 'Quiz question deleted successfully' });
     } catch (error) {
-        console.error('Error deleting quiz:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to delete quiz question',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to delete quiz question', details: error.message });
     }
 });
 
-// Get quiz statistics
+// 7. STATS
 app.get('/api/quizzes-stats', async (req, res) => {
     try {
         const quizzes = await quizzesCollection.find({}).toArray();
-        
         const stats = {
             total: quizzes.length,
             byTopic: {},
-            byDifficulty: {
-                easy: 0,
-                medium: 0,
-                hard: 0
-            }
+            byDifficulty: { easy: 0, medium: 0, hard: 0, mixed: 0 }
         };
-
         quizzes.forEach(quiz => {
-            // Count by topic
             if (!stats.byTopic[quiz.topicName]) {
-                stats.byTopic[quiz.topicName] = {
-                    total: 0,
-                    easy: 0,
-                    medium: 0,
-                    hard: 0
-                };
+                stats.byTopic[quiz.topicName] = { total: 0, easy: 0, medium: 0, hard: 0, mixed: 0 };
             }
             stats.byTopic[quiz.topicName].total++;
-            
-            // Count by difficulty
             const difficulty = quiz.difficulty || 'medium';
-            stats.byTopic[quiz.topicName][difficulty]++;
-            stats.byDifficulty[difficulty]++;
+            if (stats.byTopic[quiz.topicName][difficulty] !== undefined) stats.byTopic[quiz.topicName][difficulty]++;
+            if (stats.byDifficulty[difficulty] !== undefined) stats.byDifficulty[difficulty]++;
         });
-
-        res.json({
-            success: true,
-            stats: stats
-        });
+        res.json({ success: true, stats });
     } catch (error) {
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch quiz statistics'
-        });
+        res.status(500).json({ success: false, error: 'Failed to fetch quiz statistics' });
     }
 });
 
+// 8. BULK IMPORT
+app.post('/api/quizzes/bulk', async (req, res) => {
+    try {
+        const { quizzes } = req.body;
+        if (!Array.isArray(quizzes) || quizzes.length === 0) {
+            return res.status(400).json({ success: false, error: 'Quizzes array is required' });
+        }
+        const quizzesToInsert = quizzes.map(quiz => ({
+            topicName: quiz.topicName,
+            questionText: quiz.questionText,
+            answerOptions: quiz.answerOptions,
+            correctAnswerIndex: quiz.correctAnswerIndex,
+            explanation: quiz.explanation,
+            difficulty: (quiz.difficulty || 'medium').toLowerCase(),
+            order: quiz.order || 1,
+            createdAt: new Date().toISOString()
+        }));
+        const result = await quizzesCollection.insertMany(quizzesToInsert);
+        console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
+        res.json({ success: true, message: `${result.insertedCount} quizzes added successfully`, insertedCount: result.insertedCount });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to bulk import quizzes', details: error.message });
+    }
+});
 
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
@@ -2580,17 +2525,15 @@ function formatTime(seconds) {
 }
 
 // ==================== BULK QUIZ IMPORT (OPTIONAL) ====================
+
 app.post('/api/quizzes/bulk', async (req, res) => {
     try {
         const { quizzes } = req.body;
-        
+
         if (!Array.isArray(quizzes) || quizzes.length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Quizzes array is required'
-            });
+            return res.status(400).json({ success: false, error: 'Quizzes array is required' });
         }
-        
+
         const quizzesToInsert = quizzes.map(quiz => ({
             topicName: quiz.topicName,
             questionText: quiz.questionText,
@@ -2601,11 +2544,10 @@ app.post('/api/quizzes/bulk', async (req, res) => {
             order: quiz.order || 1,
             createdAt: new Date().toISOString()
         }));
-        
+
         const result = await quizzesCollection.insertMany(quizzesToInsert);
-        
         console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
-        
+
         res.json({
             success: true,
             message: `${result.insertedCount} quizzes added successfully`,
@@ -2613,20 +2555,15 @@ app.post('/api/quizzes/bulk', async (req, res) => {
         });
     } catch (error) {
         console.error('Error bulk importing quizzes:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to bulk import quizzes',
-            details: error.message
-        });
+        res.status(500).json({ success: false, error: 'Failed to bulk import quizzes', details: error.message });
     }
 });
-
 
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
         console.log('\n==================================================');
-        console.log('🚀 StructuReality Server v2.5 - Fixes & Analytics');
+        console.log('🚀 StructuReality Server v2.6 - Quiz + Tests Tab');
         console.log('==================================================');
         console.log(`📡 Server: http://localhost:${PORT}`);
         console.log(`🔐 Login: http://localhost:${PORT}/login.html`);
@@ -2634,7 +2571,6 @@ connectDB().then(() => {
         console.log(`👥 Users: http://localhost:${PORT}/users.html`);
         console.log(`📚 Lessons: http://localhost:${PORT}/lessons.html`);
         console.log(`💾 Database: ${DB_NAME}`);
-        console.log(`📚 Collections: users, lessons, admins`);
         console.log('==================================================\n');
     });
 });
