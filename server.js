@@ -1085,7 +1085,10 @@ app.put('/api/progress/:username', async (req, res) => {
 
         // ✅ Fetch lesson counts from database
         const lessonCounts = {};
-        const allLessons = await lessonsCollection.find({}).toArray();
+        const userDifficultyLevel = existingUser.difficultyLevel || 'beginner';
+        const allLessons = await lessonsCollection.find({ 
+            difficultyLevel: userDifficultyLevel  // ✅ Filter here
+        }).toArray();
         
         allLessons.forEach(lesson => {
             const normalizedTopic = lesson.topicName.trim();
@@ -1094,8 +1097,8 @@ app.put('/api/progress/:username', async (req, res) => {
             }
             lessonCounts[normalizedTopic]++;
         });
-
-        console.log('📚 Lesson counts per topic:', lessonCounts);
+    
+        console.log(`📚 Lesson counts for ${userDifficultyLevel}:`, lessonCounts);
 
         // ✅ CALCULATE STREAK
         let newStreak = existingUser.streak || 0;
