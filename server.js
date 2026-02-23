@@ -1212,7 +1212,7 @@ app.put('/api/progress/:username', async (req, res) => {
                         finalDifficultyScores.hard,
                         finalDifficultyScores.mixed
                     ),
-                    progressPercentage: calculatedProgress,
+                    progressPercentage: Math.max(calculatedProgress, existingTopic.progressPercentage || 0),
                     lastAccessed: topic.lastAccessed || new Date().toISOString(),
                     timeSpent: Math.max(
                         parseFloat(topic.timeSpent || 0),
