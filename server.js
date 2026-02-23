@@ -1175,9 +1175,12 @@ app.put('/api/progress/:username', async (req, res) => {
                 let puzzleProgress = 0;
                 
                 // 50% weight for lessons (using PRESERVED count)
-                if (finalLessonsCompleted > 0 && totalLessonsForTopic > 0) {
-                    lessonProgress = (finalLessonsCompleted / totalLessonsForTopic) * 50;
-                    lessonProgress = Math.min(50, lessonProgress);
+                if (totalLessonsForTopic > 0 && finalLessonsCompleted > 0) {
+                    if (finalLessonsCompleted >= totalLessonsForTopic) {
+                        lessonProgress = 50; // All lessons done = exactly 50%
+                    } else {
+                        lessonProgress = Math.min(50, (finalLessonsCompleted / totalLessonsForTopic) * 50);
+                    }
                 }
                 
                 // 50% weight for puzzles
@@ -1418,8 +1421,11 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
         // Calculate lesson progress (50%)
         let lessonProgress = 0;
         if (lessonCount > 0 && topicProgress.lessonsCompleted > 0) {
-            lessonProgress = (topicProgress.lessonsCompleted / lessonCount) * 50;
-            lessonProgress = Math.min(50, lessonProgress);
+            if (topicProgress.lessonsCompleted >= lessonCount) {
+                lessonProgress = 50; // All lessons done = exactly 50%
+            } else {
+                lessonProgress = Math.min(50, (topicProgress.lessonsCompleted / lessonCount) * 50);
+            }
         }
         
         // ✅ Calculate puzzle progress - Count completed difficulties (> 0%)
@@ -1534,7 +1540,11 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
 
         let lessonProgress = 0;
         if (totalLessonCount > 0 && lessonsCount > 0) {
-            lessonProgress = Math.min(50, (lessonsCount / totalLessonCount) * 50);
+            if (lessonsCount >= totalLessonCount) {
+                lessonProgress = 50; // All lessons done = exactly 50%
+            } else {
+                lessonProgress = Math.min(50, (lessonsCount / totalLessonCount) * 50);
+            }
         }
 
         let puzzleProgress = 0;
@@ -1590,7 +1600,11 @@ app.post('/api/admin/recalculate-progress', async (req, res) => {
 
                 let lessonProgress = 0;
                 if (totalLessons > 0 && topic.lessonsCompleted > 0) {
-                    lessonProgress = Math.min(50, (topic.lessonsCompleted / totalLessons) * 50);
+                    if (topic.lessonsCompleted >= totalLessons) {
+                        lessonProgress = 50;
+                    } else {
+                        lessonProgress = Math.min(50, (topic.lessonsCompleted / totalLessons) * 50);
+                    }
                 }
 
                 let puzzleProgress = 0;
