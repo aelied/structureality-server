@@ -1541,15 +1541,29 @@ app.post('/api/admin/fix-tutorial-completed', async (req, res) => {
                 const topic = user.progress[topicName];
                 if (topic.tutorialCompleted) continue; // Already true, skip
 
-                const totalLessons = await lessonsCollection.countDocuments({
+                // Try filtered count first
+                let totalLessons = await lessonsCollection.countDocuments({
                     topicName: topicName,
                     difficultyLevel: userLevel
                 });
+
+                // ✅ FALLBACK: if no lessons found with level filter,
+                //    count all lessons for this topic (handles legacy data)
+                if (totalLessons === 0) {
+                    totalLessons = await lessonsCollection.countDocuments({
+                        topicName: topicName
+                    });
+                    if (totalLessons > 0) {
+                        console.log(`  ℹ️  ${topicName}: no lessons with level '${userLevel}', using unfiltered count=${totalLessons}`);
+                    }
+                }
 
                 if (totalLessons > 0 && topic.lessonsCompleted >= totalLessons) {
                     updates[`progress.${topicName}.tutorialCompleted`] = true;
                     topicsFixed++;
                     console.log(`  ✅ ${user.username} - ${topicName}: ${topic.lessonsCompleted}/${totalLessons} → tutorialCompleted=true`);
+                } else {
+                    console.log(`  ⏭  ${user.username} - ${topicName}: ${topic.lessonsCompleted}/${totalLessons} (not done yet)`);
                 }
             }
 
@@ -1571,7 +1585,6 @@ app.post('/api/admin/fix-tutorial-completed', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-
 app.post('/api/admin/recalculate-progress', async (req, res) => {
     try {
         const users = await usersCollection.find({}).toArray();
