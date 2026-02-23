@@ -1081,76 +1081,67 @@ app.put('/api/progress/:username', async (req, res) => {
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
                 const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
-                
-                // ✅ CRITICAL FIX: Get EXISTING topic data
                 const existingTopic = mergedProgress[topic.topicName] || {};
-                
-                // ✅ FIX: Use EXISTING lesson count if incoming is 0 or missing
-                // This prevents puzzle submissions from erasing lesson progress
+            
+                // Preserve lesson count (never go backwards)
                 let finalLessonsCompleted;
                 if (topic.lessonsCompleted === undefined || topic.lessonsCompleted === 0) {
-                    // If incoming data has no lesson info, keep existing
                     finalLessonsCompleted = existingTopic.lessonsCompleted || 0;
                     console.log(`   ⚠️ No lesson data in request - preserving: ${finalLessonsCompleted}`);
                 } else {
-                    // If incoming data has lesson info, use it (but don't go backwards)
                     finalLessonsCompleted = Math.max(
                         topic.lessonsCompleted,
                         existingTopic.lessonsCompleted || 0
                     );
                 }
-                
-                // ✅ Merge difficulty scores (keep highest)
+            
+                // ✅ FIX: Auto-set tutorialCompleted when all lessons done
+                //    NEVER lower it from true → false (Unity sends false because it
+                //    never calls CompleteTutorial(), so we ignore incoming false values)
+                const allLessonsFinished = totalLessonsForTopic > 0 && finalLessonsCompleted >= totalLessonsForTopic;
+                const finalTutorialCompleted =
+                    allLessonsFinished ||                         // auto-complete when lessons done
+                    topic.tutorialCompleted === true ||           // respect incoming true
+                    existingTopic.tutorialCompleted === true;     // never lower from true→false
+            
+                // Merge difficulty scores (keep highest)
                 const existingDifficultyScores = existingTopic.difficultyScores || {
-                    easy: 0,
-                    medium: 0,
-                    hard: 0,
-                    mixed: 0
+                    easy: 0, medium: 0, hard: 0, mixed: 0
                 };
-                
                 const finalDifficultyScores = {
-                    easy: Math.max(existingDifficultyScores.easy, topic.difficultyScores?.easy || 0),
+                    easy:   Math.max(existingDifficultyScores.easy,   topic.difficultyScores?.easy   || 0),
                     medium: Math.max(existingDifficultyScores.medium, topic.difficultyScores?.medium || 0),
-                    hard: Math.max(existingDifficultyScores.hard, topic.difficultyScores?.hard || 0),
-                    mixed: Math.max(existingDifficultyScores.mixed, topic.difficultyScores?.mixed || 0)
+                    hard:   Math.max(existingDifficultyScores.hard,   topic.difficultyScores?.hard   || 0),
+                    mixed:  Math.max(existingDifficultyScores.mixed,  topic.difficultyScores?.mixed  || 0)
                 };
-                
-                // ✅ NOW calculate progress with correct lesson count
+            
+                // Calculate progress
                 let lessonProgress = 0;
-                let puzzleProgress = 0;
-                
-                // 50% weight for lessons (using PRESERVED count)
                 if (totalLessonsForTopic > 0 && finalLessonsCompleted > 0) {
-                    if (finalLessonsCompleted >= totalLessonsForTopic) {
-                        lessonProgress = 50; // All lessons done = exactly 50%
-                    } else {
-                        lessonProgress = Math.min(50, (finalLessonsCompleted / totalLessonsForTopic) * 50);
-                    }
+                    lessonProgress = finalLessonsCompleted >= totalLessonsForTopic
+                        ? 50
+                        : Math.min(50, (finalLessonsCompleted / totalLessonsForTopic) * 50);
                 }
-                
-                // 50% weight for puzzles
-                const difficulties = ['easy', 'medium', 'hard', 'mixed'];
+            
+                let puzzleProgress = 0;
                 let completedDifficulties = 0;
-                
-                difficulties.forEach(diff => {
+                ['easy', 'medium', 'hard', 'mixed'].forEach(diff => {
                     if (finalDifficultyScores[diff] > 0) {
                         completedDifficulties++;
                         puzzleProgress += 12.5;
                     }
                 });
-                
+            
                 const calculatedProgress = Math.min(100, lessonProgress + puzzleProgress);
-                
+            
                 console.log(`📊 ${topic.topicName}:`);
                 console.log(`   Lessons: ${finalLessonsCompleted}/${totalLessonsForTopic} = ${lessonProgress.toFixed(1)}%`);
-                console.log(`   Puzzle Scores: Easy=${finalDifficultyScores.easy}%, Med=${finalDifficultyScores.medium}%, Hard=${finalDifficultyScores.hard}%, Mix=${finalDifficultyScores.mixed}%`);
-                console.log(`   Completed Difficulties: ${completedDifficulties}/4`);
-                console.log(`   Puzzle Progress: ${puzzleProgress}%`);
+                console.log(`   tutorialCompleted: ${finalTutorialCompleted} (allDone=${allLessonsFinished})`);
+                console.log(`   Puzzle: Easy=${finalDifficultyScores.easy}% Med=${finalDifficultyScores.medium}% Hard=${finalDifficultyScores.hard}% Mix=${finalDifficultyScores.mixed}%`);
                 console.log(`   Total: ${calculatedProgress.toFixed(1)}%`);
-                
-                // ✅ Save with PRESERVED lesson count
+            
                 mergedProgress[topic.topicName] = {
-                    tutorialCompleted: topic.tutorialCompleted === true || existingTopic.tutorialCompleted === true,
+                    tutorialCompleted: finalTutorialCompleted,   // ✅ FIXED
                     puzzleCompleted: completedDifficulties >= 4,
                     score: Math.max(
                         parseInt(topic.puzzleScore || topic.score || 0),
@@ -1166,10 +1157,11 @@ app.put('/api/progress/:username', async (req, res) => {
                         parseFloat(topic.timeSpent || 0),
                         parseFloat(existingTopic.timeSpent || 0)
                     ),
-                    lessonsCompleted: finalLessonsCompleted, // ✅ PRESERVED VALUE!
+                    lessonsCompleted: finalLessonsCompleted,
                     difficultyScores: finalDifficultyScores
                 };
             });
+            
         }
 
         const updateData = {
@@ -1435,7 +1427,7 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
 app.put('/api/progress/:username/lessons', async (req, res) => {
     try {
         const { username } = req.params;
-        const { topicName, lessonsCompleted, difficultyLevel } = req.body; // ✅ only here
+        const { topicName, lessonsCompleted, difficultyLevel } = req.body;
 
         console.log(`📚 Updating lessons for ${username}: ${topicName} - ${lessonsCompleted} lessons (${difficultyLevel || 'no level'})`);
 
@@ -1464,32 +1456,38 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
             });
         }
 
+        // Get total lesson count for this topic
+        let lessonQuery = { topicName: topicName };
+        if (difficultyLevel) {
+            lessonQuery.difficultyLevel = difficultyLevel.toLowerCase();
+        }
+        const totalLessonCount = await lessonsCollection.countDocuments(lessonQuery);
+        console.log(`📚 Total ${difficultyLevel || 'all'} lessons for ${topicName}: ${totalLessonCount}`);
+
+        // ✅ FIX: Auto-set tutorialCompleted when all lessons done
+        const allLessonsFinished = totalLessonCount > 0 && lessonsCount >= totalLessonCount;
+        // Also preserve existing true value
+        const existingTutorialCompleted = user.progress?.[topicName]?.tutorialCompleted || false;
+        const finalTutorialCompleted = allLessonsFinished || existingTutorialCompleted;
+
+        console.log(`📖 tutorialCompleted: ${finalTutorialCompleted} (allDone=${allLessonsFinished}, existing=${existingTutorialCompleted})`);
+
         await usersCollection.updateOne({ username }, {
             $set: {
                 [`progress.${topicName}.lessonsCompleted`]: lessonsCount,
-                [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                [`progress.${topicName}.lastAccessed`]: new Date().toISOString(),
+                [`progress.${topicName}.tutorialCompleted`]: finalTutorialCompleted  // ✅ FIXED
             }
         });
 
         const updatedUser = await usersCollection.findOne({ username });
         const topicProgress = updatedUser.progress[topicName];
 
-        // ✅ Filter by difficultyLevel if provided
-        let lessonQuery = { topicName: topicName };
-        if (difficultyLevel) {
-            lessonQuery.difficultyLevel = difficultyLevel.toLowerCase();
-        }
-        const totalLessonCount = await lessonsCollection.countDocuments(lessonQuery);
-
-        console.log(`📚 Total ${difficultyLevel || 'all'} lessons for ${topicName}: ${totalLessonCount}`);
-
         let lessonProgress = 0;
         if (totalLessonCount > 0 && lessonsCount > 0) {
-            if (lessonsCount >= totalLessonCount) {
-                lessonProgress = 50; // All lessons done = exactly 50%
-            } else {
-                lessonProgress = Math.min(50, (lessonsCount / totalLessonCount) * 50);
-            }
+            lessonProgress = lessonsCount >= totalLessonCount
+                ? 50
+                : Math.min(50, (lessonsCount / totalLessonCount) * 50);
         }
 
         let puzzleProgress = 0;
@@ -1516,11 +1514,61 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
             message: 'Lesson completion updated',
             topicName, lessonsCompleted: lessonsCount,
             totalLessons: totalLessonCount,
-            progressPercentage: totalProgress
+            progressPercentage: totalProgress,
+            tutorialCompleted: finalTutorialCompleted  // ✅ Return so Unity can update
         });
     } catch (error) {
         console.error('Error updating lessons:', error);
         res.status(500).json({ success: false, error: 'Failed to update lesson completion', details: error.message });
+    }
+});
+
+app.post('/api/admin/fix-tutorial-completed', async (req, res) => {
+    try {
+        console.log('🔄 Fixing tutorialCompleted for all users...');
+
+        const users = await usersCollection.find({}).toArray();
+        let fixedCount = 0;
+        let topicsFixed = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+
+            const userLevel = user.difficultyLevel || 'beginner';
+            const updates = {};
+
+            for (const topicName of Object.keys(user.progress)) {
+                const topic = user.progress[topicName];
+                if (topic.tutorialCompleted) continue; // Already true, skip
+
+                const totalLessons = await lessonsCollection.countDocuments({
+                    topicName: topicName,
+                    difficultyLevel: userLevel
+                });
+
+                if (totalLessons > 0 && topic.lessonsCompleted >= totalLessons) {
+                    updates[`progress.${topicName}.tutorialCompleted`] = true;
+                    topicsFixed++;
+                    console.log(`  ✅ ${user.username} - ${topicName}: ${topic.lessonsCompleted}/${totalLessons} → tutorialCompleted=true`);
+                }
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                fixedCount++;
+            }
+        }
+
+        console.log(`✅ Fix complete: ${fixedCount} users updated, ${topicsFixed} topics fixed`);
+        res.json({
+            success: true,
+            message: 'tutorialCompleted fixed for all eligible users',
+            usersUpdated: fixedCount,
+            topicsFixed: topicsFixed
+        });
+    } catch (error) {
+        console.error('❌ Fix error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
