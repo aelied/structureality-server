@@ -1569,6 +1569,55 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
     }
 });
 
+app.post('/api/admin/recalculate-progress', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+
+            const userLevel = user.difficultyLevel || 'beginner';
+            const updates = {};
+
+            for (const topicName of Object.keys(user.progress)) {
+                const topic = user.progress[topicName];
+
+                const totalLessons = await lessonsCollection.countDocuments({
+                    topicName: topicName,
+                    difficultyLevel: userLevel
+                });
+
+                let lessonProgress = 0;
+                if (totalLessons > 0 && topic.lessonsCompleted > 0) {
+                    lessonProgress = Math.min(50, (topic.lessonsCompleted / totalLessons) * 50);
+                }
+
+                let puzzleProgress = 0;
+                const scores = topic.difficultyScores || {};
+                if (scores.easy > 0) puzzleProgress += 12.5;
+                if (scores.medium > 0) puzzleProgress += 12.5;
+                if (scores.hard > 0) puzzleProgress += 12.5;
+                if (scores.mixed > 0) puzzleProgress += 12.5;
+
+                const newProgress = Math.min(100, lessonProgress + puzzleProgress);
+                updates[`progress.${topicName}.progressPercentage`] = newProgress;
+                
+                console.log(`📊 ${user.username} - ${topicName}: ${topic.lessonsCompleted}/${totalLessons} lessons + puzzle ${puzzleProgress}% = ${newProgress}%`);
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                updated++;
+            }
+        }
+
+        res.json({ success: true, message: 'Progress recalculated', usersUpdated: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
