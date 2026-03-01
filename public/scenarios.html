@@ -296,6 +296,13 @@
         ];
 
         // =========================================================
+        // API URL
+        // =========================================================
+        const API_URL = window.location.hostname === 'localhost'
+            ? 'http://localhost:3000/api'
+            : 'https://structureality-admin.onrender.com/api';
+
+        // =========================================================
         // STATE
         // activeScenarios[dsId] = array of 0, 1, or 2 scenario IDs
         // The ORDER matters — index 0 = Button 1, index 1 = Button 2
@@ -314,9 +321,9 @@
         // =========================================================
         // INIT
         // =========================================================
-        window.addEventListener('load', () => {
+        window.addEventListener('load', async () => {
             loadAuthDisplay();
-            loadSavedState();
+            await loadStateFromServer();   // try server first
             renderDsTabs();
             renderAll();
         });
@@ -337,16 +344,32 @@
             window.location.href = 'login.html';
         }
 
-        function loadSavedState() {
+        // Load config from server on page open — falls back to localStorage
+        async function loadStateFromServer() {
+            try {
+                const res  = await fetch(`${API_URL}/scenarios/config`);
+                const data = await res.json();
+                if (data.success && data.scenarios) {
+                    activeScenarios = { ...activeScenarios, ...data.scenarios };
+                    // Keep localStorage in sync
+                    localStorage.setItem('srActiveScenarios', JSON.stringify(activeScenarios));
+                    if (data.updatedAt) {
+                        const formatted = new Date(data.updatedAt).toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                        document.getElementById('lastPush').textContent = formatted;
+                        localStorage.setItem('srLastPush', formatted);
+                    }
+                    return;
+                }
+            } catch(e) {
+                console.warn('Could not load config from server, using localStorage fallback.');
+            }
+            // Fallback: localStorage
             const saved = localStorage.getItem('srActiveScenarios');
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    // Migrate old format (string → array)
                     Object.keys(parsed).forEach(ds => {
-                        if (typeof parsed[ds] === 'string') {
-                            parsed[ds] = [parsed[ds]];
-                        }
+                        if (typeof parsed[ds] === 'string') parsed[ds] = [parsed[ds]];
                     });
                     activeScenarios = { ...activeScenarios, ...parsed };
                 } catch(e) {}
@@ -604,19 +627,35 @@
         }
 
         // =========================================================
-        // PUSH CONFIG TO APP
+        // PUSH CONFIG TO APP — saves to MongoDB via backend
         // =========================================================
-        function pushConfigToApp() {
-            const now = new Date();
-            const formatted = now.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
-            localStorage.setItem('srLastPush', formatted);
-            document.getElementById('lastPush').textContent = formatted;
+        async function pushConfigToApp() {
+            const pushBtn = document.querySelector('button[onclick="pushConfigToApp()"]');
+            if (pushBtn) { pushBtn.disabled = true; pushBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Pushing...'; }
 
-            // What gets sent to the Unity app:
-            // { "Arrays": ["ParkingLot","VendingMachine"], "Queue": [...], ... }
-            console.log('Pushing scenario config to app:', activeScenarios);
+            try {
+                const res  = await fetch(`${API_URL}/scenarios/config`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ scenarios: activeScenarios }),
+                });
+                const data = await res.json();
 
-            showToast('🚀 Config pushed to AR app successfully!', 'info');
+                if (data.success) {
+                    const now       = new Date();
+                    const formatted = now.toLocaleString('en-US', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+                    localStorage.setItem('srLastPush', formatted);
+                    document.getElementById('lastPush').textContent = formatted;
+                    showToast('🚀 Config pushed to AR app!', 'success');
+                } else {
+                    showToast('❌ Push failed — check server logs', 'error');
+                }
+            } catch(e) {
+                console.error('Push error:', e);
+                showToast('❌ Could not reach server', 'error');
+            } finally {
+                if (pushBtn) { pushBtn.disabled = false; pushBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Push to App'; }
+            }
         }
 
         // =========================================================

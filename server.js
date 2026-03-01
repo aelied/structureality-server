@@ -5,6 +5,7 @@ const path = require('path');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const crypto = require('crypto'); // ← ADD THIS - Required for token generation
 const sgMail = require('@sendgrid/mail');
+const scenarioRoutes = require('./scenarioRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,6 +68,7 @@ async function connectDB() {
         await lessonsCollection.createIndex({ topicName: 1, order: 1 });
         await quizzesCollection.createIndex({ topicName: 1, order: 1 });  // ✅ ADD THIS LINE
         await adminsCollection.createIndex({ username: 1 }, { unique: true });
+        app.use('/api/scenarios', scenarioRoutes(db));
 
         console.log("✅ Connected to MongoDB Atlas!");
     } catch (error) {
