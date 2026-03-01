@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>StructuReality - AR Scenarios</title>
+  <title>AR Scenarios - StructuReality Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -13,6 +13,40 @@
     .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
     .scenario-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
     .scenario-card.active { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99,102,241,0.15); }
+
+    /* Tab styles */
+    .ds-tab {
+      position: relative;
+      padding: 10px 28px;
+      border-radius: 10px 10px 0 0;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+      border-bottom: none;
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+    .ds-tab.active-tab {
+      background: white;
+      color: #4f46e5;
+      border-color: #e5e7eb;
+      border-bottom-color: white;
+      z-index: 2;
+    }
+    .ds-tab:hover:not(.active-tab) { background: #e9eaff; color: #4f46e5; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-bar {
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid #e5e7eb;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 0;
+    }
+
     .toggle-switch { position: relative; width: 44px; height: 24px; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
     .slider {
@@ -31,6 +65,7 @@
     }
     .toggle-switch input:checked + .slider { background: #6366f1; }
     .toggle-switch input:checked + .slider::before { transform: translateX(20px); }
+
     .sparkline { overflow: visible; }
     .toast {
       position: fixed; bottom: 24px; right: 24px;
@@ -112,7 +147,7 @@
     <div class="px-8 py-4 flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-gray-800">AR Scenarios</h2>
-        <p class="text-sm text-gray-500">Configure which scenarios appear in the AR app</p>
+        <p class="text-sm text-gray-500">Configure which scenarios appear in the AR app per data structure</p>
       </div>
       <div class="flex items-center space-x-4">
         <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
@@ -141,52 +176,107 @@
   <!-- Main Content -->
   <main class="ml-64 mt-20 p-8">
 
-    <!-- App Preview Bar -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6 flex items-center gap-5 flex-wrap">
-      <div class="flex items-center gap-2 text-sm text-gray-500">
-        <i class="fas fa-mobile-alt text-indigo-500"></i>
-        <span class="font-medium text-gray-700">Arrays Screen Preview</span>
+    <!-- DS Tab Bar -->
+    <div class="tab-bar mb-0">
+      <button class="ds-tab active-tab" id="tab-Arrays" onclick="switchTab('Arrays')">
+        <i class="fas fa-list-ol mr-2 text-sm"></i>Arrays
+      </button>
+      <button class="ds-tab" id="tab-Stacks" onclick="switchTab('Stacks')">
+        <i class="fas fa-layer-group mr-2 text-sm"></i>Stacks
+      </button>
+    </div>
+
+    <!-- ══════════════ ARRAYS TAB ══════════════ -->
+    <div class="tab-panel active bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Arrays">
+
+      <!-- App Preview -->
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-indigo-500"></i>
+          <span class="font-medium text-gray-700">Arrays Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="arrPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="arrPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="arrActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="arrStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
       </div>
-      <i class="fas fa-arrow-right text-gray-300"></i>
-      <div class="flex gap-3 flex-wrap">
-        <div id="previewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-        <div id="previewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-      </div>
-      <div class="ml-auto flex items-center gap-2 text-sm">
-        <span id="activeCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-        <span id="statusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+
+      <!-- Array Scenario Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="arrScenariosGrid"></div>
+
+      <!-- Push Section -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Arrays Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Arrays launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('Arrays')"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="arrPushBtn" onclick="pushConfig('Arrays')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Arrays
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- Scenario Cards -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" id="scenariosGrid">
-      <!-- Populated by JS -->
-    </div>
+    <!-- ══════════════ STACKS TAB ══════════════ -->
+    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Stacks">
 
-    <!-- Push Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between flex-wrap gap-4">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800 mb-1">Push to App</h3>
-        <p class="text-sm text-gray-500">Saves the selected scenario config to the server. The AR app reads this on every launch and reset.</p>
+      <!-- App Preview -->
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-purple-500"></i>
+          <span class="font-medium text-gray-700">Stacks Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="stkPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="stkPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="stkActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="stkStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
       </div>
-      <div class="flex gap-3">
-        <button onclick="loadConfig()"
-          class="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
-          <i class="fas fa-sync-alt"></i> Reload
-        </button>
-        <button id="pushBtn" onclick="pushConfig()" disabled
-          class="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-          <i class="fas fa-upload"></i> Push to App
-        </button>
+
+      <!-- Stack Scenario Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="stkScenariosGrid"></div>
+
+      <!-- Push Section -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Stacks Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Stacks launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('Stacks')"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="stkPushBtn" onclick="pushConfig('Stacks')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Stacks
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- Activity Log -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-8">
-      <div class="p-6 border-b border-gray-100">
-        <h3 class="text-lg font-semibold text-gray-800">Activity Log</h3>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-2">
+      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="text-base font-semibold text-gray-800">Activity Log</h3>
+        <button onclick="clearLog()" class="text-xs text-gray-400 hover:text-gray-600 transition">Clear</button>
       </div>
-      <div class="p-6 space-y-3" id="logList">
+      <div class="p-5 space-y-2.5 max-h-52 overflow-y-auto" id="logList">
         <div class="flex items-center gap-3 text-sm text-gray-600">
           <div class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></div>
           <span>Admin panel loaded — fetching server config…</span>
@@ -196,58 +286,76 @@
     </div>
   </main>
 
-  <!-- Toast -->
   <div class="toast" id="toast"></div>
-
-  <!-- Loading overlay -->
-  <div class="loading-overlay" id="loadingOverlay">
-    <div class="spinner"></div>
-  </div>
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
   <script>
-    // ── CONFIG ──────────────────────────────────────────────
+    // ── CONSTANTS ────────────────────────────────────────────────
     const SERVER_URL = 'https://structureality-admin.onrender.com';
-    const DS_KEY     = 'Arrays';
     const MAX_ACTIVE = 2;
 
-    // ── SCENARIO DEFINITIONS ────────────────────────────────
-    const ALL_SCENARIOS = [
-      {
-        id:       'ParkingLot',
-        name:     'Parking Lot',
-        icon:     '🅿️',
-        desc:     'Cars in numbered parking spots. Students INSERT cars into spots, REMOVE them, and ACCESS a spot directly by index.',
-        ops:      ['INSERT', 'REMOVE', 'ACCESS', 'SORTED INSERT', 'BINARY SEARCH'],
-        sessions: [120, 145, 130, 160, 175, 155, 180],
-        avgTime:  '4.2 min',
-        color:    'indigo',
-      },
-      {
-        id:       'VendingMachine',
-        name:     'Vending Machine',
-        icon:     '🏪',
-        desc:     '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address (A0–B2).',
-        ops:      ['RESTOCK', 'DISPENSE', 'INSPECT', 'SORTED RESTOCK', 'PRICE SEARCH'],
-        sessions: [95, 110, 130, 145, 160, 140, 170],
-        avgTime:  '3.8 min',
-        color:    'purple',
-      },
-      {
-        id:       'Supermarket',
-        name:     'Supermarket Shelf',
-        icon:     '🛒',
-        desc:     'Linear shelf with 6 grocery slots. Students STOCK items onto the shelf, PULL them off, and CHECK shelf contents by index.',
-        ops:      ['STOCK', 'PULL', 'CHECK', 'SORTED STOCK', 'BARCODE SCAN'],
-        sessions: [90, 110, 140, 175, 160, 155, 200],
-        avgTime:  '4.0 min',
-        color:    'blue',
-      },
-    ];
+    // ── SCENARIO DEFINITIONS ─────────────────────────────────────
+    const SCENARIOS = {
+      Arrays: [
+        {
+          id: 'ParkingLot', name: 'Parking Lot', icon: '🅿️',
+          desc: 'Cars in numbered parking spots. Students INSERT cars, REMOVE them, and ACCESS a spot by index.',
+          ops: ['INSERT', 'REMOVE', 'ACCESS', 'SORTED INSERT', 'BINARY SEARCH'],
+          sessions: [120, 145, 130, 160, 175, 155, 180], avgTime: '4.2 min',
+        },
+        {
+          id: 'VendingMachine', name: 'Vending Machine', icon: '🏪',
+          desc: '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address.',
+          ops: ['RESTOCK', 'DISPENSE', 'INSPECT', 'SORTED RESTOCK', 'PRICE SEARCH'],
+          sessions: [95, 110, 130, 145, 160, 140, 170], avgTime: '3.8 min',
+        },
+        {
+          id: 'Supermarket', name: 'Supermarket Shelf', icon: '🛒',
+          desc: 'Linear shelf with 6 grocery slots. Students STOCK items, PULL them off, and CHECK by index.',
+          ops: ['STOCK', 'PULL', 'CHECK', 'SORTED STOCK', 'BARCODE SCAN'],
+          sessions: [90, 110, 140, 175, 160, 155, 200], avgTime: '4.0 min',
+        },
+      ],
+      Stacks: [
+        {
+          id: 'Plates', name: 'Plates', icon: '🍽️',
+          desc: 'Classic dinner plate stack on a round table. Students PUSH plates onto the stack and POP them off — pure LIFO.',
+          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
+          sessions: [110, 125, 138, 152, 167, 145, 180], avgTime: '3.9 min',
+        },
+        {
+          id: 'Warehouse', name: 'Warehouse', icon: '📦',
+          desc: 'Cardboard boxes stacked on a forklift pallet. PUSH boxes on, POP them off — LIFO in a storage context.',
+          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
+          sessions: [100, 118, 135, 148, 162, 140, 175], avgTime: '4.1 min',
+        },
+        {
+          id: 'Kitchen', name: 'Kitchen', icon: '🍳',
+          desc: 'Pots and pans stacked on a stove burner. PUSH cookware onto the stack, POP them off to cook — intuitive LIFO.',
+          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
+          sessions: [85, 105, 128, 155, 168, 150, 195], avgTime: '4.0 min',
+        },
+      ],
+    };
 
-    // ── STATE ───────────────────────────────────────────────
-    let activeIds = [];
+    // ── STATE — per DS ────────────────────────────────────────────
+    const state = {
+      Arrays: { activeIds: [] },
+      Stacks: { activeIds: [] },
+    };
 
-    // ── AUTH & UTILS ────────────────────────────────────────
+    let currentTab = 'Arrays';
+
+    // ── TAB SWITCHING ─────────────────────────────────────────────
+    function switchTab(ds) {
+      currentTab = ds;
+      document.querySelectorAll('.ds-tab').forEach(t => t.classList.remove('active-tab'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.getElementById(`tab-${ds}`).classList.add('active-tab');
+      document.getElementById(`panel-${ds}`).classList.add('active');
+    }
+
+    // ── AUTH ──────────────────────────────────────────────────────
     function logout() {
       localStorage.removeItem('adminUser');
       window.location.href = 'login.html';
@@ -259,6 +367,7 @@
       try { return JSON.parse(raw); } catch { logout(); return null; }
     }
 
+    // ── TOAST ─────────────────────────────────────────────────────
     function showToast(msg, type = 'info') {
       const colorMap = {
         success: 'bg-green-50 border border-green-300 text-green-700',
@@ -277,69 +386,75 @@
       document.getElementById('loadingOverlay').classList.toggle('show', v);
     }
 
+    // ── LOG ───────────────────────────────────────────────────────
     function addLog(msg, type = 'info') {
-      const list  = document.getElementById('logList');
-      const now   = new Date().toLocaleTimeString();
+      const list = document.getElementById('logList');
+      const now  = new Date().toLocaleTimeString();
       const dotColor = type === 'success' ? 'bg-green-400' : type === 'error' ? 'bg-red-400' : 'bg-indigo-400';
       const el = document.createElement('div');
       el.className = 'flex items-center gap-3 text-sm text-gray-600';
       el.innerHTML = `<div class="w-2 h-2 rounded-full ${dotColor} flex-shrink-0"></div><span>${msg}</span><span class="ml-auto text-xs text-gray-400">${now}</span>`;
       list.prepend(el);
-      while (list.children.length > 20) list.removeChild(list.lastChild);
+      while (list.children.length > 30) list.removeChild(list.lastChild);
     }
 
-    // ── RENDER ───────────────────────────────────────────────
-    function renderGrid() {
-      const grid = document.getElementById('scenariosGrid');
-      grid.innerHTML = '';
+    function clearLog() {
+      document.getElementById('logList').innerHTML = '';
+    }
 
-      ALL_SCENARIOS.forEach(sc => {
+    // ── RENDER CARDS ──────────────────────────────────────────────
+    function renderGrid(ds) {
+      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
+      const grid      = document.getElementById(`${prefix}ScenariosGrid`);
+      const activeIds = state[ds].activeIds;
+      grid.innerHTML  = '';
+
+      SCENARIOS[ds].forEach(sc => {
         const isActive   = activeIds.includes(sc.id);
         const pos        = activeIds.indexOf(sc.id) + 1;
         const maxReached = activeIds.length >= MAX_ACTIVE && !isActive;
         const total      = sc.sessions.reduce((a, b) => a + b, 0);
+        const sparkId    = `spark_${ds}_${sc.id}`;
 
         const card = document.createElement('div');
-        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? 'border-indigo-500 active' : 'border-gray-100'} p-6 cursor-pointer card-hover`;
-        card.onclick = () => toggleScenario(sc.id);
-
-        const sparkId = `spark_${sc.id}`;
+        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? 'border-indigo-500 active' : 'border-gray-100'} p-5 cursor-pointer card-hover`;
+        card.onclick = () => toggleScenario(ds, sc.id);
 
         card.innerHTML = `
-          <div class="flex items-start justify-between mb-4">
+          <div class="flex items-start justify-between mb-3">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 ${isActive ? 'bg-indigo-100' : 'bg-gray-100'} rounded-xl flex items-center justify-center text-2xl">
+              <div class="w-11 h-11 ${isActive ? 'bg-indigo-100' : 'bg-gray-100'} rounded-xl flex items-center justify-center text-2xl">
                 ${sc.icon}
               </div>
               <div>
-                <h3 class="font-semibold text-gray-800">${sc.name}</h3>
+                <h3 class="font-semibold text-gray-800 text-sm">${sc.name}</h3>
                 <span class="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">${sc.id}</span>
               </div>
             </div>
-            <div class="flex flex-col items-end gap-1">
+            <div class="flex flex-col items-end gap-1.5">
               ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">Button ${pos}</span>` : ''}
               <label class="toggle-switch" onclick="event.stopPropagation()">
-                <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''} onchange="toggleScenario('${sc.id}')">
+                <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''} onchange="toggleScenario('${ds}', '${sc.id}')">
                 <span class="slider"></span>
               </label>
             </div>
           </div>
 
-          <p class="text-sm text-gray-500 leading-relaxed mb-4">${sc.desc}</p>
+          <p class="text-xs text-gray-500 leading-relaxed mb-3">${sc.desc}</p>
 
-          <div class="flex flex-wrap gap-1.5 mb-4">
+          <div class="flex flex-wrap gap-1 mb-3">
             ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
           </div>
 
-          <div class="border-t border-gray-100 pt-4 flex items-center justify-between">
+          <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
             <div class="text-center">
-              <p class="text-xl font-bold text-gray-800">${total}</p>
-              <p class="text-xs text-gray-400">Total Sessions</p>
+              <p class="text-lg font-bold text-gray-800">${total}</p>
+              <p class="text-xs text-gray-400">Sessions</p>
             </div>
-            <svg class="sparkline flex-1 mx-4" id="${sparkId}" height="32" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
+            <svg class="sparkline flex-1 mx-3" id="${sparkId}" height="28" viewBox="0 0 100 28" preserveAspectRatio="none"></svg>
             <div class="text-center">
-              <p class="text-xl font-bold text-gray-800">${sc.avgTime}</p>
-              <p class="text-xs text-gray-400">Avg Duration</p>
+              <p class="text-lg font-bold text-gray-800">${sc.avgTime}</p>
+              <p class="text-xs text-gray-400">Avg Time</p>
             </div>
           </div>
         `;
@@ -348,19 +463,19 @@
         drawSparkline(sparkId, sc.sessions, isActive);
       });
 
-      updateStatusBar();
-      updatePreview();
+      updateStatusBar(ds);
+      updatePreview(ds);
     }
 
     function drawSparkline(id, data, active) {
       const svg = document.getElementById(id);
       if (!svg) return;
-      const w = 100, h = 32;
+      const w = 100, h = 28;
       const min = Math.min(...data), max = Math.max(...data);
       const range = max - min || 1;
       const pts = data.map((v, i) => {
         const x = (i / (data.length - 1)) * w;
-        const y = h - ((v - min) / range) * (h - 6) - 3;
+        const y = h - ((v - min) / range) * (h - 5) - 2.5;
         return `${x},${y}`;
       });
       const color = active ? '#6366f1' : '#d1d5db';
@@ -368,92 +483,116 @@
         stroke-linejoin="round" stroke-linecap="round"/>`;
     }
 
-    function updateStatusBar() {
-      const n = activeIds.length;
-      const badge = document.getElementById('activeCountBadge');
-      const hint  = document.getElementById('statusHint');
-      const btn   = document.getElementById('pushBtn');
+    function updateStatusBar(ds) {
+      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
+      const n         = state[ds].activeIds.length;
+      const badge     = document.getElementById(`${prefix}ActiveCountBadge`);
+      const hint      = document.getElementById(`${prefix}StatusHint`);
+      const btn       = document.getElementById(`${prefix}PushBtn`);
+      const total     = SCENARIOS[ds].length;
 
-      badge.textContent = `${n} of ${ALL_SCENARIOS.length} active`;
+      badge.textContent = `${n} of ${total} active`;
       badge.className   = `px-3 py-1 rounded-full font-semibold text-xs ${n === MAX_ACTIVE ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`;
 
       if (n === MAX_ACTIVE) {
-        hint.textContent  = '✓ Exactly 2 selected — ready to push.';
-        hint.className    = 'text-green-600 text-xs font-medium';
-        btn.disabled      = false;
+        hint.textContent = '✓ Exactly 2 selected — ready to push.';
+        hint.className   = 'text-green-600 text-xs font-medium';
+        btn.disabled     = false;
       } else {
-        hint.textContent  = `Select ${MAX_ACTIVE - n} more scenario${MAX_ACTIVE - n !== 1 ? 's' : ''} to enable push.`;
-        hint.className    = 'text-gray-400 text-xs';
-        btn.disabled      = true;
+        const need = MAX_ACTIVE - n;
+        hint.textContent = `Select ${need} more scenario${need !== 1 ? 's' : ''} to enable push.`;
+        hint.className   = 'text-gray-400 text-xs';
+        btn.disabled     = true;
       }
     }
 
-    function updatePreview() {
-      const b1 = document.getElementById('previewBtn1');
-      const b2 = document.getElementById('previewBtn2');
-      const s1 = ALL_SCENARIOS.find(s => s.id === activeIds[0]);
-      const s2 = ALL_SCENARIOS.find(s => s.id === activeIds[1]);
+    function updatePreview(ds) {
+      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
+      const activeIds = state[ds].activeIds;
+      const b1        = document.getElementById(`${prefix}PreviewBtn1`);
+      const b2        = document.getElementById(`${prefix}PreviewBtn2`);
+      const s1        = SCENARIOS[ds].find(s => s.id === activeIds[0]);
+      const s2        = SCENARIOS[ds].find(s => s.id === activeIds[1]);
 
       if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
-      else     { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
+      else    { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
 
       if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
-      else     { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
+      else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
     }
 
-    // ── TOGGLE ───────────────────────────────────────────────
-    function toggleScenario(id) {
-      const idx = activeIds.indexOf(id);
+    // ── TOGGLE ────────────────────────────────────────────────────
+    function toggleScenario(ds, id) {
+      const activeIds = state[ds].activeIds;
+      const idx       = activeIds.indexOf(id);
       if (idx >= 0) {
         activeIds.splice(idx, 1);
       } else {
         if (activeIds.length >= MAX_ACTIVE) {
           showToast(`Max ${MAX_ACTIVE} scenarios allowed — deactivate one first.`, 'error');
-          renderGrid();
+          renderGrid(ds);
           return;
         }
         activeIds.push(id);
       }
-      renderGrid();
+      renderGrid(ds);
     }
 
-    // ── LOAD FROM SERVER ─────────────────────────────────────
-    async function loadConfig() {
+    // ── LOAD FROM SERVER ──────────────────────────────────────────
+    async function loadConfig(ds) {
       showLoading(true);
       try {
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
         const data = await res.json();
+
         if (data.success && data.config?.scenarios) {
-          const ids = data.config.scenarios[DS_KEY] || [];
-          activeIds = ids.filter(id => ALL_SCENARIOS.some(s => s.id === id));
+          // Load for the specified DS
+          const ids = data.config.scenarios[ds] || [];
+          state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
         } else {
-          activeIds = ['ParkingLot', 'VendingMachine'];
+          // Fallback defaults
+          state[ds].activeIds = ds === 'Arrays'
+            ? ['ParkingLot', 'VendingMachine']
+            : ['Plates', 'Warehouse'];
         }
+
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
-        addLog(`Loaded config — active: [${activeIds.join(', ')}]`, 'success');
-        showToast('Config loaded from server.', 'success');
+        addLog(`[${ds}] Loaded — active: [${state[ds].activeIds.join(', ')}]`, 'success');
+        showToast(`${ds} config loaded.`, 'success');
       } catch (err) {
-        activeIds = activeIds.length ? activeIds : ['ParkingLot', 'VendingMachine'];
+        // Fallback if server unreachable
+        if (!state[ds].activeIds.length) {
+          state[ds].activeIds = ds === 'Arrays'
+            ? ['ParkingLot', 'VendingMachine']
+            : ['Plates', 'Warehouse'];
+        }
         document.getElementById('apiStatus').textContent = 'offline';
         document.getElementById('apiStatus').className   = 'font-medium text-red-500';
-        addLog('Could not reach server — using local state.', 'error');
+        addLog(`[${ds}] Server unreachable — using local state.`, 'error');
         showToast('Server unreachable. Working offline.', 'error');
       } finally {
         showLoading(false);
-        renderGrid();
+        renderGrid(ds);
       }
     }
 
-    // ── PUSH TO SERVER ───────────────────────────────────────
-    async function pushConfig() {
+    // ── PUSH TO SERVER ────────────────────────────────────────────
+    async function pushConfig(ds) {
+      const activeIds = state[ds].activeIds;
       if (activeIds.length !== MAX_ACTIVE) {
         showToast(`Select exactly ${MAX_ACTIVE} scenarios first.`, 'error');
         return;
       }
       showLoading(true);
       try {
-        const payload = { scenarios: { [DS_KEY]: [...activeIds] } };
+        // Merge both DS configs into a single payload so we don't overwrite the other
+        const payload = {
+          scenarios: {
+            Arrays: [...state.Arrays.activeIds],
+            Stacks: [...state.Stacks.activeIds],
+          }
+        };
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -461,27 +600,28 @@
         });
         const data = await res.json();
         if (data.success) {
-          addLog(`Pushed config — [${activeIds.join(', ')}] → live in app.`, 'success');
-          showToast(`Pushed! App will show: ${activeIds.map(id => {
-            const s = ALL_SCENARIOS.find(x => x.id === id);
+          const labels = activeIds.map(id => {
+            const s = SCENARIOS[ds].find(x => x.id === id);
             return s ? `${s.icon} ${s.name}` : id;
-          }).join(' + ')}`, 'success');
+          }).join(' + ');
+          addLog(`[${ds}] Pushed — [${activeIds.join(', ')}] → live in app.`, 'success');
+          showToast(`${ds} pushed! App shows: ${labels}`, 'success');
         } else {
           throw new Error(data.message || 'Server returned failure');
         }
       } catch (err) {
-        addLog(`Push failed: ${err.message}`, 'error');
+        addLog(`[${ds}] Push failed: ${err.message}`, 'error');
         showToast(`Push failed: ${err.message}`, 'error');
       } finally {
         showLoading(false);
       }
     }
 
-    // ── INIT ─────────────────────────────────────────────────
-    window.addEventListener('load', () => {
+    // ── INIT ──────────────────────────────────────────────────────
+    window.addEventListener('load', async () => {
       const user = checkAuth();
       if (user) {
-        document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+        document.getElementById('adminUserDisplay').textContent  = user.name || user.username;
         document.getElementById('adminEmailDisplay').textContent = user.email || '';
         if (user.role === 'instructor') {
           const link = document.getElementById('instructorsLink');
@@ -489,7 +629,35 @@
         }
       }
       document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
-      loadConfig();
+
+      // Load both DS configs in parallel
+      showLoading(true);
+      try {
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
+        const data = await res.json();
+        if (data.success && data.config?.scenarios) {
+          ['Arrays', 'Stacks'].forEach(ds => {
+            const ids = data.config.scenarios[ds] || [];
+            state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
+          });
+        } else {
+          state.Arrays.activeIds = ['ParkingLot', 'VendingMachine'];
+          state.Stacks.activeIds = ['Plates', 'Warehouse'];
+        }
+        document.getElementById('apiStatus').textContent = 'connected';
+        document.getElementById('apiStatus').className   = 'font-medium text-green-500';
+        addLog('Both configs loaded from server.', 'success');
+      } catch {
+        state.Arrays.activeIds = ['ParkingLot', 'VendingMachine'];
+        state.Stacks.activeIds = ['Plates', 'Warehouse'];
+        document.getElementById('apiStatus').textContent = 'offline';
+        document.getElementById('apiStatus').className   = 'font-medium text-red-500';
+        addLog('Server unreachable — defaults applied.', 'error');
+      } finally {
+        showLoading(false);
+        renderGrid('Arrays');
+        renderGrid('Stacks');
+      }
     });
   </script>
 </body>
