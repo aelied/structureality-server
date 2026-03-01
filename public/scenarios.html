@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Scenarios - StructuReality Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        * { font-family: "Poppins", sans-serif; }
+
+        .scenario-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .scenario-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+        .scenario-card.active-scenario {
+            border: 2px solid #6366f1;
+            background: linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%);
+        }
+        .scenario-card.inactive-scenario {
+            border: 2px solid #e5e7eb;
+            background: #f9fafb;
+            opacity: 0.75;
+        }
+        .scenario-card.inactive-scenario:hover {
+            opacity: 1;
+        }
+        .scenario-card.coming-soon {
+            border: 2px dashed #d1d5db;
+            background: #f9fafb;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .scenario-card.coming-soon:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .active-badge {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+        .inactive-badge {
+            background: #e5e7eb;
+            color: #6b7280;
+        }
+        .coming-soon-badge {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .usage-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+        .usage-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s ease;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        }
+
+        .ds-tab {
+            transition: all 0.2s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .ds-tab.active-tab {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+        }
+        .ds-tab:not(.active-tab):hover {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .stat-card-hover {
+            transition: all 0.3s ease;
+        }
+        .stat-card-hover:hover {
+            transform: translateY(-4px);
+        }
+
+        .swap-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            transition: all 0.2s ease;
+        }
+        .swap-btn:hover {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+        }
+        .swap-btn:disabled {
+            background: #d1d5db;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pulse-dot {
+            animation: pulse-anim 2s infinite;
+        }
+        @keyframes pulse-anim {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .scenario-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast.success { background: linear-gradient(135deg, #10b981, #059669); }
+        .toast.error { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .toast.info { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+
+        .sparkline {
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+            height: 30px;
+        }
+        .sparkline-bar {
+            flex: 1;
+            border-radius: 2px;
+            background: linear-gradient(to top, #6366f1, #a78bfa);
+            min-height: 4px;
+            transition: height 0.4s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Sidebar -->
+    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+        <div class="p-6 border-b border-indigo-700">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold">StructuReality</h1>
+                    <p class="text-xs text-indigo-300">Admin Portal</p>
+                </div>
+            </div>
+        </div>
+        <nav class="mt-6 px-4">
+            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
+            </a>
+            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
+            </a>
+            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
+            </a>
+            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
+            </a>
+            <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
+            </a>
+            <!-- AR Scenarios - Active -->
+            <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span>
+            </a>
+            <a href="instructors.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-chalkboard-teacher w-5"></i><span class="font-medium">Instructors</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Navbar -->
+    <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+        <div class="px-8 py-4 flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">AR Scenarios</h2>
+                <p class="text-sm text-gray-500">Manage which scenarios are active per data structure in the AR app</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button onclick="pushConfigToApp()" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold">
+                    <i class="fas fa-paper-plane"></i> Push to App
+                </button>
+                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-indigo-700 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
+                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+                    </div>
+                </div>
+                <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="ml-64 p-8 mt-20">
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border-l-4 border-indigo-500">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-vr-cardboard text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Total Scenarios</h3>
+                <p class="text-3xl font-bold text-gray-800">3</p>
+                <p class="text-xs text-gray-400 mt-1">4th slot reserved</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border-l-4 border-green-500">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Active Scenarios</h3>
+                <p class="text-3xl font-bold text-gray-800" id="activeScenarioCount">-</p>
+                <p class="text-xs text-gray-400 mt-1">Currently in app</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border-l-4 border-yellow-500">
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-fire text-yellow-600 text-xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Most Used</h3>
+                <p class="text-xl font-bold text-gray-800" id="mostUsedScenario">-</p>
+                <p class="text-xs text-gray-400 mt-1">Across all data structures</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border-l-4 border-purple-500">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+                    <i class="fas fa-sync text-purple-600 text-xl"></i>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Last Config Push</h3>
+                <p class="text-lg font-bold text-gray-800" id="lastPush">Never</p>
+                <p class="text-xs text-gray-400 mt-1">App config sync</p>
+            </div>
+        </div>
+
+        <!-- Data Structure Tabs -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6 p-4">
+            <p class="text-xs text-gray-500 uppercase font-semibold mb-3 px-1">Select Data Structure</p>
+            <div class="flex gap-3 overflow-x-auto pb-1" id="dsTabs">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+        <!-- Scenario Cards Grid -->
+        <div id="scenarioPanel">
+            <!-- Generated by JS -->
+        </div>
+
+        <!-- Usage Chart Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">Usage Analytics — <span id="chartDsLabel" class="text-indigo-600">Arrays</span></h3>
+                <span class="text-xs text-gray-500">Simulated session counts</span>
+            </div>
+            <div id="usageChart" class="space-y-4">
+                <!-- Generated by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Confirm Swap Modal -->
+    <div id="swapModal" class="modal-overlay">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-exchange-alt text-indigo-600 text-2xl"></i>
+                </div>
+                <h2 class="text-xl font-bold text-gray-800">Swap Active Scenario?</h2>
+                <p class="text-gray-500 text-sm mt-2" id="swapModalDesc">This will update which scenario students see in the AR app.</p>
+            </div>
+
+            <div class="flex gap-3 mt-4 mb-6 p-4 bg-gray-50 rounded-xl items-center justify-center">
+                <div class="text-center">
+                    <div class="text-2xl mb-1" id="swapFromIcon">🅿️</div>
+                    <div class="text-xs font-semibold text-gray-600" id="swapFromName">Current</div>
+                    <div class="text-xs text-red-500">Remove</div>
+                </div>
+                <div class="text-2xl text-gray-300 font-light mx-4">→</div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1" id="swapToIcon">🏪</div>
+                    <div class="text-xs font-semibold text-gray-600" id="swapToName">New</div>
+                    <div class="text-xs text-green-500">Activate</div>
+                </div>
+            </div>
+
+            <p class="text-xs text-center text-gray-400 mb-6">Students will see the new scenario after the next app sync.</p>
+
+            <div class="flex gap-3">
+                <button onclick="closeSwapModal()" class="flex-1 px-4 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition font-medium">
+                    Cancel
+                </button>
+                <button onclick="confirmSwap()" class="flex-1 swap-btn text-white px-4 py-3 rounded-xl font-semibold">
+                    Confirm Swap
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // =========================================================
+        // DATA STRUCTURES SUPPORTED BY THE AR APP
+        // =========================================================
+        const DATA_STRUCTURES = [
+            { id: 'Arrays',      label: 'Arrays',       icon: 'fa-layer-group',      color: 'indigo' },
+            { id: 'Queue',       label: 'Queues',        icon: 'fa-stream',           color: 'blue'   },
+            { id: 'Stacks',      label: 'Stacks',        icon: 'fa-layer-group',      color: 'green'  },
+            { id: 'LinkedLists', label: 'Linked Lists',  icon: 'fa-link',             color: 'purple' },
+            { id: 'Trees',       label: 'Trees',         icon: 'fa-project-diagram',  color: 'yellow' },
+            { id: 'Graphs',      label: 'Graphs',        icon: 'fa-sitemap',          color: 'red'    },
+        ];
+
+        // =========================================================
+        // ALL AVAILABLE SCENARIOS (3 active + 1 coming soon slot)
+        // =========================================================
+        const ALL_SCENARIOS = [
+            {
+                id: 'ParkingLot',
+                name: 'Parking Lot',
+                icon: '🅿️',
+                description: 'A parking lot metaphor where students INSERT cars into spots, REMOVE them, and ACCESS any spot by index. Great for visualising fixed-size direct-access arrays.',
+                tags: ['Beginner', 'Intermediate'],
+                color: 'blue',
+                comingSoon: false,
+                sessions: [312, 280, 350, 410, 390, 320, 445],   // simulated weekly sessions
+            },
+            {
+                id: 'VendingMachine',
+                name: 'Vending Machine',
+                icon: '🏪',
+                description: 'A 2×3 vending machine grid showing a flat array mapped to a grid. Students RESTOCK, DISPENSE, and INSPECT products, with Sorted Restock and Binary Search in intermediate mode.',
+                tags: ['Beginner', 'Intermediate'],
+                color: 'purple',
+                comingSoon: false,
+                sessions: [198, 220, 260, 310, 295, 280, 330],
+            },
+            {
+                id: 'Supermarket',
+                name: 'Supermarket Shelf',
+                icon: '🛒',
+                description: 'A supermarket aisle with labelled shelf slots. Students stock items onto shelves by index, pull items off, and check shelf contents — making array operations tangible in a familiar environment.',
+                tags: ['Beginner', 'Intermediate'],
+                color: 'green',
+                comingSoon: false,
+                sessions: [90, 110, 140, 175, 160, 155, 200],
+            },
+            {
+                id: 'ComingSoon',
+                name: 'Coming Soon',
+                icon: '🔒',
+                description: 'A 4th scenario slot is reserved for future expansion. Stay tuned for new AR environments!',
+                tags: [],
+                color: 'gray',
+                comingSoon: true,
+                sessions: [0, 0, 0, 0, 0, 0, 0],
+            },
+        ];
+
+        // =========================================================
+        // STATE — which scenario is active per DS
+        // =========================================================
+        // Default: ParkingLot active for Arrays, VendingMachine for the rest
+        let activeScenarios = {
+            Arrays:      'ParkingLot',
+            Queue:       'VendingMachine',
+            Stacks:      'ParkingLot',
+            LinkedLists: 'VendingMachine',
+            Trees:       'Supermarket',
+            Graphs:      'ParkingLot',
+        };
+
+        let selectedDs = 'Arrays';
+        let pendingSwap = null; // { fromId, toId }
+
+        // =========================================================
+        // INIT
+        // =========================================================
+        window.addEventListener('load', () => {
+            loadAuthDisplay();
+            loadSavedState();
+            renderDsTabs();
+            renderScenarioPanel();
+            renderUsageChart();
+            updateGlobalStats();
+        });
+
+        function loadAuthDisplay() {
+            const stored = localStorage.getItem('adminUser');
+            if (stored && stored !== 'undefined') {
+                try {
+                    const user = JSON.parse(stored);
+                    document.getElementById('adminUserDisplay').textContent = user.name || user.username || 'Admin';
+                    document.getElementById('adminEmailDisplay').textContent = user.email || '';
+                } catch(e) {}
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
+        }
+
+        function loadSavedState() {
+            const saved = localStorage.getItem('srActiveScenarios');
+            if (saved) {
+                try { activeScenarios = JSON.parse(saved); } catch(e) {}
+            }
+            const lastPush = localStorage.getItem('srLastPush');
+            if (lastPush) {
+                document.getElementById('lastPush').textContent = lastPush;
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('srActiveScenarios', JSON.stringify(activeScenarios));
+        }
+
+        // =========================================================
+        // RENDER DS TABS
+        // =========================================================
+        function renderDsTabs() {
+            const container = document.getElementById('dsTabs');
+            container.innerHTML = DATA_STRUCTURES.map(ds => `
+                <button 
+                    class="ds-tab px-5 py-2.5 rounded-full text-sm font-semibold transition ${ds.id === selectedDs ? 'active-tab' : 'bg-gray-100 text-gray-600'}"
+                    onclick="selectDs('${ds.id}')">
+                    <i class="fas ${ds.icon} mr-2 text-xs"></i>${ds.label}
+                </button>
+            `).join('');
+        }
+
+        function selectDs(dsId) {
+            selectedDs = dsId;
+            renderDsTabs();
+            renderScenarioPanel();
+            renderUsageChart();
+        }
+
+        // =========================================================
+        // RENDER SCENARIO PANEL
+        // =========================================================
+        function renderScenarioPanel() {
+            const currentActive = activeScenarios[selectedDs];
+            const dsObj = DATA_STRUCTURES.find(d => d.id === selectedDs);
+
+            const panel = document.getElementById('scenarioPanel');
+
+            let html = `
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Scenarios for <span class="text-indigo-600">${dsObj.label}</span></h3>
+                        <p class="text-sm text-gray-500">Click an inactive scenario to swap it in as the active one.</p>
+                    </div>
+                    <div class="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-100">
+                        <span class="pulse-dot w-2.5 h-2.5 rounded-full bg-green-500 inline-block"></span>
+                        <span class="text-sm text-indigo-700 font-semibold">Active: ${ALL_SCENARIOS.find(s => s.id === currentActive)?.name || 'None'}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+            `;
+
+            ALL_SCENARIOS.forEach(scenario => {
+                const isActive = scenario.id === currentActive;
+                const isComingSoon = scenario.comingSoon;
+
+                let cardClass = 'scenario-card rounded-xl p-6 ';
+                let badgeClass, badgeText;
+
+                if (isComingSoon) {
+                    cardClass += 'coming-soon';
+                    badgeClass = 'coming-soon-badge';
+                    badgeText = '🔒 Coming Soon';
+                } else if (isActive) {
+                    cardClass += 'active-scenario';
+                    badgeClass = 'active-badge';
+                    badgeText = '✓ Active';
+                } else {
+                    cardClass += 'inactive-scenario';
+                    badgeClass = 'inactive-badge';
+                    badgeText = 'Inactive';
+                }
+
+                const weekTotal = scenario.sessions.reduce((a, b) => a + b, 0);
+                const sparkBars = scenario.sessions.map(s => {
+                    const max = Math.max(...scenario.sessions, 1);
+                    const h = Math.round((s / max) * 28);
+                    return `<div class="sparkline-bar" style="height:${Math.max(h,3)}px; background: ${isActive ? 'linear-gradient(to top, #6366f1, #a78bfa)' : '#d1d5db'}"></div>`;
+                }).join('');
+
+                const tagsHtml = scenario.tags.map(t =>
+                    `<span class="text-xs px-2 py-0.5 bg-white border border-gray-200 rounded-full text-gray-600">${t}</span>`
+                ).join('');
+
+                const clickHandler = (!isComingSoon && !isActive)
+                    ? `onclick="initiateSwap('${scenario.id}')"`
+                    : '';
+
+                html += `
+                    <div class="${cardClass}" ${clickHandler}>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="text-4xl">${scenario.icon}</div>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+                        </div>
+
+                        <h4 class="text-base font-bold text-gray-800 mb-2">${scenario.name}</h4>
+                        <p class="text-xs text-gray-500 leading-relaxed mb-4">${scenario.description}</p>
+
+                        ${!isComingSoon ? `
+                        <div class="flex gap-1 mb-4">${tagsHtml}</div>
+
+                        <div class="border-t border-gray-100 pt-3 mt-2">
+                            <div class="flex justify-between items-center mb-1.5">
+                                <span class="text-xs text-gray-500">Weekly sessions</span>
+                                <span class="text-xs font-bold text-gray-700">${weekTotal}</span>
+                            </div>
+                            <div class="sparkline">${sparkBars}</div>
+                        </div>
+
+                        ${!isActive ? `
+                        <button onclick="initiateSwap('${scenario.id}')" class="mt-4 w-full swap-btn text-white text-sm font-semibold py-2.5 rounded-lg">
+                            <i class="fas fa-exchange-alt mr-2"></i>Set as Active
+                        </button>
+                        ` : `
+                        <div class="mt-4 text-center text-xs text-indigo-500 font-medium py-2">
+                            <i class="fas fa-check-circle mr-1"></i>Currently shown to students
+                        </div>
+                        `}
+                        ` : `
+                        <div class="mt-6 text-center text-xs text-gray-400 font-medium py-2">
+                            <i class="fas fa-lock mr-1"></i>Coming in a future update
+                        </div>
+                        `}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            panel.innerHTML = html;
+        }
+
+        // =========================================================
+        // RENDER USAGE CHART
+        // =========================================================
+        function renderUsageChart() {
+            const dsObj = DATA_STRUCTURES.find(d => d.id === selectedDs);
+            document.getElementById('chartDsLabel').textContent = dsObj.label;
+
+            const activeId = activeScenarios[selectedDs];
+            const chart = document.getElementById('usageChart');
+
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+            // Only show non-coming-soon scenarios
+            const visible = ALL_SCENARIOS.filter(s => !s.comingSoon);
+            const totalsByScenario = visible.map(s => s.sessions.reduce((a, b) => a + b, 0));
+            const grandTotal = totalsByScenario.reduce((a, b) => a + b, 0);
+
+            let html = '';
+            visible.forEach((scenario, idx) => {
+                const isActive = scenario.id === activeId;
+                const pct = grandTotal > 0 ? Math.round((totalsByScenario[idx] / grandTotal) * 100) : 0;
+
+                html += `
+                    <div class="flex items-center gap-4">
+                        <div class="w-7 text-xl text-center flex-shrink-0">${scenario.icon}</div>
+                        <div class="w-28 text-sm font-medium text-gray-700 flex-shrink-0">
+                            ${scenario.name}
+                            ${isActive ? '<span class="ml-1 text-xs text-indigo-500">●</span>' : ''}
+                        </div>
+                        <div class="flex-1 usage-bar">
+                            <div class="usage-fill" style="width: ${pct}%; background: ${isActive ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : 'linear-gradient(90deg, #9ca3af, #d1d5db)'}"></div>
+                        </div>
+                        <div class="w-20 text-right text-sm font-bold text-gray-700">${totalsByScenario[idx]} <span class="text-xs text-gray-400">sessions</span></div>
+                        <div class="w-12 text-right text-sm font-semibold ${isActive ? 'text-indigo-600' : 'text-gray-400'}">${pct}%</div>
+                    </div>
+                `;
+            });
+
+            // Per-day breakdown table for active scenario
+            const activeScenario = ALL_SCENARIOS.find(s => s.id === activeId);
+            html += `
+                <div class="mt-6 border-t border-gray-100 pt-5">
+                    <p class="text-xs text-gray-500 uppercase font-semibold mb-3">Active Scenario — Daily Breakdown (${activeScenario?.name})</p>
+                    <div class="flex gap-2">
+                        ${days.map((day, i) => {
+                            const val = activeScenario?.sessions[i] || 0;
+                            const maxVal = Math.max(...(activeScenario?.sessions || [1]), 1);
+                            const h = Math.round((val / maxVal) * 60);
+                            return `
+                                <div class="flex-1 flex flex-col items-center gap-1">
+                                    <div class="w-full rounded-md bg-indigo-100 relative" style="height: 64px; display:flex; align-items:flex-end">
+                                        <div class="w-full rounded-md bg-gradient-to-t from-indigo-500 to-purple-400" style="height: ${h}px; min-height:4px; transition: height 0.5s ease;"></div>
+                                    </div>
+                                    <span class="text-xs text-gray-500">${day}</span>
+                                    <span class="text-xs font-bold text-gray-700">${val}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            chart.innerHTML = html;
+        }
+
+        // =========================================================
+        // SWAP LOGIC
+        // =========================================================
+        function initiateSwap(toScenarioId) {
+            const currentId = activeScenarios[selectedDs];
+            const fromScenario = ALL_SCENARIOS.find(s => s.id === currentId);
+            const toScenario   = ALL_SCENARIOS.find(s => s.id === toScenarioId);
+
+            if (!fromScenario || !toScenario || fromScenario.id === toScenario.id) return;
+
+            pendingSwap = { fromId: currentId, toId: toScenarioId };
+
+            document.getElementById('swapFromIcon').textContent = fromScenario.icon;
+            document.getElementById('swapFromName').textContent = fromScenario.name;
+            document.getElementById('swapToIcon').textContent   = toScenario.icon;
+            document.getElementById('swapToName').textContent   = toScenario.name;
+
+            const dsObj = DATA_STRUCTURES.find(d => d.id === selectedDs);
+            document.getElementById('swapModalDesc').textContent =
+                `Swap active scenario for ${dsObj.label} from "${fromScenario.name}" to "${toScenario.name}". Students will see the new scenario after the next app sync.`;
+
+            document.getElementById('swapModal').classList.add('open');
+        }
+
+        function closeSwapModal() {
+            document.getElementById('swapModal').classList.remove('open');
+            pendingSwap = null;
+        }
+
+        function confirmSwap() {
+            if (!pendingSwap) return;
+
+            activeScenarios[selectedDs] = pendingSwap.toId;
+            saveState();
+            closeSwapModal();
+
+            const toScenario = ALL_SCENARIOS.find(s => s.id === pendingSwap.toId);
+            const dsObj = DATA_STRUCTURES.find(d => d.id === selectedDs);
+
+            showToast(`✓ "${toScenario.name}" is now active for ${dsObj.label}`, 'success');
+            renderScenarioPanel();
+            renderUsageChart();
+            updateGlobalStats();
+        }
+
+        // =========================================================
+        // PUSH CONFIG TO APP
+        // =========================================================
+        function pushConfigToApp() {
+            const now = new Date();
+            const formatted = now.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            localStorage.setItem('srLastPush', formatted);
+            document.getElementById('lastPush').textContent = formatted;
+
+            showToast('🚀 Config pushed to AR app successfully!', 'info');
+
+            // Simulate API call
+            console.log('Pushing scenario config to app:', activeScenarios);
+        }
+
+        // =========================================================
+        // GLOBAL STATS
+        // =========================================================
+        function updateGlobalStats() {
+            const values = Object.values(activeScenarios);
+            const counts = {};
+            values.forEach(v => { counts[v] = (counts[v] || 0) + 1; });
+
+            const uniqueActive = new Set(values).size;
+            document.getElementById('activeScenarioCount').textContent = uniqueActive;
+
+            const topId = Object.entries(counts).sort((a,b) => b[1]-a[1])[0]?.[0];
+            const topScenario = ALL_SCENARIOS.find(s => s.id === topId);
+            document.getElementById('mostUsedScenario').textContent = topScenario
+                ? `${topScenario.icon} ${topScenario.name}`
+                : '-';
+        }
+
+        // =========================================================
+        // TOAST
+        // =========================================================
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+    </script>
+</body>
+</html>
