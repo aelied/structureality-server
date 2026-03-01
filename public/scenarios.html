@@ -1,799 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>StructuReality · Scenario Control</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
-
-  :root {
-    --bg:        #0a0c14;
-    --surface:   #11141f;
-    --card:      #161a28;
-    --border:    #232840;
-    --accent:    #5b6af0;
-    --accent2:   #9b59f5;
-    --green:     #2ecc8a;
-    --red:       #e05252;
-    --yellow:    #f5c842;
-    --text:      #e8eaf6;
-    --muted:     #6b7280;
-    --radius:    14px;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    padding: 0 0 60px;
-  }
-
-  /* ── HEADER ── */
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 20px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .logo {
-    display: flex; align-items: center; gap: 12px;
-  }
-  .logo-mark {
-    width: 36px; height: 36px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 8px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
-  }
-  .logo-text { font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
-  .logo-sub  { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 1px; }
-
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .server-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 10px;
-  }
-  .server-badge span { color: var(--green); }
-
-  /* ── MAIN LAYOUT ── */
-  main { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
-
-  /* ── PAGE TITLE ── */
-  .page-header { margin-bottom: 36px; }
-  .page-title  { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
-  .page-sub    { color: var(--muted); margin-top: 6px; font-size: 14px; line-height: 1.5; }
-
-  /* ── ACTIVE SCENARIOS PREVIEW ── */
-  .preview-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 24px;
-    margin-bottom: 36px;
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .preview-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    white-space: nowrap;
-  }
-  .preview-buttons {
-    display: flex;
-    gap: 10px;
-    flex: 1;
-    flex-wrap: wrap;
-  }
-  .preview-btn {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    border-radius: 8px;
-    color: white;
-    padding: 8px 20px;
-    font-family: 'Syne', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: default;
-    opacity: 1;
-    transition: opacity 0.3s;
-  }
-  .preview-btn.empty {
-    background: var(--card);
-    border: 1.5px dashed var(--border);
-    color: var(--muted);
-    font-weight: 400;
-  }
-  .preview-arrow {
-    color: var(--muted);
-    font-size: 18px;
-    padding: 0 4px;
-  }
-  .app-screen {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 12px;
-    color: var(--muted);
-  }
-
-  /* ── STATUS BAR ── */
-  .status-bar {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-  }
-  .status-count {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-  .status-count.ok   { border-color: var(--green); color: var(--green); }
-  .status-count.warn { border-color: var(--yellow); color: var(--yellow); }
-  .status-count.err  { border-color: var(--red); color: var(--red); }
-  .status-hint { font-size: 13px; color: var(--muted); }
-
-  /* ── SCENARIO GRID ── */
-  .scenarios-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-    margin-bottom: 32px;
-  }
-
-  .scenario-card {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-  }
-  .scenario-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background: linear-gradient(135deg, rgba(91,106,240,0.07), rgba(155,89,245,0.07));
-    transition: opacity 0.25s;
-    pointer-events: none;
-  }
-  .scenario-card.active {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 1px var(--accent), 0 8px 32px rgba(91,106,240,0.2);
-  }
-  .scenario-card.active::before { opacity: 1; }
-  .scenario-card:hover { transform: translateY(-2px); }
-
-  .card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .card-icon {
-    width: 52px; height: 52px;
-    border-radius: 12px;
-    background: var(--surface);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
-    border: 1px solid var(--border);
-  }
-  .scenario-card.active .card-icon {
-    background: rgba(91,106,240,0.15);
-    border-color: var(--accent);
-  }
-
-  .toggle-wrap { display: flex; align-items: center; gap: 8px; }
-  .toggle-label { font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
-  .toggle {
-    position: relative;
-    width: 42px; height: 24px;
-    cursor: pointer;
-  }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute;
-    inset: 0;
-    background: var(--border);
-    border-radius: 24px;
-    transition: background 0.25s;
-  }
-  .slider::before {
-    content: '';
-    position: absolute;
-    width: 18px; height: 18px;
-    left: 3px; top: 3px;
-    background: var(--muted);
-    border-radius: 50%;
-    transition: transform 0.25s, background 0.25s;
-  }
-  .toggle input:checked + .slider { background: var(--accent); }
-  .toggle input:checked + .slider::before { transform: translateX(18px); background: white; }
-
-  .card-name { font-size: 20px; font-weight: 800; margin-bottom: 4px; letter-spacing: -0.3px; }
-  .card-id   {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    background: var(--surface);
-    border-radius: 4px;
-    padding: 2px 6px;
-    display: inline-block;
-    margin-bottom: 12px;
-    border: 1px solid var(--border);
-  }
-  .card-desc { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 16px; }
-
-  .card-ops {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .op-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-  }
-  .scenario-card.active .op-tag {
-    border-color: rgba(91,106,240,0.4);
-    color: var(--accent);
-  }
-
-  .card-stats {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .stat-item { text-align: center; }
-  .stat-num  { font-size: 20px; font-weight: 800; }
-  .stat-lbl  { font-size: 10px; color: var(--muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
-  .sparkline { flex: 1; max-width: 100px; height: 30px; margin: 0 16px; }
-
-  .active-badge {
-    position: absolute;
-    top: 12px;
-    right: 58px;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    background: var(--accent);
-    color: white;
-    padding: 2px 7px;
-    border-radius: 3px;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-  .scenario-card.active .active-badge { opacity: 1; }
-
-  /* ── PUSH SECTION ── */
-  .push-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 24px;
-    flex-wrap: wrap;
-  }
-  .push-info h3  { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .push-info p   { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-  .push-actions { display: flex; gap: 12px; align-items: center; }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
-    border-radius: 10px;
-    font-family: 'Syne', sans-serif;
-    font-size: 14px;
-    font-weight: 700;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: white;
-  }
-  .btn-primary:hover { opacity: 0.88; transform: translateY(-1px); }
-  .btn-primary:active { transform: translateY(0); opacity: 1; }
-  .btn-secondary {
-    background: var(--card);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-
-  /* ── TOAST NOTIFICATION ── */
-  .toast {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    padding: 14px 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 999;
-    max-width: 340px;
-  }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { background: #1a3d2e; border: 1px solid var(--green); color: var(--green); }
-  .toast.error   { background: #3d1a1a; border: 1px solid var(--red);   color: var(--red);   }
-  .toast.info    { background: #1a2060; border: 1px solid var(--accent); color: #9ba8ff; }
-
-  /* ── LOADING OVERLAY ── */
-  .loading {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10,12,20,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(4px);
-  }
-  .loading.show { display: flex; }
-  .spinner {
-    width: 40px; height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── DIVIDER ── */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 36px 0;
-  }
-
-  /* ── LOGS / HISTORY ── */
-  .logs-section h3 {
-    font-size: 16px;
-    font-weight: 700;
-    margin-bottom: 16px;
-  }
-  .log-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .log-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 13px;
-  }
-  .log-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .log-dot.success { background: var(--green); }
-  .log-dot.info    { background: var(--accent); }
-  .log-time { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-left: auto; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StructuReality - AR Scenarios</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: "Poppins", sans-serif; }
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+    .scenario-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
+    .scenario-card.active { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99,102,241,0.15); }
+    .toggle-switch { position: relative; width: 44px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; inset: 0;
+      background: #e5e7eb; border-radius: 24px;
+      cursor: pointer; transition: background 0.25s;
+    }
+    .slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white; border-radius: 50%;
+      transition: transform 0.25s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .toggle-switch input:checked + .slider { background: #6366f1; }
+    .toggle-switch input:checked + .slider::before { transform: translateX(20px); }
+    .sparkline { overflow: visible; }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 12px;
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 999; max-width: 340px; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 200;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(3px);
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .preview-btn-active {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; font-weight: 600;
+    }
+    .preview-btn-empty {
+      border: 2px dashed #d1d5db;
+      color: #9ca3af;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-gray-100">
 
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-mark">📐</div>
-    <div>
-      <div class="logo-text">StructuReality</div>
-      <div class="logo-sub">Admin · Scenario Control</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="server-badge">API: <span id="apiStatus">connecting…</span></div>
-  </div>
-</header>
-
-<!-- MAIN -->
-<main>
-  <div class="page-header">
-    <h1 class="page-title">Scenario Manager</h1>
-    <p class="page-sub">
-      Select which 2 scenarios appear as buttons in the AR app for the <strong>Arrays</strong> data structure.<br>
-      Toggle to activate/deactivate, then push the config to the server.
-    </p>
-  </div>
-
-  <!-- APP PREVIEW -->
-  <div class="preview-bar">
-    <span class="preview-label">App Preview</span>
-    <div class="app-screen">📱 Arrays Screen</div>
-    <span class="preview-arrow">→</span>
-    <div class="preview-buttons">
-      <div class="preview-btn" id="previewBtn1">—</div>
-      <div class="preview-btn" id="previewBtn2">—</div>
-    </div>
-  </div>
-
-  <!-- STATUS -->
-  <div class="status-bar">
-    <div class="status-count" id="activeCount">0 of 3 active</div>
-    <span class="status-hint" id="statusHint">Toggle exactly 2 scenarios to enable push.</span>
-  </div>
-
-  <!-- SCENARIO CARDS -->
-  <div class="scenarios-grid" id="scenariosGrid">
-    <!-- Populated by JS -->
-  </div>
-
-  <!-- PUSH SECTION -->
-  <div class="push-section">
-    <div class="push-info">
-      <h3>Push to App</h3>
-      <p>Saves the selected scenario config to the server. The AR app reads this on every launch and reset.</p>
-    </div>
-    <div class="push-actions">
-      <button class="btn btn-secondary" onclick="loadConfig()">↻ Reload</button>
-      <button class="btn btn-primary" id="pushBtn" onclick="pushConfig()" disabled>
-        ⬆ Push to App
-      </button>
-    </div>
-  </div>
-
-  <hr class="divider">
-
-  <!-- ACTIVITY LOG -->
-  <div class="logs-section">
-    <h3>Activity Log</h3>
-    <div class="log-list" id="logList">
-      <div class="log-item">
-        <div class="log-dot info"></div>
-        <span>Admin panel loaded — fetching server config…</span>
-        <span class="log-time" id="initTime"></span>
-      </div>
-    </div>
-  </div>
-</main>
-
-<!-- TOAST -->
-<div class="toast" id="toast"></div>
-
-<!-- LOADING -->
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-</div>
-
-<script>
-// ============================================================
-// CONFIG
-// ============================================================
-const SERVER_URL = 'https://structureality-admin.onrender.com';
-const DS_KEY     = 'Arrays';
-const MAX_ACTIVE = 2;
-
-// ============================================================
-// SCENARIO DEFINITIONS
-// ============================================================
-const ALL_SCENARIOS = [
-  {
-    id:          'ParkingLot',
-    name:        'Parking Lot',
-    icon:        '🅿️',
-    desc:        'Cars in numbered parking spots. Students INSERT cars into spots, REMOVE them, and ACCESS a spot directly by index.',
-    ops:         ['INSERT', 'REMOVE', 'ACCESS', 'SORTED INSERT', 'BINARY SEARCH'],
-    sessions:    [120, 145, 130, 160, 175, 155, 180],
-    avgTime:     '4.2 min',
-  },
-  {
-    id:          'VendingMachine',
-    name:        'Vending Machine',
-    icon:        '🏪',
-    desc:        '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address (A0–B2).',
-    ops:         ['RESTOCK', 'DISPENSE', 'INSPECT', 'SORTED RESTOCK', 'PRICE SEARCH'],
-    sessions:    [95, 110, 130, 145, 160, 140, 170],
-    avgTime:     '3.8 min',
-  },
-  {
-    id:          'Supermarket',
-    name:        'Supermarket Shelf',
-    icon:        '🛒',
-    desc:        'Linear shelf with 6 grocery slots. Students STOCK items onto the shelf, PULL them off, and CHECK shelf contents by index.',
-    ops:         ['STOCK', 'PULL', 'CHECK', 'SORTED STOCK', 'BARCODE SCAN'],
-    sessions:    [90, 110, 140, 175, 160, 155, 200],
-    avgTime:     '4.0 min',
-  },
-];
-
-// ============================================================
-// STATE
-// ============================================================
-let activeIds = [];   // ordered list of active scenario IDs (max 2)
-
-// ============================================================
-// DOM HELPERS
-// ============================================================
-function showToast(msg, type = 'info') {
-  const t = document.getElementById('toast');
-  t.className = `toast ${type}`;
-  t.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span> ${msg}`;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
-
-function showLoading(v) {
-  document.getElementById('loading').classList.toggle('show', v);
-}
-
-function addLog(msg, type = 'info') {
-  const list = document.getElementById('logList');
-  const now  = new Date().toLocaleTimeString();
-  const el   = document.createElement('div');
-  el.className = 'log-item';
-  el.innerHTML = `<div class="log-dot ${type}"></div><span>${msg}</span><span class="log-time">${now}</span>`;
-  list.prepend(el);
-  // keep max 20 entries
-  while (list.children.length > 20) list.removeChild(list.lastChild);
-}
-
-// ============================================================
-// RENDER SCENARIOS
-// ============================================================
-function renderGrid() {
-  const grid = document.getElementById('scenariosGrid');
-  grid.innerHTML = '';
-
-  ALL_SCENARIOS.forEach(sc => {
-    const isActive = activeIds.includes(sc.id);
-    const pos      = activeIds.indexOf(sc.id) + 1;   // 1-based position (0 = not active)
-    const maxReached = activeIds.length >= MAX_ACTIVE && !isActive;
-
-    const card = document.createElement('div');
-    card.className = `scenario-card${isActive ? ' active' : ''}`;
-    card.onclick = () => toggleScenario(sc.id);
-
-    const sparkId = `spark_${sc.id}`;
-
-    card.innerHTML = `
-      <div class="active-badge">${pos ? `Button ${pos}` : ''}</div>
-      <div class="card-top">
-        <div class="card-icon">${sc.icon}</div>
-        <div class="toggle-wrap">
-          <span class="toggle-label">${isActive ? 'ON' : maxReached ? 'MAX' : 'OFF'}</span>
-          <label class="toggle" onclick="event.stopPropagation()">
-            <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''}
-                   onchange="toggleScenario('${sc.id}')">
-            <span class="slider"></span>
-          </label>
+  <!-- Sidebar -->
+  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <div class="p-6 border-b border-indigo-700">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+          <i class="fas fa-cube text-indigo-700 text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">StructuReality</h1>
+          <p class="text-xs text-indigo-300">Admin Portal</p>
         </div>
       </div>
-      <div class="card-name">${sc.name}</div>
-      <div class="card-id">${sc.id}</div>
-      <div class="card-desc">${sc.desc}</div>
-      <div class="card-ops">${sc.ops.map(op => `<span class="op-tag">${op}</span>`).join('')}</div>
-      <div class="card-stats">
-        <div class="stat-item">
-          <div class="stat-num">${sc.sessions.reduce((a,b)=>a+b,0)}</div>
-          <div class="stat-lbl">Total Sessions</div>
+    </div>
+    <nav class="mt-6 px-4">
+      <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
+      </a>
+      <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
+      </a>
+      <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
+      </a>
+      <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
+      </a>
+      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
+      </a>
+      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+        <i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span>
+      </a>
+      <a href="instructors.html" id="instructorsLink" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+        <i class="fas fa-chalkboard-teacher w-5"></i><span class="font-medium">Instructors</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+    <div class="px-8 py-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">AR Scenarios</h2>
+        <p class="text-sm text-gray-500">Configure which scenarios appear in the AR app</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+          <span class="text-gray-500">API:</span>
+          <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
         </div>
-        <svg class="sparkline" id="${sparkId}" viewBox="0 0 100 30" preserveAspectRatio="none"></svg>
-        <div class="stat-item">
-          <div class="stat-num">${sc.avgTime}</div>
-          <div class="stat-lbl">Avg Duration</div>
+        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+          <i class="fas fa-bell text-gray-600"></i>
+        </button>
+        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+          <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-indigo-700 text-sm"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
+            <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+          </div>
+        </div>
+        <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
+          <i class="fas fa-sign-out-alt text-gray-600"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="ml-64 mt-20 p-8">
+
+    <!-- App Preview Bar -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6 flex items-center gap-5 flex-wrap">
+      <div class="flex items-center gap-2 text-sm text-gray-500">
+        <i class="fas fa-mobile-alt text-indigo-500"></i>
+        <span class="font-medium text-gray-700">Arrays Screen Preview</span>
+      </div>
+      <i class="fas fa-arrow-right text-gray-300"></i>
+      <div class="flex gap-3 flex-wrap">
+        <div id="previewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+        <div id="previewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+      </div>
+      <div class="ml-auto flex items-center gap-2 text-sm">
+        <span id="activeCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+        <span id="statusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+      </div>
+    </div>
+
+    <!-- Scenario Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8" id="scenariosGrid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Push Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between flex-wrap gap-4">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800 mb-1">Push to App</h3>
+        <p class="text-sm text-gray-500">Saves the selected scenario config to the server. The AR app reads this on every launch and reset.</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="loadConfig()"
+          class="flex items-center gap-2 px-5 py-2.5 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
+          <i class="fas fa-sync-alt"></i> Reload
+        </button>
+        <button id="pushBtn" onclick="pushConfig()" disabled
+          class="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+          <i class="fas fa-upload"></i> Push to App
+        </button>
+      </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-8">
+      <div class="p-6 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Activity Log</h3>
+      </div>
+      <div class="p-6 space-y-3" id="logList">
+        <div class="flex items-center gap-3 text-sm text-gray-600">
+          <div class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></div>
+          <span>Admin panel loaded — fetching server config…</span>
+          <span class="ml-auto text-xs text-gray-400" id="initTime"></span>
         </div>
       </div>
-    `;
+    </div>
+  </main>
 
-    grid.appendChild(card);
-    drawSparkline(sparkId, sc.sessions, isActive);
-  });
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
 
-  updateStatusBar();
-  updatePreview();
-}
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
 
-function drawSparkline(id, data, active) {
-  const svg = document.getElementById(id);
-  if (!svg) return;
-  const w = 100, h = 30;
-  const min = Math.min(...data), max = Math.max(...data);
-  const range = max - min || 1;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * (h - 4) - 2;
-    return `${x},${y}`;
-  });
-  const color = active ? '#5b6af0' : '#3d4155';
-  svg.innerHTML = `
-    <polyline points="${pts.join(' ')}"
-      fill="none" stroke="${color}" stroke-width="1.8"
-      stroke-linejoin="round" stroke-linecap="round"/>
-  `;
-}
+  <script>
+    // ── CONFIG ──────────────────────────────────────────────
+    const SERVER_URL = 'https://structureality-admin.onrender.com';
+    const DS_KEY     = 'Arrays';
+    const MAX_ACTIVE = 2;
 
-function updateStatusBar() {
-  const n   = activeIds.length;
-  const cnt = document.getElementById('activeCount');
-  const hint= document.getElementById('statusHint');
-  const btn = document.getElementById('pushBtn');
+    // ── SCENARIO DEFINITIONS ────────────────────────────────
+    const ALL_SCENARIOS = [
+      {
+        id:       'ParkingLot',
+        name:     'Parking Lot',
+        icon:     '🅿️',
+        desc:     'Cars in numbered parking spots. Students INSERT cars into spots, REMOVE them, and ACCESS a spot directly by index.',
+        ops:      ['INSERT', 'REMOVE', 'ACCESS', 'SORTED INSERT', 'BINARY SEARCH'],
+        sessions: [120, 145, 130, 160, 175, 155, 180],
+        avgTime:  '4.2 min',
+        color:    'indigo',
+      },
+      {
+        id:       'VendingMachine',
+        name:     'Vending Machine',
+        icon:     '🏪',
+        desc:     '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address (A0–B2).',
+        ops:      ['RESTOCK', 'DISPENSE', 'INSPECT', 'SORTED RESTOCK', 'PRICE SEARCH'],
+        sessions: [95, 110, 130, 145, 160, 140, 170],
+        avgTime:  '3.8 min',
+        color:    'purple',
+      },
+      {
+        id:       'Supermarket',
+        name:     'Supermarket Shelf',
+        icon:     '🛒',
+        desc:     'Linear shelf with 6 grocery slots. Students STOCK items onto the shelf, PULL them off, and CHECK shelf contents by index.',
+        ops:      ['STOCK', 'PULL', 'CHECK', 'SORTED STOCK', 'BARCODE SCAN'],
+        sessions: [90, 110, 140, 175, 160, 155, 200],
+        avgTime:  '4.0 min',
+        color:    'blue',
+      },
+    ];
 
-  cnt.className = `status-count ${n === MAX_ACTIVE ? 'ok' : n > MAX_ACTIVE ? 'err' : 'warn'}`;
-  cnt.textContent = `${n} of ${ALL_SCENARIOS.length} active`;
+    // ── STATE ───────────────────────────────────────────────
+    let activeIds = [];
 
-  if (n === MAX_ACTIVE) {
-    hint.textContent = '✓ Exactly 2 active — ready to push.';
-    hint.style.color = 'var(--green)';
-    btn.disabled = false;
-  } else {
-    hint.textContent = `Select ${MAX_ACTIVE - n} more scenario${MAX_ACTIVE - n !== 1 ? 's' : ''} to enable push.`;
-    hint.style.color = 'var(--muted)';
-    btn.disabled = true;
-  }
-}
-
-function updatePreview() {
-  const b1 = document.getElementById('previewBtn1');
-  const b2 = document.getElementById('previewBtn2');
-
-  const s1 = ALL_SCENARIOS.find(s => s.id === activeIds[0]);
-  const s2 = ALL_SCENARIOS.find(s => s.id === activeIds[1]);
-
-  if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = 'preview-btn'; }
-  else     { b1.textContent = 'Button 1'; b1.className = 'preview-btn empty'; }
-
-  if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = 'preview-btn'; }
-  else     { b2.textContent = 'Button 2'; b2.className = 'preview-btn empty'; }
-}
-
-// ============================================================
-// TOGGLE SCENARIO
-// ============================================================
-function toggleScenario(id) {
-  const idx = activeIds.indexOf(id);
-  if (idx >= 0) {
-    // deactivate
-    activeIds.splice(idx, 1);
-  } else {
-    if (activeIds.length >= MAX_ACTIVE) {
-      showToast(`Max ${MAX_ACTIVE} scenarios allowed — deactivate one first.`, 'error');
-      renderGrid(); // reset checkbox state
-      return;
-    }
-    activeIds.push(id);
-  }
-  renderGrid();
-}
-
-// ============================================================
-// LOAD CONFIG FROM SERVER
-// ============================================================
-async function loadConfig() {
-  showLoading(true);
-  try {
-    const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
-    const data = await res.json();
-
-    if (data.success && data.config && data.config.scenarios) {
-      const serverIds = data.config.scenarios[DS_KEY] || [];
-      // Only use IDs we know about
-      activeIds = serverIds.filter(id => ALL_SCENARIOS.some(s => s.id === id));
-    } else {
-      activeIds = ['ParkingLot', 'VendingMachine'];
+    // ── AUTH & UTILS ────────────────────────────────────────
+    function logout() {
+      localStorage.removeItem('adminUser');
+      window.location.href = 'login.html';
     }
 
-    document.getElementById('apiStatus').textContent = 'connected';
-    document.getElementById('apiStatus').style.color  = 'var(--green)';
-    addLog(`Loaded config from server — active: [${activeIds.join(', ')}]`, 'success');
-    showToast('Config loaded from server.', 'success');
-  } catch (err) {
-    console.warn('Could not reach server:', err);
-    activeIds = activeIds.length ? activeIds : ['ParkingLot', 'VendingMachine'];
-    document.getElementById('apiStatus').textContent = 'offline';
-    document.getElementById('apiStatus').style.color  = 'var(--red)';
-    addLog(`Could not reach server — using local state.`, 'error');
-    showToast('Server unreachable. Working offline.', 'error');
-  } finally {
-    showLoading(false);
-    renderGrid();
-  }
-}
+    function checkAuth() {
+      const raw = localStorage.getItem('adminUser');
+      if (!raw || raw === 'undefined') { logout(); return null; }
+      try { return JSON.parse(raw); } catch { logout(); return null; }
+    }
 
-// ============================================================
-// PUSH CONFIG TO SERVER
-// ============================================================
-async function pushConfig() {
-  if (activeIds.length !== MAX_ACTIVE) {
-    showToast(`Select exactly ${MAX_ACTIVE} scenarios first.`, 'error');
-    return;
-  }
+    function showToast(msg, type = 'info') {
+      const colorMap = {
+        success: 'bg-green-50 border border-green-300 text-green-700',
+        error:   'bg-red-50 border border-red-300 text-red-700',
+        info:    'bg-indigo-50 border border-indigo-300 text-indigo-700',
+      };
+      const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+      const t = document.getElementById('toast');
+      t.className = `toast ${colorMap[type]}`;
+      t.innerHTML = `<i class="fas ${iconMap[type]}"></i> ${msg}`;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
 
-  showLoading(true);
-  try {
-    const payload = {
-      scenarios: {
-        [DS_KEY]: [...activeIds]
+    function showLoading(v) {
+      document.getElementById('loadingOverlay').classList.toggle('show', v);
+    }
+
+    function addLog(msg, type = 'info') {
+      const list  = document.getElementById('logList');
+      const now   = new Date().toLocaleTimeString();
+      const dotColor = type === 'success' ? 'bg-green-400' : type === 'error' ? 'bg-red-400' : 'bg-indigo-400';
+      const el = document.createElement('div');
+      el.className = 'flex items-center gap-3 text-sm text-gray-600';
+      el.innerHTML = `<div class="w-2 h-2 rounded-full ${dotColor} flex-shrink-0"></div><span>${msg}</span><span class="ml-auto text-xs text-gray-400">${now}</span>`;
+      list.prepend(el);
+      while (list.children.length > 20) list.removeChild(list.lastChild);
+    }
+
+    // ── RENDER ───────────────────────────────────────────────
+    function renderGrid() {
+      const grid = document.getElementById('scenariosGrid');
+      grid.innerHTML = '';
+
+      ALL_SCENARIOS.forEach(sc => {
+        const isActive   = activeIds.includes(sc.id);
+        const pos        = activeIds.indexOf(sc.id) + 1;
+        const maxReached = activeIds.length >= MAX_ACTIVE && !isActive;
+        const total      = sc.sessions.reduce((a, b) => a + b, 0);
+
+        const card = document.createElement('div');
+        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? 'border-indigo-500 active' : 'border-gray-100'} p-6 cursor-pointer card-hover`;
+        card.onclick = () => toggleScenario(sc.id);
+
+        const sparkId = `spark_${sc.id}`;
+
+        card.innerHTML = `
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 ${isActive ? 'bg-indigo-100' : 'bg-gray-100'} rounded-xl flex items-center justify-center text-2xl">
+                ${sc.icon}
+              </div>
+              <div>
+                <h3 class="font-semibold text-gray-800">${sc.name}</h3>
+                <span class="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">${sc.id}</span>
+              </div>
+            </div>
+            <div class="flex flex-col items-end gap-1">
+              ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">Button ${pos}</span>` : ''}
+              <label class="toggle-switch" onclick="event.stopPropagation()">
+                <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''} onchange="toggleScenario('${sc.id}')">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <p class="text-sm text-gray-500 leading-relaxed mb-4">${sc.desc}</p>
+
+          <div class="flex flex-wrap gap-1.5 mb-4">
+            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
+          </div>
+
+          <div class="border-t border-gray-100 pt-4 flex items-center justify-between">
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">${total}</p>
+              <p class="text-xs text-gray-400">Total Sessions</p>
+            </div>
+            <svg class="sparkline flex-1 mx-4" id="${sparkId}" height="32" viewBox="0 0 100 32" preserveAspectRatio="none"></svg>
+            <div class="text-center">
+              <p class="text-xl font-bold text-gray-800">${sc.avgTime}</p>
+              <p class="text-xs text-gray-400">Avg Duration</p>
+            </div>
+          </div>
+        `;
+
+        grid.appendChild(card);
+        drawSparkline(sparkId, sc.sessions, isActive);
+      });
+
+      updateStatusBar();
+      updatePreview();
+    }
+
+    function drawSparkline(id, data, active) {
+      const svg = document.getElementById(id);
+      if (!svg) return;
+      const w = 100, h = 32;
+      const min = Math.min(...data), max = Math.max(...data);
+      const range = max - min || 1;
+      const pts = data.map((v, i) => {
+        const x = (i / (data.length - 1)) * w;
+        const y = h - ((v - min) / range) * (h - 6) - 3;
+        return `${x},${y}`;
+      });
+      const color = active ? '#6366f1' : '#d1d5db';
+      svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2"
+        stroke-linejoin="round" stroke-linecap="round"/>`;
+    }
+
+    function updateStatusBar() {
+      const n = activeIds.length;
+      const badge = document.getElementById('activeCountBadge');
+      const hint  = document.getElementById('statusHint');
+      const btn   = document.getElementById('pushBtn');
+
+      badge.textContent = `${n} of ${ALL_SCENARIOS.length} active`;
+      badge.className   = `px-3 py-1 rounded-full font-semibold text-xs ${n === MAX_ACTIVE ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`;
+
+      if (n === MAX_ACTIVE) {
+        hint.textContent  = '✓ Exactly 2 selected — ready to push.';
+        hint.className    = 'text-green-600 text-xs font-medium';
+        btn.disabled      = false;
+      } else {
+        hint.textContent  = `Select ${MAX_ACTIVE - n} more scenario${MAX_ACTIVE - n !== 1 ? 's' : ''} to enable push.`;
+        hint.className    = 'text-gray-400 text-xs';
+        btn.disabled      = true;
       }
-    };
-
-    const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify(payload)
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      addLog(`Pushed config — [${activeIds.join(', ')}] → live in app.`, 'success');
-      showToast(`Config pushed! App will show: ${activeIds.map(id => {
-        const s = ALL_SCENARIOS.find(x => x.id === id);
-        return s ? `${s.icon} ${s.name}` : id;
-      }).join(' + ')}`, 'success');
-    } else {
-      throw new Error(data.message || 'Server returned failure');
     }
-  } catch (err) {
-    console.error(err);
-    addLog(`Push failed: ${err.message}`, 'error');
-    showToast(`Push failed: ${err.message}`, 'error');
-  } finally {
-    showLoading(false);
-  }
-}
 
-// ============================================================
-// INIT
-// ============================================================
-document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
-loadConfig();
-</script>
+    function updatePreview() {
+      const b1 = document.getElementById('previewBtn1');
+      const b2 = document.getElementById('previewBtn2');
+      const s1 = ALL_SCENARIOS.find(s => s.id === activeIds[0]);
+      const s2 = ALL_SCENARIOS.find(s => s.id === activeIds[1]);
+
+      if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
+      else     { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
+
+      if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
+      else     { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
+    }
+
+    // ── TOGGLE ───────────────────────────────────────────────
+    function toggleScenario(id) {
+      const idx = activeIds.indexOf(id);
+      if (idx >= 0) {
+        activeIds.splice(idx, 1);
+      } else {
+        if (activeIds.length >= MAX_ACTIVE) {
+          showToast(`Max ${MAX_ACTIVE} scenarios allowed — deactivate one first.`, 'error');
+          renderGrid();
+          return;
+        }
+        activeIds.push(id);
+      }
+      renderGrid();
+    }
+
+    // ── LOAD FROM SERVER ─────────────────────────────────────
+    async function loadConfig() {
+      showLoading(true);
+      try {
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
+        const data = await res.json();
+        if (data.success && data.config?.scenarios) {
+          const ids = data.config.scenarios[DS_KEY] || [];
+          activeIds = ids.filter(id => ALL_SCENARIOS.some(s => s.id === id));
+        } else {
+          activeIds = ['ParkingLot', 'VendingMachine'];
+        }
+        document.getElementById('apiStatus').textContent = 'connected';
+        document.getElementById('apiStatus').className   = 'font-medium text-green-500';
+        addLog(`Loaded config — active: [${activeIds.join(', ')}]`, 'success');
+        showToast('Config loaded from server.', 'success');
+      } catch (err) {
+        activeIds = activeIds.length ? activeIds : ['ParkingLot', 'VendingMachine'];
+        document.getElementById('apiStatus').textContent = 'offline';
+        document.getElementById('apiStatus').className   = 'font-medium text-red-500';
+        addLog('Could not reach server — using local state.', 'error');
+        showToast('Server unreachable. Working offline.', 'error');
+      } finally {
+        showLoading(false);
+        renderGrid();
+      }
+    }
+
+    // ── PUSH TO SERVER ───────────────────────────────────────
+    async function pushConfig() {
+      if (activeIds.length !== MAX_ACTIVE) {
+        showToast(`Select exactly ${MAX_ACTIVE} scenarios first.`, 'error');
+        return;
+      }
+      showLoading(true);
+      try {
+        const payload = { scenarios: { [DS_KEY]: [...activeIds] } };
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          addLog(`Pushed config — [${activeIds.join(', ')}] → live in app.`, 'success');
+          showToast(`Pushed! App will show: ${activeIds.map(id => {
+            const s = ALL_SCENARIOS.find(x => x.id === id);
+            return s ? `${s.icon} ${s.name}` : id;
+          }).join(' + ')}`, 'success');
+        } else {
+          throw new Error(data.message || 'Server returned failure');
+        }
+      } catch (err) {
+        addLog(`Push failed: ${err.message}`, 'error');
+        showToast(`Push failed: ${err.message}`, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ── INIT ─────────────────────────────────────────────────
+    window.addEventListener('load', () => {
+      const user = checkAuth();
+      if (user) {
+        document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+        document.getElementById('adminEmailDisplay').textContent = user.email || '';
+        if (user.role === 'instructor') {
+          const link = document.getElementById('instructorsLink');
+          if (link) link.style.display = 'none';
+        }
+      }
+      document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
+      loadConfig();
+    });
+  </script>
 </body>
 </html>
