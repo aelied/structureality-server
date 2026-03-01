@@ -12,15 +12,20 @@
     .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
     .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
     .scenario-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
-    .scenario-card.active { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99,102,241,0.15); }
 
-    /* Tab styles */
+    .scenario-card.active-Arrays      { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99,102,241,0.15); }
+    .scenario-card.active-Stacks      { border-color: #8b5cf6; box-shadow: 0 0 0 2px #8b5cf6, 0 8px 24px rgba(139,92,246,0.15); }
+    .scenario-card.active-Queue       { border-color: #10b981; box-shadow: 0 0 0 2px #10b981, 0 8px 24px rgba(16,185,129,0.15); }
+    .scenario-card.active-LinkedList  { border-color: #f43f5e; box-shadow: 0 0 0 2px #f43f5e, 0 8px 24px rgba(244,63,94,0.15); }
+    .scenario-card.active-Graph       { border-color: #0ea5e9; box-shadow: 0 0 0 2px #0ea5e9, 0 8px 24px rgba(14,165,233,0.15); }
+    .scenario-card.active-Trees       { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a, 0 8px 24px rgba(22,163,74,0.15); }
+
     .ds-tab {
       position: relative;
-      padding: 10px 28px;
+      padding: 10px 24px;
       border-radius: 10px 10px 0 0;
       font-weight: 600;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.2s;
       border: 2px solid transparent;
@@ -28,78 +33,60 @@
       background: #f3f4f6;
       color: #6b7280;
     }
-    .ds-tab.active-tab {
-      background: white;
-      color: #4f46e5;
-      border-color: #e5e7eb;
-      border-bottom-color: white;
-      z-index: 2;
-    }
+    .ds-tab.active-tab { background: white; border-color: #e5e7eb; border-bottom-color: white; z-index: 2; }
+    .ds-tab.active-tab.tab-Arrays      { color: #4f46e5; }
+    .ds-tab.active-tab.tab-Stacks      { color: #7c3aed; }
+    .ds-tab.active-tab.tab-Queue       { color: #059669; }
+    .ds-tab.active-tab.tab-LinkedList  { color: #e11d48; }
+    .ds-tab.active-tab.tab-Graph       { color: #0284c7; }
+    .ds-tab.active-tab.tab-Trees       { color: #15803d; }
     .ds-tab:hover:not(.active-tab) { background: #e9eaff; color: #4f46e5; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
-    .tab-bar {
-      display: flex;
-      gap: 4px;
-      border-bottom: 2px solid #e5e7eb;
-      position: relative;
-      z-index: 1;
-      margin-bottom: 0;
-    }
+    .tab-bar { display: flex; gap: 4px; border-bottom: 2px solid #e5e7eb; position: relative; z-index: 1; margin-bottom: 0; flex-wrap: wrap; }
 
     .toggle-switch { position: relative; width: 44px; height: 24px; }
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; inset: 0;
-      background: #e5e7eb; border-radius: 24px;
-      cursor: pointer; transition: background 0.25s;
-    }
-    .slider::before {
-      content: '';
-      position: absolute;
-      width: 18px; height: 18px;
-      left: 3px; top: 3px;
-      background: white; border-radius: 50%;
-      transition: transform 0.25s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-    }
-    .toggle-switch input:checked + .slider { background: #6366f1; }
+    .slider { position: absolute; inset: 0; background: #e5e7eb; border-radius: 24px; cursor: pointer; transition: background 0.25s; }
+    .slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .toggle-Arrays     input:checked + .slider { background: #6366f1; }
+    .toggle-Stacks     input:checked + .slider { background: #8b5cf6; }
+    .toggle-Queue      input:checked + .slider { background: #10b981; }
+    .toggle-LinkedList input:checked + .slider { background: #f43f5e; }
+    .toggle-Graph      input:checked + .slider { background: #0ea5e9; }
+    .toggle-Trees      input:checked + .slider { background: #16a34a; }
     .toggle-switch input:checked + .slider::before { transform: translateX(20px); }
 
-    .sparkline { overflow: visible; }
+    .preview-btn-active-Arrays      { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 600; }
+    .preview-btn-active-Stacks      { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; font-weight: 600; }
+    .preview-btn-active-Queue       { background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 600; }
+    .preview-btn-active-LinkedList  { background: linear-gradient(135deg, #f43f5e, #fb7185); color: white; font-weight: 600; }
+    .preview-btn-active-Graph       { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: white; font-weight: 600; }
+    .preview-btn-active-Trees       { background: linear-gradient(135deg, #16a34a, #22c55e); color: white; font-weight: 600; }
+    .preview-btn-empty { border: 2px dashed #d1d5db; color: #9ca3af; }
+
     .toast {
       position: fixed; bottom: 24px; right: 24px;
-      padding: 14px 20px; border-radius: 12px;
-      font-size: 13px; font-weight: 600;
+      padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
       display: flex; align-items: center; gap: 10px;
       transform: translateY(80px); opacity: 0;
       transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 999; max-width: 340px; pointer-events: none;
     }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
     .loading-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.3); z-index: 200;
-      align-items: center; justify-content: center;
-      backdrop-filter: blur(3px);
+      align-items: center; justify-content: center; backdrop-filter: blur(3px);
     }
     .loading-overlay.show { display: flex; }
-    .spinner {
-      width: 40px; height: 40px;
-      border: 3px solid #e5e7eb;
-      border-top-color: #6366f1;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .preview-btn-active {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: white; font-weight: 600;
-    }
-    .preview-btn-empty {
-      border: 2px dashed #d1d5db;
-      color: #9ca3af;
-    }
+
+    .diff-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.3px; }
+    .diff-beginner     { background: #dcfce7; color: #15803d; }
+    .diff-intermediate { background: #fef3c7; color: #b45309; }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -118,27 +105,13 @@
       </div>
     </div>
     <nav class="mt-6 px-4">
-      <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
-      </a>
-      <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
-      </a>
-      <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
-      </a>
-      <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
-      </a>
-      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
-      </a>
-      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-        <i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span>
-      </a>
-      <a href="instructors.html" id="instructorsLink" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chalkboard-teacher w-5"></i><span class="font-medium">Instructors</span>
-      </a>
+      <a href="index.html"       class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
+      <a href="users.html"       class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
+      <a href="lessons.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span></a>
+      <a href="quizzes.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
+      <a href="analytics.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
+      <a href="scenarios.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
+      <a href="instructors.html" id="instructorsLink" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chalkboard-teacher w-5"></i><span class="font-medium">Instructors</span></a>
     </nav>
   </aside>
 
@@ -178,18 +151,28 @@
 
     <!-- DS Tab Bar -->
     <div class="tab-bar mb-0">
-      <button class="ds-tab active-tab" id="tab-Arrays" onclick="switchTab('Arrays')">
+      <button class="ds-tab tab-Arrays active-tab" id="tab-Arrays"      onclick="switchTab('Arrays')">
         <i class="fas fa-list-ol mr-2 text-sm"></i>Arrays
       </button>
-      <button class="ds-tab" id="tab-Stacks" onclick="switchTab('Stacks')">
+      <button class="ds-tab tab-Stacks"            id="tab-Stacks"      onclick="switchTab('Stacks')">
         <i class="fas fa-layer-group mr-2 text-sm"></i>Stacks
+      </button>
+      <button class="ds-tab tab-Queue"             id="tab-Queue"       onclick="switchTab('Queue')">
+        <i class="fas fa-stream mr-2 text-sm"></i>Queue
+      </button>
+      <button class="ds-tab tab-LinkedList"        id="tab-LinkedList"  onclick="switchTab('LinkedList')">
+        <i class="fas fa-link mr-2 text-sm"></i>Linked List
+      </button>
+      <button class="ds-tab tab-Graph"             id="tab-Graph"       onclick="switchTab('Graph')">
+        <i class="fas fa-project-diagram mr-2 text-sm"></i>Graph
+      </button>
+      <button class="ds-tab tab-Trees"             id="tab-Trees"       onclick="switchTab('Trees')">
+        <i class="fas fa-tree mr-2 text-sm"></i>Trees
       </button>
     </div>
 
     <!-- ══════════════ ARRAYS TAB ══════════════ -->
     <div class="tab-panel active bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Arrays">
-
-      <!-- App Preview -->
       <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <i class="fas fa-mobile-alt text-indigo-500"></i>
@@ -205,19 +188,14 @@
           <span id="arrStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
         </div>
       </div>
-
-      <!-- Array Scenario Cards -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="arrScenariosGrid"></div>
-
-      <!-- Push Section -->
       <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
         <div>
           <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Arrays Config to App</h3>
           <p class="text-xs text-gray-400">The AR app reads this on every Arrays launch and reset.</p>
         </div>
         <div class="flex gap-3">
-          <button onclick="loadConfig('Arrays')"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
+          <button onclick="loadConfig('Arrays')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
             <i class="fas fa-sync-alt"></i> Reload
           </button>
           <button id="arrPushBtn" onclick="pushConfig('Arrays')" disabled
@@ -230,8 +208,6 @@
 
     <!-- ══════════════ STACKS TAB ══════════════ -->
     <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Stacks">
-
-      <!-- App Preview -->
       <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
         <div class="flex items-center gap-2 text-sm text-gray-500">
           <i class="fas fa-mobile-alt text-purple-500"></i>
@@ -247,24 +223,190 @@
           <span id="stkStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
         </div>
       </div>
-
-      <!-- Stack Scenario Cards -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="stkScenariosGrid"></div>
-
-      <!-- Push Section -->
       <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
         <div>
           <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Stacks Config to App</h3>
           <p class="text-xs text-gray-400">The AR app reads this on every Stacks launch and reset.</p>
         </div>
         <div class="flex gap-3">
-          <button onclick="loadConfig('Stacks')"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
+          <button onclick="loadConfig('Stacks')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-purple-400 hover:text-purple-600 transition">
             <i class="fas fa-sync-alt"></i> Reload
           </button>
           <button id="stkPushBtn" onclick="pushConfig('Stacks')" disabled
             class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
             <i class="fas fa-upload"></i> Push Stacks
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ QUEUE TAB ══════════════ -->
+    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Queue">
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-emerald-500"></i>
+          <span class="font-medium text-gray-700">Queue Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="quePreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="quePreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="queActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="queStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="queScenariosGrid"></div>
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Queue Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Queue launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('Queue')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-emerald-400 hover:text-emerald-600 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="quePushBtn" onclick="pushConfig('Queue')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Queue
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ LINKED LIST TAB ══════════════ -->
+    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-LinkedList">
+      <div class="bg-rose-50 border border-rose-100 rounded-xl p-3 mb-5 flex items-start gap-3">
+        <i class="fas fa-info-circle text-rose-400 mt-0.5 flex-shrink-0"></i>
+        <div class="text-xs text-rose-700">
+          <span class="font-semibold">Linked List has 2 difficulty modes</span> — Beginner (Add Head/Tail, Remove, Traverse) and Intermediate (Insert At, Delete By Value, Reverse, Find Middle).
+          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-rose-500"></i>
+          <span class="font-medium text-gray-700">Linked List Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="llPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="llPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="llActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="llStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="llScenariosGrid"></div>
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Linked List Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Linked List launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('LinkedList')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-rose-400 hover:text-rose-600 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="llPushBtn" onclick="pushConfig('LinkedList')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Linked List
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ GRAPH TAB ══════════════ -->
+    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Graph">
+      <div class="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-5 flex items-start gap-3">
+        <i class="fas fa-info-circle text-sky-400 mt-0.5 flex-shrink-0"></i>
+        <div class="text-xs text-sky-700">
+          <span class="font-semibold">Graph has 2 difficulty modes</span> — Beginner (Add Node/Edge, Remove, BFS, DFS, Dijkstra) and Intermediate (MST, Path Check, Node Degree).
+          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
+        </div>
+      </div>
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-sky-500"></i>
+          <span class="font-medium text-gray-700">Graph Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="grpPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="grpPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="grpActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="grpStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="grpScenariosGrid"></div>
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Graph Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Graph launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('Graph')"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-sky-400 hover:text-sky-600 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="grpPushBtn" onclick="pushConfig('Graph')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Graph
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ TREES TAB ══════════════ -->
+    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Trees">
+
+      <!-- Difficulty notice -->
+      <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-5 flex items-start gap-3">
+        <i class="fas fa-info-circle text-green-500 mt-0.5 flex-shrink-0"></i>
+        <div class="text-xs text-green-800">
+          <span class="font-semibold">Trees has 2 difficulty modes</span> — Beginner (Add Child, In-Order, Pre-Order, Post-Order) and Intermediate (Add Child, Search, Delete, Height).
+          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
+        </div>
+      </div>
+
+      <!-- App Preview -->
+      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+        <div class="flex items-center gap-2 text-sm text-gray-500">
+          <i class="fas fa-mobile-alt text-green-600"></i>
+          <span class="font-medium text-gray-700">Trees Screen Preview</span>
+        </div>
+        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+        <div class="flex gap-3 flex-wrap">
+          <div id="treePreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+          <div id="treePreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+        </div>
+        <div class="ml-auto flex items-center gap-2 text-sm">
+          <span id="treeActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+          <span id="treeStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+        </div>
+      </div>
+
+      <!-- Scenario Cards -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="treeScenariosGrid"></div>
+
+      <!-- Push Section -->
+      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+        <div>
+          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Trees Config to App</h3>
+          <p class="text-xs text-gray-400">The AR app reads this on every Trees launch and reset.</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="loadConfig('Trees')"
+            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-green-500 hover:text-green-700 transition">
+            <i class="fas fa-sync-alt"></i> Reload
+          </button>
+          <button id="treePushBtn" onclick="pushConfig('Trees')" disabled
+            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fas fa-upload"></i> Push Trees
           </button>
         </div>
       </div>
@@ -290,11 +432,10 @@
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
   <script>
-    // ── CONSTANTS ────────────────────────────────────────────────
     const SERVER_URL = 'https://structureality-admin.onrender.com';
     const MAX_ACTIVE = 2;
 
-    // ── SCENARIO DEFINITIONS ─────────────────────────────────────
+    // ── SCENARIO DEFINITIONS ─────────────────────────────────────────────────
     const SCENARIOS = {
       Arrays: [
         {
@@ -331,17 +472,132 @@
         },
         {
           id: 'Kitchen', name: 'Kitchen', icon: '🍳',
-          desc: 'Pots and pans stacked on a stove burner. PUSH cookware onto the stack, POP them off to cook — intuitive LIFO.',
+          desc: 'Pots and pans stacked on a stove burner. PUSH cookware onto the stack, POP them off — intuitive LIFO.',
           ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
           sessions: [85, 105, 128, 155, 168, 150, 195], avgTime: '4.0 min',
         },
       ],
+      Queue: [
+        {
+          id: 'CoffeeShop', name: 'Coffee Shop', icon: '☕',
+          desc: 'Customers line up to order coffee. Students ENQUEUE new customers at the rear, DEQUEUE the front customer when served.',
+          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
+          note: 'Joystick movement — students physically guide each customer into the queue.',
+          sessions: [115, 130, 145, 160, 172, 155, 185], avgTime: '4.5 min',
+        },
+        {
+          id: 'ConveyorBelt', name: 'Conveyor Belt', icon: '📦',
+          desc: 'Packages arrive on a warehouse belt and queue for scanning. Students ENQUEUE packages and DEQUEUE them at the scanner.',
+          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
+          note: 'Instant slide animation — packages glide along the belt automatically.',
+          sessions: [95, 110, 130, 148, 162, 140, 175], avgTime: '3.8 min',
+        },
+        {
+          id: 'Hospital', name: 'Hospital ER', icon: '🏥',
+          desc: 'ER patients register at reception and wait in a triage queue. Priority Enqueue places critical patients (P1) ahead.',
+          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
+          note: 'Colour-coded wristbands show triage level: red=critical → green=minor.',
+          sessions: [80, 105, 138, 170, 155, 168, 210], avgTime: '4.1 min',
+        },
+      ],
+      LinkedList: [
+        {
+          id: 'Train', name: 'Train', icon: '🚂',
+          desc: 'Train cars on tracks linked by metal coupling rods. Students add cars to the HEAD or TAIL, remove from the front, or traverse the entire train.',
+          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Each car is a node; the coupling rod is the "next pointer".',
+          sessions: [105, 130, 150, 168, 182, 170, 200], avgTime: '5.1 min', colorHex: '#f43f5e',
+        },
+        {
+          id: 'Solar', name: 'Solar System', icon: '🪐',
+          desc: 'Planets in space linked by glowing orbital paths. Students build a planetary chain and manipulate it using all linked list operations.',
+          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Planets spin in place; the orbital bead-path represents the next pointer.',
+          sessions: [95, 118, 145, 172, 188, 175, 215], avgTime: '5.4 min', colorHex: '#8b5cf6',
+        },
+        {
+          id: 'CityMetro', name: 'City Metro', icon: '🚇',
+          desc: 'Underground metro carriages linked by glowing tunnel connectors. Students chain carriages together and manipulate the list.',
+          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Dark tunnel background with neon-lit connectors; each carriage shows its cargo on an LED display.',
+          sessions: [88, 112, 140, 165, 178, 160, 198], avgTime: '5.2 min', colorHex: '#0ea5e9',
+        },
+      ],
+      Graph: [
+        {
+          id: 'CityMap', name: 'City Map', icon: '🏙️',
+          desc: 'Miniature city with buildings as nodes and roads as edges. Students ADD nodes/edges, REMOVE, run BFS, DFS, Dijkstra, MST, Path Check, and Node Degree.',
+          ops: ['ADD NODE', 'ADD ROAD', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Colourful procedural buildings; edge weights represent road distances in km.',
+          sessions: [100, 125, 148, 170, 185, 165, 210], avgTime: '5.8 min', colorHex: '#6366f1',
+        },
+        {
+          id: 'IslandNetwork', name: 'Island Network', icon: '🏝️',
+          desc: 'Tropical islands connected by wooden bridges over a blue ocean base. Each island is a graph node; bridges are weighted edges (nautical miles).',
+          ops: ['ADD ISLAND', 'ADD BRIDGE', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Sandy island mounds with palm trees; bridges shown as brown cylinders with distance labels.',
+          sessions: [90, 115, 142, 168, 180, 160, 205], avgTime: '5.5 min', colorHex: '#10b981',
+        },
+        {
+          id: 'SpaceStation', name: 'Space Station', icon: '🛸',
+          desc: 'Modular space station orbiting in deep space. Station modules are nodes connected by metallic docking tubes.',
+          ops: ['ADD MODULE', 'ADD TUBE', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Detailed procedural modules with solar panels, portholes, and status lights. Dark space base with a nebula ring.',
+          sessions: [85, 108, 138, 165, 178, 158, 200], avgTime: '5.9 min', colorHex: '#0ea5e9',
+        },
+      ],
+      Trees: [
+        {
+          id: 'FamilyTree', name: 'Family Tree', icon: '🧑‍👩‍👦',
+          desc: 'Coloured person spheres arranged as a BST. Each sphere is a family member. Left child = younger, right child = older. Colour indicates generation level.',
+          ops: ['ADD CHILD', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Each generation gets a distinct colour. Root node is always the eldest ancestor.',
+          sessions: [110, 135, 155, 172, 188, 170, 205], avgTime: '5.3 min', colorHex: '#16a34a',
+        },
+        {
+          id: 'FruitTree', name: 'Fruit Tree', icon: '🍎',
+          desc: 'Fruit-shaped nodes hanging from a brown trunk. Each fruit is a BST node. Grows downward with left/right branches in a natural tree layout.',
+          ops: ['ADD CHILD', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'Brown trunk + green canopy acts as the root anchor. Fruit colour changes by level.',
+          sessions: [100, 122, 148, 168, 182, 165, 198], avgTime: '5.1 min', colorHex: '#dc2626',
+        },
+        {
+          id: 'ForestTrail', name: 'Forest Trail', icon: '🌲',
+          desc: 'Amber waypoint spheres on wooden posts in a mossy forest clearing. Each waypoint is a BST node. Signpost arrows indicate child pointers (left = west fork, right = east fork).',
+          ops: ['ADD WAYPOINT', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
+          difficulties: ['Beginner', 'Intermediate'],
+          note: 'NEW scenario! Mossy ground disc + 3 pine trees as scenery. Amber/orange/red colour palette per level.',
+          sessions: [88, 112, 140, 162, 178, 158, 195], avgTime: '5.0 min', colorHex: '#d97706',
+        },
+      ],
     };
 
-    // ── STATE — per DS ────────────────────────────────────────────
+    // ── DS CONFIG ─────────────────────────────────────────────────
+    const DS_CONFIG = {
+      Arrays:     { prefix: 'arr',  accentColor: '#6366f1' },
+      Stacks:     { prefix: 'stk',  accentColor: '#8b5cf6' },
+      Queue:      { prefix: 'que',  accentColor: '#10b981' },
+      LinkedList: { prefix: 'll',   accentColor: '#f43f5e' },
+      Graph:      { prefix: 'grp',  accentColor: '#0ea5e9' },
+      Trees:      { prefix: 'tree', accentColor: '#16a34a' },
+    };
+
+    // ── STATE ─────────────────────────────────────────────────────
     const state = {
-      Arrays: { activeIds: [] },
-      Stacks: { activeIds: [] },
+      Arrays:     { activeIds: [] },
+      Stacks:     { activeIds: [] },
+      Queue:      { activeIds: [] },
+      LinkedList: { activeIds: [] },
+      Graph:      { activeIds: [] },
+      Trees:      { activeIds: [] },
     };
 
     let currentTab = 'Arrays';
@@ -404,7 +660,7 @@
 
     // ── RENDER CARDS ──────────────────────────────────────────────
     function renderGrid(ds) {
-      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
+      const { prefix, accentColor } = DS_CONFIG[ds];
       const grid      = document.getElementById(`${prefix}ScenariosGrid`);
       const activeIds = state[ds].activeIds;
       grid.innerHTML  = '';
@@ -417,33 +673,57 @@
         const sparkId    = `spark_${ds}_${sc.id}`;
 
         const card = document.createElement('div');
-        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? 'border-indigo-500 active' : 'border-gray-100'} p-5 cursor-pointer card-hover`;
+        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? `border-2 active-${ds}` : 'border-gray-100'} p-5 cursor-pointer card-hover`;
         card.onclick = () => toggleScenario(ds, sc.id);
+
+        const activeOpClass = ds === 'Arrays'     ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
+                            : ds === 'Stacks'     ? 'bg-purple-50 text-purple-600 border border-purple-200'
+                            : ds === 'Queue'      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                            : ds === 'Graph'      ? 'bg-sky-50 text-sky-600 border border-sky-200'
+                            : ds === 'Trees'      ? 'bg-green-50 text-green-700 border border-green-200'
+                            : 'bg-rose-50 text-rose-600 border border-rose-200';
+
+        const iconBgClass = isActive
+          ? (ds === 'Arrays' ? 'bg-indigo-100' : ds === 'Stacks' ? 'bg-purple-100' : ds === 'Queue' ? 'bg-emerald-100' : ds === 'Graph' ? 'bg-sky-100' : ds === 'Trees' ? 'bg-green-100' : 'bg-rose-100')
+          : 'bg-gray-100';
+
+        const badgeClass = isActive
+          ? (ds === 'Arrays' ? 'bg-indigo-100 text-indigo-600' : ds === 'Stacks' ? 'bg-purple-100 text-purple-600' : ds === 'Queue' ? 'bg-emerald-100 text-emerald-600' : ds === 'Graph' ? 'bg-sky-100 text-sky-600' : ds === 'Trees' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-600')
+          : '';
+
+        const diffBadges = sc.difficulties
+          ? sc.difficulties.map(d =>
+              `<span class="diff-badge ${d === 'Beginner' ? 'diff-beginner' : 'diff-intermediate'}">
+                <i class="fas ${d === 'Beginner' ? 'fa-seedling' : 'fa-fire'}" style="font-size:9px"></i> ${d}
+              </span>`).join('')
+          : '';
 
         card.innerHTML = `
           <div class="flex items-start justify-between mb-3">
             <div class="flex items-center gap-3">
-              <div class="w-11 h-11 ${isActive ? 'bg-indigo-100' : 'bg-gray-100'} rounded-xl flex items-center justify-center text-2xl">
-                ${sc.icon}
-              </div>
+              <div class="w-11 h-11 ${iconBgClass} rounded-xl flex items-center justify-center text-2xl">${sc.icon}</div>
               <div>
                 <h3 class="font-semibold text-gray-800 text-sm">${sc.name}</h3>
                 <span class="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">${sc.id}</span>
               </div>
             </div>
             <div class="flex flex-col items-end gap-1.5">
-              ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-600">Button ${pos}</span>` : ''}
-              <label class="toggle-switch" onclick="event.stopPropagation()">
+              ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}">Button ${pos}</span>` : ''}
+              <label class="toggle-switch toggle-${ds}" onclick="event.stopPropagation()">
                 <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''} onchange="toggleScenario('${ds}', '${sc.id}')">
                 <span class="slider"></span>
               </label>
             </div>
           </div>
 
+          ${diffBadges ? `<div class="flex gap-2 mb-2">${diffBadges}</div>` : ''}
+
           <p class="text-xs text-gray-500 leading-relaxed mb-3">${sc.desc}</p>
 
+          ${sc.note ? `<div class="mb-3 flex items-start gap-2 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i><span>${sc.note}</span></div>` : ''}
+
           <div class="flex flex-wrap gap-1 mb-3">
-            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive ? 'bg-indigo-50 text-indigo-600 border border-indigo-200' : 'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
+            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive ? activeOpClass : 'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
           </div>
 
           <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
@@ -460,14 +740,15 @@
         `;
 
         grid.appendChild(card);
-        drawSparkline(sparkId, sc.sessions, isActive);
+        const sparkColor = isActive ? (sc.colorHex || accentColor) : '#d1d5db';
+        drawSparkline(sparkId, sc.sessions, sparkColor);
       });
 
       updateStatusBar(ds);
       updatePreview(ds);
     }
 
-    function drawSparkline(id, data, active) {
+    function drawSparkline(id, data, color) {
       const svg = document.getElementById(id);
       if (!svg) return;
       const w = 100, h = 28;
@@ -478,18 +759,16 @@
         const y = h - ((v - min) / range) * (h - 5) - 2.5;
         return `${x},${y}`;
       });
-      const color = active ? '#6366f1' : '#d1d5db';
-      svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2"
-        stroke-linejoin="round" stroke-linecap="round"/>`;
+      svg.innerHTML = `<polyline points="${pts.join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
     }
 
     function updateStatusBar(ds) {
-      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
-      const n         = state[ds].activeIds.length;
-      const badge     = document.getElementById(`${prefix}ActiveCountBadge`);
-      const hint      = document.getElementById(`${prefix}StatusHint`);
-      const btn       = document.getElementById(`${prefix}PushBtn`);
-      const total     = SCENARIOS[ds].length;
+      const { prefix } = DS_CONFIG[ds];
+      const n     = state[ds].activeIds.length;
+      const badge = document.getElementById(`${prefix}ActiveCountBadge`);
+      const hint  = document.getElementById(`${prefix}StatusHint`);
+      const btn   = document.getElementById(`${prefix}PushBtn`);
+      const total = SCENARIOS[ds].length;
 
       badge.textContent = `${n} of ${total} active`;
       badge.className   = `px-3 py-1 rounded-full font-semibold text-xs ${n === MAX_ACTIVE ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`;
@@ -507,17 +786,17 @@
     }
 
     function updatePreview(ds) {
-      const prefix    = ds === 'Arrays' ? 'arr' : 'stk';
-      const activeIds = state[ds].activeIds;
-      const b1        = document.getElementById(`${prefix}PreviewBtn1`);
-      const b2        = document.getElementById(`${prefix}PreviewBtn2`);
-      const s1        = SCENARIOS[ds].find(s => s.id === activeIds[0]);
-      const s2        = SCENARIOS[ds].find(s => s.id === activeIds[1]);
+      const { prefix } = DS_CONFIG[ds];
+      const activeIds  = state[ds].activeIds;
+      const b1 = document.getElementById(`${prefix}PreviewBtn1`);
+      const b2 = document.getElementById(`${prefix}PreviewBtn2`);
+      const s1 = SCENARIOS[ds].find(s => s.id === activeIds[0]);
+      const s2 = SCENARIOS[ds].find(s => s.id === activeIds[1]);
 
-      if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
+      if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
       else    { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
 
-      if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = 'preview-btn-active px-5 py-2.5 rounded-lg text-sm transition'; }
+      if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
       else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
     }
 
@@ -544,29 +823,18 @@
       try {
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
         const data = await res.json();
-
         if (data.success && data.config?.scenarios) {
-          // Load for the specified DS
           const ids = data.config.scenarios[ds] || [];
           state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
         } else {
-          // Fallback defaults
-          state[ds].activeIds = ds === 'Arrays'
-            ? ['ParkingLot', 'VendingMachine']
-            : ['Plates', 'Warehouse'];
+          state[ds].activeIds = getDefaults(ds);
         }
-
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
         addLog(`[${ds}] Loaded — active: [${state[ds].activeIds.join(', ')}]`, 'success');
         showToast(`${ds} config loaded.`, 'success');
       } catch (err) {
-        // Fallback if server unreachable
-        if (!state[ds].activeIds.length) {
-          state[ds].activeIds = ds === 'Arrays'
-            ? ['ParkingLot', 'VendingMachine']
-            : ['Plates', 'Warehouse'];
-        }
+        if (!state[ds].activeIds.length) state[ds].activeIds = getDefaults(ds);
         document.getElementById('apiStatus').textContent = 'offline';
         document.getElementById('apiStatus').className   = 'font-medium text-red-500';
         addLog(`[${ds}] Server unreachable — using local state.`, 'error');
@@ -575,6 +843,17 @@
         showLoading(false);
         renderGrid(ds);
       }
+    }
+
+    function getDefaults(ds) {
+      return {
+        Arrays:     ['ParkingLot', 'VendingMachine'],
+        Stacks:     ['Plates', 'Warehouse'],
+        Queue:      ['CoffeeShop', 'ConveyorBelt'],
+        LinkedList: ['Train', 'Solar'],
+        Graph:      ['CityMap', 'IslandNetwork'],
+        Trees:      ['FamilyTree', 'FruitTree'],
+      }[ds];
     }
 
     // ── PUSH TO SERVER ────────────────────────────────────────────
@@ -586,11 +865,14 @@
       }
       showLoading(true);
       try {
-        // Merge both DS configs into a single payload so we don't overwrite the other
         const payload = {
           scenarios: {
-            Arrays: [...state.Arrays.activeIds],
-            Stacks: [...state.Stacks.activeIds],
+            Arrays:     [...state.Arrays.activeIds],
+            Stacks:     [...state.Stacks.activeIds],
+            Queue:      [...state.Queue.activeIds],
+            LinkedList: [...state.LinkedList.activeIds],
+            Graph:      [...state.Graph.activeIds],
+            Trees:      [...state.Trees.activeIds],
           }
         };
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, {
@@ -618,6 +900,8 @@
     }
 
     // ── INIT ──────────────────────────────────────────────────────
+    const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
+
     window.addEventListener('load', async () => {
       const user = checkAuth();
       if (user) {
@@ -630,33 +914,29 @@
       }
       document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
 
-      // Load both DS configs in parallel
       showLoading(true);
       try {
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
         const data = await res.json();
         if (data.success && data.config?.scenarios) {
-          ['Arrays', 'Stacks'].forEach(ds => {
+          ALL_DS.forEach(ds => {
             const ids = data.config.scenarios[ds] || [];
             state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
           });
         } else {
-          state.Arrays.activeIds = ['ParkingLot', 'VendingMachine'];
-          state.Stacks.activeIds = ['Plates', 'Warehouse'];
+          ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); });
         }
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
-        addLog('Both configs loaded from server.', 'success');
+        addLog('All configs loaded from server.', 'success');
       } catch {
-        state.Arrays.activeIds = ['ParkingLot', 'VendingMachine'];
-        state.Stacks.activeIds = ['Plates', 'Warehouse'];
+        ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); });
         document.getElementById('apiStatus').textContent = 'offline';
         document.getElementById('apiStatus').className   = 'font-medium text-red-500';
         addLog('Server unreachable — defaults applied.', 'error');
       } finally {
         showLoading(false);
-        renderGrid('Arrays');
-        renderGrid('Stacks');
+        ALL_DS.forEach(ds => renderGrid(ds));
       }
     });
   </script>
