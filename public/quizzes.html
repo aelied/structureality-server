@@ -19,9 +19,6 @@
         .answer-option { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .answer-option input[type="text"] { flex: 1; }
         .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
-        .difficulty-badge-easy { background: linear-gradient(135deg, #10b981, #34d399); }
-        .difficulty-badge-medium { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-        .difficulty-badge-hard { background: linear-gradient(135deg, #ef4444, #f87171); }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -66,7 +63,7 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
-                <p class="text-sm text-gray-500">Manage quiz questions with difficulty levels</p>
+                <p class="text-sm text-gray-500">Manage quiz questions per topic</p>
             </div>
             <div class="flex items-center space-x-4">
                 <button class="p-2 hover:bg-gray-100 rounded-lg transition">
@@ -90,7 +87,7 @@
 
     <!-- Main Content -->
     <main class="ml-64 p-8 mt-20">
-        <!-- Stats Grid -->
+        <!-- Stats Grid (2 cards: total + per-topic breakdown) -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
                 <div class="flex items-center justify-between mb-4">
@@ -102,34 +99,34 @@
                 <p class="text-3xl font-bold text-gray-800" id="totalQuizzes">-</p>
             </div>
 
-            <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
+            <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-seedling text-white text-xl"></i>
+                        <i class="fas fa-layer-group text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Easy Questions</h3>
-                <p class="text-3xl font-bold" id="easyCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Topics Covered</h3>
+                <p class="text-3xl font-bold" id="topicsCount">-</p>
             </div>
 
-            <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-sm p-6 stat-card-hover text-white">
+            <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-white text-xl"></i>
+                        <i class="fas fa-list-ol text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Medium Questions</h3>
-                <p class="text-3xl font-bold" id="mediumCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Avg per Topic</h3>
+                <p class="text-3xl font-bold" id="avgPerTopic">-</p>
             </div>
 
-            <div class="bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-sm p-6 stat-card-hover text-white">
+            <div class="bg-gradient-to-br from-violet-500 to-violet-700 rounded-xl shadow-sm p-6 stat-card-hover text-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-fire text-white text-xl"></i>
+                        <i class="fas fa-check-circle text-white text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Hard Questions</h3>
-                <p class="text-3xl font-bold" id="hardCount">-</p>
+                <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Most Quizzes</h3>
+                <p class="text-xl font-bold" id="mostQuizzesTopic">-</p>
             </div>
         </div>
 
@@ -154,14 +151,6 @@
                         <option value="LinkedLists">Linked Lists</option>
                         <option value="Trees">Trees</option>
                         <option value="Graphs">Graphs</option>
-                    </select>
-
-                    <select id="difficultyFilter" onchange="filterQuizzes()"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="all">All Difficulties</option>
-                        <option value="easy">🟢 Easy</option>
-                        <option value="medium">🟡 Medium</option>
-                        <option value="hard">🔴 Hard</option>
                     </select>
                 </div>
 
@@ -195,30 +184,18 @@
             </div>
 
             <form id="addQuizForm" onsubmit="addQuiz(event)">
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                        <select id="quizTopic" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="">Select Topic</option>
-                            <option value="Arrays">Arrays</option>
-                            <option value="Queue">Queue</option>
-                            <option value="Stacks">Stacks</option>
-                            <option value="LinkedLists">Linked Lists</option>
-                            <option value="Trees">Trees</option>
-                            <option value="Graphs">Graphs</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty *</label>
-                        <select id="quizDifficulty" required
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="easy">🟢 Easy</option>
-                            <option value="medium" selected>🟡 Medium</option>
-                            <option value="hard">🔴 Hard</option>
-                        </select>
-                    </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                    <select id="quizTopic" required
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <option value="">Select Topic</option>
+                        <option value="Arrays">Arrays</option>
+                        <option value="Queue">Queue</option>
+                        <option value="Stacks">Stacks</option>
+                        <option value="LinkedLists">Linked Lists</option>
+                        <option value="Trees">Trees</option>
+                        <option value="Graphs">Graphs</option>
+                    </select>
                 </div>
 
                 <div class="mb-4">
@@ -306,9 +283,10 @@
                 return null;
             }
             try {
-                return JSON.parse(adminUser);
+                const user = JSON.parse(adminUser);
+                if (!user.role) user.role = 'admin';
+                return user;
             } catch (e) {
-                console.error("Failed to parse adminUser JSON:", e);
                 localStorage.removeItem('adminUser');
                 window.location.href = 'login.html';
                 return null;
@@ -334,19 +312,32 @@
 
         function updateStats() {
             document.getElementById('totalQuizzes').textContent = allQuizzes.length;
-            document.getElementById('easyCount').textContent = allQuizzes.filter(q => q.difficulty === 'easy').length;
-            document.getElementById('mediumCount').textContent = allQuizzes.filter(q => q.difficulty === 'medium' || !q.difficulty).length;
-            document.getElementById('hardCount').textContent = allQuizzes.filter(q => q.difficulty === 'hard').length;
-        }
 
-        function getDifficultyBadge(difficulty) {
-            const diff = (difficulty || 'medium').toLowerCase();
-            const badges = {
-                easy: '<span class="px-3 py-1 difficulty-badge-easy text-white rounded-full text-xs font-bold shadow-md">🟢 EASY</span>',
-                medium: '<span class="px-3 py-1 difficulty-badge-medium text-white rounded-full text-xs font-bold shadow-md">🟡 MEDIUM</span>',
-                hard: '<span class="px-3 py-1 difficulty-badge-hard text-white rounded-full text-xs font-bold shadow-md">🔴 HARD</span>'
-            };
-            return badges[diff] || badges.medium;
+            // Count unique topics
+            const topicCounts = {};
+            allQuizzes.forEach(q => {
+                topicCounts[q.topicName] = (topicCounts[q.topicName] || 0) + 1;
+            });
+
+            const topicNames = Object.keys(topicCounts);
+            document.getElementById('topicsCount').textContent = topicNames.length;
+
+            // Average per topic
+            const avg = topicNames.length > 0
+                ? Math.round(allQuizzes.length / topicNames.length)
+                : 0;
+            document.getElementById('avgPerTopic').textContent = avg;
+
+            // Topic with most quizzes
+            let mostTopic = '-';
+            let mostCount = 0;
+            topicNames.forEach(t => {
+                if (topicCounts[t] > mostCount) {
+                    mostCount = topicCounts[t];
+                    mostTopic = `${t} (${topicCounts[t]})`;
+                }
+            });
+            document.getElementById('mostQuizzesTopic').textContent = mostTopic;
         }
 
         function displayQuizzes(quizzes) {
@@ -367,43 +358,42 @@
                 const color = topicColors[quiz.topicName] || 'gray';
 
                 html += `
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 quiz-card p-6">
-              <div class="flex items-start justify-between mb-4">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-3">
-                    <span class="px-3 py-1 bg-${color}-100 text-${color}-700 rounded-full text-xs font-semibold">
-                      ${quiz.topicName}
-                    </span>
-                    ${getDifficultyBadge(quiz.difficulty)}
-                    <span class="text-xs text-gray-500">Order: ${quiz.order}</span>
-                  </div>
-                  <h3 class="text-lg font-semibold text-gray-800 mb-3">${quiz.questionText}</h3>
-                  
-                  <div class="grid grid-cols-2 gap-2 mb-3">
-                    ${quiz.answerOptions.map((opt, idx) => `
-                      <div class="flex items-center gap-2 p-2 rounded ${idx === quiz.correctAnswerIndex ? `bg-green-50 border border-green-200` : 'bg-gray-50'}">
-                        <span class="text-sm ${idx === quiz.correctAnswerIndex ? 'text-green-700 font-semibold' : 'text-gray-600'}">
-                          ${String.fromCharCode(65 + idx)}. ${opt}
-                        </span>
-                        ${idx === quiz.correctAnswerIndex ? '<i class="fas fa-check-circle text-green-600"></i>' : ''}
-                      </div>
-                    `).join('')}
-                  </div>
-                  
-                  <p class="text-sm text-gray-600 italic">💡 ${quiz.explanation}</p>
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 quiz-card p-6">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-3">
+                                <span class="px-3 py-1 bg-${color}-100 text-${color}-700 rounded-full text-xs font-semibold">
+                                    ${quiz.topicName}
+                                </span>
+                                <span class="text-xs text-gray-400">Order: ${quiz.order}</span>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-3">${quiz.questionText}</h3>
+
+                            <div class="grid grid-cols-2 gap-2 mb-3">
+                                ${quiz.answerOptions.map((opt, idx) => `
+                                <div class="flex items-center gap-2 p-2 rounded ${idx === quiz.correctAnswerIndex ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}">
+                                    <span class="text-sm ${idx === quiz.correctAnswerIndex ? 'text-green-700 font-semibold' : 'text-gray-600'}">
+                                        ${String.fromCharCode(65 + idx)}. ${opt}
+                                    </span>
+                                    ${idx === quiz.correctAnswerIndex ? '<i class="fas fa-check-circle text-green-600 ml-auto"></i>' : ''}
+                                </div>
+                                `).join('')}
+                            </div>
+
+                            <p class="text-sm text-gray-600 italic">💡 ${quiz.explanation}</p>
+                        </div>
+
+                        <div class="flex flex-col items-center space-y-2 ml-4">
+                            <button onclick="viewQuiz('${quiz._id}')" class="text-indigo-600 hover:text-indigo-700" title="View">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button onclick="deleteQuiz('${quiz._id}')" class="text-red-600 hover:text-red-700" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="flex flex-col items-center space-y-2 ml-4">
-                  <button onclick="viewQuiz('${quiz._id}')" class="text-indigo-600 hover:text-indigo-700" title="View">
-                    <i class="fas fa-eye"></i>
-                  </button>
-                  <button onclick="deleteQuiz('${quiz._id}')" class="text-red-600 hover:text-red-700" title="Delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          `;
+                `;
             });
 
             container.innerHTML = html;
@@ -412,7 +402,6 @@
         function filterQuizzes() {
             const searchTerm = document.getElementById('searchQuizzes').value.toLowerCase();
             const topicFilter = document.getElementById('topicFilter').value;
-            const difficultyFilter = document.getElementById('difficultyFilter').value;
 
             let filtered = allQuizzes.filter(quiz => {
                 const matchesSearch =
@@ -420,9 +409,8 @@
                     quiz.answerOptions.some(opt => opt.toLowerCase().includes(searchTerm));
 
                 const matchesTopic = topicFilter === 'all' || quiz.topicName === topicFilter;
-                const matchesDifficulty = difficultyFilter === 'all' || (quiz.difficulty || 'medium') === difficultyFilter;
 
-                return matchesSearch && matchesTopic && matchesDifficulty;
+                return matchesSearch && matchesTopic;
             });
 
             displayQuizzes(filtered);
@@ -455,7 +443,7 @@
                 answerOptions: answerOptions,
                 correctAnswerIndex: parseInt(correctAnswerRadio.value),
                 explanation: document.getElementById('quizExplanation').value,
-                difficulty: document.getElementById('quizDifficulty').value,
+                difficulty: 'medium', // kept for DB compatibility but not shown in UI
                 order: parseInt(document.getElementById('quizOrder').value)
             };
 
@@ -487,10 +475,7 @@
                     `${String.fromCharCode(65 + idx)}. ${opt} ${idx === quiz.correctAnswerIndex ? '✓ (Correct)' : ''}`
                 ).join('\n');
 
-                const diffEmoji = { easy: '🟢', medium: '🟡', hard: '🔴' };
-                const diff = (quiz.difficulty || 'medium').toLowerCase();
-
-                alert(`Question: ${quiz.questionText}\n\nTopic: ${quiz.topicName}\nDifficulty: ${diffEmoji[diff]} ${diff.toUpperCase()}\n\nAnswers:\n${answersList}\n\nExplanation: ${quiz.explanation}`);
+                alert(`Question: ${quiz.questionText}\n\nTopic: ${quiz.topicName}\n\nAnswers:\n${answersList}\n\nExplanation: ${quiz.explanation}`);
             }
         }
 
@@ -520,44 +505,6 @@
                 loadQuizzes();
             }
         });
-        function checkAuth() {
-    const adminUser = localStorage.getItem('adminUser');
-
-    if (!adminUser || adminUser === 'undefined') {
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-    }
-
-    try {
-        const user = JSON.parse(adminUser);
-        // Add role to user object if not present (for backward compatibility)
-        if (!user.role) {
-            user.role = 'admin';
-        }
-        return user;
-    } catch (e) {
-        console.error("Failed to parse adminUser JSON:", e);
-        localStorage.removeItem('adminUser');
-        window.location.href = 'login.html';
-        return null;
-    }
-}
-function isInstructor(user) {
-    return user && user.role === 'instructor';
-}
-
-function isAdmin(user) {
-    return user && (user.role === 'admin' || !user.role); // Default to admin if no role
-}
-
-function canDeleteUsers(user) {
-    return isAdmin(user);
-}
-
-function canAccessAnalytics(user) {
-    return isAdmin(user);
-}
     </script>
 </body>
 </html>
