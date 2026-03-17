@@ -188,22 +188,21 @@
                     </select>
                 </div>
 
-                <!-- Lesson Title (dropdown populated from DB + manual fallback) -->
+                <!-- Lesson Title (dropdown populated from DB) -->
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Lesson Title *
-                        <span class="text-xs text-gray-400 font-normal ml-1">(must match exact lesson name)</span>
+                        <span class="text-xs text-gray-400 font-normal ml-1">(select from existing or type new)</span>
                     </label>
-                    <div class="flex gap-2">
-                        <select id="quizLessonSelect"
-                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                            onchange="syncLessonInput()">
+                    <div class="flex gap-2 mb-2">
+                        <select id="quizLessonSelect" onchange="selectLessonTitle()"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                             <option value="">— pick a topic first —</option>
                         </select>
                     </div>
-                    <input type="text" id="quizLesson" required placeholder="Or type lesson title manually…"
-                        class="mt-2 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                    <p class="text-xs text-gray-500 mt-1">💡 Select from the dropdown to auto-fill, or type the exact title.</p>
+                    <input type="text" id="quizLesson" required placeholder="Or type a new lesson title…"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    <p class="text-xs text-gray-500 mt-1">💡 Select from dropdown to auto-fill, or type a new lesson title.</p>
                 </div>
 
                 <!-- Question -->
@@ -278,9 +277,19 @@
             </div>
             <form id="editQuizForm" onsubmit="saveEditedQuiz(event)">
                 <input type="hidden" id="editQuizId" />
+                <input type="hidden" id="editQuizTopic" />
 
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Lesson Title
+                        <span class="text-xs text-gray-400 font-normal ml-1">(select from existing or type new)</span>
+                    </label>
+                    <div class="flex gap-2 mb-2">
+                        <select id="editQuizLessonSelect" onchange="selectEditLessonTitle()"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="">— select lesson —</option>
+                        </select>
+                    </div>
                     <input type="text" id="editQuizLesson"
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                 </div>
@@ -382,9 +391,20 @@
             }
         }
 
-        function syncLessonInput() {
-            const val = document.getElementById('quizLessonSelect').value;
-            if (val) document.getElementById('quizLesson').value = val;
+        // ✅ NEW: Auto-fill lesson title from dropdown selection
+        function selectLessonTitle() {
+            const selected = document.getElementById('quizLessonSelect').value;
+            if (selected) {
+                document.getElementById('quizLesson').value = selected;
+            }
+        }
+
+        // ✅ NEW: Auto-fill lesson title from edit dropdown selection
+        function selectEditLessonTitle() {
+            const selected = document.getElementById('editQuizLessonSelect').value;
+            if (selected) {
+                document.getElementById('editQuizLesson').value = selected;
+            }
         }
 
         // ── Load all quizzes ──────────────────────────────────────────
@@ -549,12 +569,32 @@
             document.getElementById('quizLessonSelect').innerHTML = '<option value="">— pick a topic first —</option>';
         }
 
-        function openEditModal(quiz) {
+        async function openEditModal(quiz) {
             document.getElementById('editQuizId').value         = quiz._id;
+            document.getElementById('editQuizTopic').value      = quiz.topicName;
             document.getElementById('editQuizLesson').value     = quiz.lessonTitle || '';
             document.getElementById('editQuizQuestion').value   = quiz.questionText;
             document.getElementById('editQuizExplanation').value= quiz.explanation;
             document.getElementById('editQuizOrder').value      = quiz.order || 1;
+
+            // Load lessons for this topic
+            const select = document.getElementById('editQuizLessonSelect');
+            try {
+                const res = await fetch(`${API_URL}/lessons/${quiz.topicName}`);
+                const data = await res.json();
+                select.innerHTML = '<option value="">— select lesson —</option>';
+                if (data.success && data.lessons && data.lessons.length > 0) {
+                    data.lessons.forEach(l => {
+                        const opt = document.createElement('option');
+                        opt.value = l.title;
+                        opt.textContent = l.title;
+                        if (l.title === quiz.lessonTitle) opt.selected = true;
+                        select.appendChild(opt);
+                    });
+                }
+            } catch (e) {
+                select.innerHTML = '<option value="">Error loading lessons</option>';
+            }
 
             const container = document.getElementById('editAnswerOptions');
             container.innerHTML = quiz.answerOptions.map((opt, idx) => `
