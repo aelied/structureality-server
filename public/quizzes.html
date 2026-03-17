@@ -267,6 +267,60 @@
         </div>
     </div>
 
+    <!-- Edit Quiz Modal -->
+    <div id="editQuizModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Edit Quiz Question</h2>
+                <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+            <form id="editQuizForm" onsubmit="saveEditedQuiz(event)">
+                <input type="hidden" id="editQuizId" />
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title</label>
+                    <input type="text" id="editQuizLesson"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Question *</label>
+                    <textarea id="editQuizQuestion" required rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Answer Options *</label>
+                    <div id="editAnswerOptions">
+                        <!-- filled by openEditModal() -->
+                    </div>
+                    <small class="text-gray-500">💡 Select the radio button next to the correct answer</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Explanation *</label>
+                    <textarea id="editQuizExplanation" required rows="3"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                    <input type="number" id="editQuizOrder" min="1"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" onclick="closeEditModal()"
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_URL = window.location.hostname === 'localhost'
             ? 'http://localhost:3000/api'
@@ -451,6 +505,10 @@
                                 </div>
                             </div>
                             <div class="flex flex-col items-center gap-2 shrink-0">
+                                <button onclick="openEditModal(${JSON.stringify(quiz).replace(/"/g, '&quot;')})" 
+                                        class="text-indigo-500 hover:text-indigo-700 p-1" title="Edit">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
                                 <button onclick="deleteQuiz('${quiz._id}')" class="text-red-500 hover:text-red-700 p-1" title="Delete">
                                     <i class="fas fa-trash text-sm"></i>
                                 </button>
@@ -489,6 +547,68 @@
             document.getElementById('addQuizModal').classList.remove('active');
             document.getElementById('addQuizForm').reset();
             document.getElementById('quizLessonSelect').innerHTML = '<option value="">— pick a topic first —</option>';
+        }
+
+        function openEditModal(quiz) {
+            document.getElementById('editQuizId').value         = quiz._id;
+            document.getElementById('editQuizLesson').value     = quiz.lessonTitle || '';
+            document.getElementById('editQuizQuestion').value   = quiz.questionText;
+            document.getElementById('editQuizExplanation').value= quiz.explanation;
+            document.getElementById('editQuizOrder').value      = quiz.order || 1;
+
+            const container = document.getElementById('editAnswerOptions');
+            container.innerHTML = quiz.answerOptions.map((opt, idx) => `
+                <div class="answer-option">
+                    <input type="radio" name="editCorrectAnswer" value="${idx}"
+                        ${idx === quiz.correctAnswerIndex ? 'checked' : ''} required />
+                    <input type="text" value="${opt.replace(/"/g, '&quot;')}" required
+                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    <span class="text-sm text-gray-500 whitespace-nowrap">✓ Correct</span>
+                </div>`).join('');
+
+            document.getElementById('editQuizModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editQuizModal').classList.remove('active');
+        }
+
+        async function saveEditedQuiz(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('editQuizId').value;
+            const correctRadio = document.querySelector('input[name="editCorrectAnswer"]:checked');
+            if (!correctRadio) { alert('Please select the correct answer'); return; }
+
+            const answerInputs  = document.querySelectorAll('#editAnswerOptions input[type="text"]');
+            const answerOptions = Array.from(answerInputs).map(i => i.value);
+
+            const payload = {
+                lessonTitle:        document.getElementById('editQuizLesson').value.trim(),
+                questionText:       document.getElementById('editQuizQuestion').value,
+                answerOptions:      answerOptions,
+                correctAnswerIndex: parseInt(correctRadio.value),
+                explanation:        document.getElementById('editQuizExplanation').value,
+                order:              parseInt(document.getElementById('editQuizOrder').value)
+            };
+
+            try {
+                const res  = await fetch(`${API_URL}/quizzes/${id}`, {
+                    method:  'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('✅ Quiz updated!');
+                    closeEditModal();
+                    loadQuizzes();
+                } else {
+                    alert('Failed to update: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+            }
         }
 
         async function addQuiz(event) {
