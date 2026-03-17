@@ -138,14 +138,22 @@ app.get('/api/quizzes/:topicName/mixed', async (req, res) => {
 // Get all quizzes for a topic (no difficulty filter)
 app.get('/api/quizzes/:topicName', async (req, res) => {
     try {
-        const quizzes = await quizzesCollection.find({ topicName: req.params.topicName })
-            .sort({ order: 1 })
+        const { topicName } = req.params;
+        // LESSON_TAG_PATCH: optional ?lesson= query param to fetch a single lesson's quizzes
+        const lessonFilter = req.query.lesson;
+        const query = lessonFilter
+            ? { topicName, lessonTitle: lessonFilter }
+            : { topicName };
+ 
+        const quizzes = await quizzesCollection.find(query)
+            .sort({ lessonTitle: 1, order: 1 })
             .toArray();
-        res.json({ success: true, topicName: req.params.topicName, count: quizzes.length, quizzes });
+        res.json({ success: true, topicName, count: quizzes.length, quizzes });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
     }
 });
+ 
 
 // Get quizzes for a topic filtered by difficulty
 app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
@@ -172,16 +180,18 @@ app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
 app.post('/api/quizzes', async (req, res) => {
     try {
         const quizData = {
-            topicName: req.body.topicName,
-            questionText: req.body.questionText,
-            answerOptions: req.body.answerOptions,
+            topicName:          req.body.topicName,
+            // LESSON_TAG_PATCH: store lessonTitle so Unity groups by lesson
+            lessonTitle:        req.body.lessonTitle   || '',
+            questionText:       req.body.questionText,
+            answerOptions:      req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
-            explanation: req.body.explanation,
-            difficulty: (req.body.difficulty || 'medium').toLowerCase(),
-            order: req.body.order || 1,
-            createdAt: new Date().toISOString()
+            explanation:        req.body.explanation,
+            difficulty:         (req.body.difficulty || 'medium').toLowerCase(),
+            order:              req.body.order || 1,
+            createdAt:          new Date().toISOString()
         };
-
+ 
         if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions ||
             quizData.correctAnswerIndex === undefined || !quizData.explanation) {
             return res.status(400).json({ success: false, error: 'Topic name, question, answers, correct answer index, and explanation are required' });
@@ -195,15 +205,14 @@ app.post('/api/quizzes', async (req, res) => {
         if (quizData.correctAnswerIndex < 0 || quizData.correctAnswerIndex >= quizData.answerOptions.length) {
             return res.status(400).json({ success: false, error: 'Invalid correct answer index' });
         }
-
+ 
         const result = await quizzesCollection.insertOne(quizData);
-        console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName} - ${quizData.difficulty})`);
+        console.log(`✅ Quiz added: "${quizData.questionText.substring(0,50)}…" | topic=${quizData.topicName} lesson="${quizData.lessonTitle}"`);
         res.status(201).json({ success: true, message: 'Quiz question added successfully', quizId: result.insertedId });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to add quiz question', details: error.message });
     }
 });
-
 // 5. UPDATE quiz
 app.put('/api/quizzes/:quizId', async (req, res) => {
     try {
@@ -280,14 +289,15 @@ app.post('/api/quizzes/bulk', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Quizzes array is required' });
         }
         const quizzesToInsert = quizzes.map(quiz => ({
-            topicName: quiz.topicName,
-            questionText: quiz.questionText,
-            answerOptions: quiz.answerOptions,
+            topicName:          quiz.topicName,
+            lessonTitle:        quiz.lessonTitle   || '',  // LESSON_TAG_PATCH
+            questionText:       quiz.questionText,
+            answerOptions:      quiz.answerOptions,
             correctAnswerIndex: quiz.correctAnswerIndex,
-            explanation: quiz.explanation,
-            difficulty: (quiz.difficulty || 'medium').toLowerCase(),
-            order: quiz.order || 1,
-            createdAt: new Date().toISOString()
+            explanation:        quiz.explanation,
+            difficulty:         (quiz.difficulty || 'medium').toLowerCase(),
+            order:              quiz.order || 1,
+            createdAt:          new Date().toISOString()
         }));
         const result = await quizzesCollection.insertMany(quizzesToInsert);
         console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
@@ -297,6 +307,175 @@ app.post('/api/quizzes/bulk', async (req, res) => {
     }
 });
 
+app.post('/api/progress/:username/ar-assessment', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score } = req.body;
+ 
+        if (!topicName || score === undefined) {
+            return res.status(400).json({ success: false, error: 'topicName and score are required' });
+        }
+ 
+        const validTopics = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Trees', 'Graphs'];
+        if (!validTopics.includes(topicName)) {
+            return res.status(400).json({ success: false, error: `Invalid topicName. Must be one of: ${validTopics.join(', ')}` });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        const clampedScore = Math.min(100, Math.max(0, parseFloat(score)));
+        const existing     = user.progress?.[topicName]?.arAssessmentScore || 0;
+        const finalScore   = Math.max(existing, clampedScore); // never go backwards
+ 
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.arAssessmentScore`]: finalScore,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+ 
+        console.log(`🎮 AR Assessment saved: ${username} → ${topicName} = ${finalScore}%`);
+        res.json({ success: true, username, topicName, arAssessmentScore: finalScore });
+ 
+    } catch (error) {
+        console.error('❌ AR assessment save error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+ 
+ 
+// ── 2.  Save Code Lab score (any topic) ──────────────────────────────
+//  POST /api/progress/:username/code-score
+//  Body: { "topicName": "Arrays", "score": 0-100 }
+//
+app.post('/api/progress/:username/quiz-score', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score, correctAnswers, totalQuestions } = req.body;
+
+        if (!topicName || score === undefined)
+            return res.status(400).json({ success: false, error: 'topicName and score required' });
+
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+        const attempts  = (user.progress?.[topicName]?.quizAttempts || 0) + 1;
+
+        // ✅ Accumulate correct/total across all attempts for true lifetime percentage
+        const prevCorrect = user.progress?.[topicName]?.quizTotalCorrect   || 0;
+        const prevTotal   = user.progress?.[topicName]?.quizTotalQuestions || 0;
+        const newCorrect  = prevCorrect + (parseInt(correctAnswers) || 0);
+        const newTotal    = prevTotal   + (parseInt(totalQuestions) || 0);
+
+        // True percentage over ALL attempts combined
+        const trueScore = newTotal > 0
+            ? Math.round((newCorrect / newTotal) * 100)
+            : Math.min(100, Math.max(0, parseFloat(score)));
+
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.quizScore`]:          trueScore,
+                    [`progress.${topicName}.quizAttempts`]:       attempts,
+                    [`progress.${topicName}.quizTotalCorrect`]:   newCorrect,
+                    [`progress.${topicName}.quizTotalQuestions`]: newTotal,
+                    [`progress.${topicName}.lastAccessed`]:       new Date().toISOString()
+                }
+            }
+        );
+
+        console.log(`📝 Quiz: ${username} → ${topicName} = ${trueScore}% (${newCorrect}/${newTotal} over ${attempts} attempts)`);
+        res.json({ success: true, topicName, quizScore: trueScore, quizAttempts: attempts,
+                   quizTotalCorrect: newCorrect, quizTotalQuestions: newTotal });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+app.post('/api/progress/:username/code-score', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score } = req.body;
+ 
+        if (!topicName || score === undefined) {
+            return res.status(400).json({ success: false, error: 'topicName and score are required' });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        const clampedScore = Math.min(100, Math.max(0, parseFloat(score)));
+        const existing     = user.progress?.[topicName]?.codeScore || 0;
+        const finalScore   = Math.max(existing, clampedScore);
+ 
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.codeScore`]: finalScore,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+ 
+        console.log(`💻 Code Score saved: ${username} → ${topicName} = ${finalScore}%`);
+        res.json({ success: true, username, topicName, codeScore: finalScore });
+ 
+    } catch (error) {
+        console.error('❌ Code score save error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/admin/init-score-fields', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+            const updates = {};
+
+            Object.keys(user.progress).forEach(topicName => {
+                const topic = user.progress[topicName];
+
+                if (topic.arAssessmentScore === undefined) {
+                    updates[`progress.${topicName}.arAssessmentScore`] = 0;
+                }
+                if (topic.codeScore === undefined) {
+                    updates[`progress.${topicName}.codeScore`] = 0;
+                }
+                if (topic.quizScore === undefined) {
+                    updates[`progress.${topicName}.quizScore`]    = 0;
+                    updates[`progress.${topicName}.quizAttempts`] = 0;
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne(
+                    { _id: user._id },
+                    { $set: updates }
+                );
+                updated++;
+            }
+        }
+
+        console.log(`✅ Score fields initialized for ${updated} users`);
+        res.json({
+            success: true,
+            message: `Score fields initialized`,
+            usersUpdated: updated
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+ 
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
     res.json({
@@ -1160,7 +1339,9 @@ app.put('/api/progress/:username', async (req, res) => {
                         parseFloat(existingTopic.timeSpent || 0)
                     ),
                     lessonsCompleted: finalLessonsCompleted,
-                    difficultyScores: finalDifficultyScores
+                    difficultyScores: finalDifficultyScores,
+                    arAssessmentScore:  existingTopic.arAssessmentScore || 0,   // ← ADD THIS
+                    codeScore:          existingTopic.codeScore         || 0,   // ← ADD THIS
                 };
             });
             
@@ -1756,7 +1937,12 @@ app.get('/api/progress/:username', async (req, res) => {
                         medium: 0,
                         hard: 0,
                         mixed: 0
-                    }
+                        
+                    },
+                    arAssessmentScore:  topic.arAssessmentScore  || 0,   // ← ADD THIS
+                    codeScore:          topic.codeScore          || 0,
+                    quizScore:    topic.quizScore    || 0,   // ← ADD
+                    quizAttempts: topic.quizAttempts || 0,   // ← ADD
                 });
             });
         }
@@ -1792,34 +1978,40 @@ app.get('/api/progress', async (req, res) => {
             .project({ password: 0 })
             .toArray();
 
-        const progressData = users.map(user => {
-            const topics = [];
-            if (user.progress) {
-                Object.keys(user.progress).forEach(topicName => {
-                    const topic = user.progress[topicName];
-                    topics.push({
-                        topicName: topicName,
-                        tutorialCompleted: topic.tutorialCompleted || false,
-                        puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,
-                        progressPercentage: topic.progressPercentage || 0,
-                        lastAccessed: topic.lastAccessed || '',
-                        timeSpent: topic.timeSpent || 0,
-                        lessonsCompleted: topic.lessonsCompleted || 0
+            const progressData = users.map(user => {
+                const topics = [];
+                if (user.progress) {
+                    Object.keys(user.progress).forEach(topicName => {
+                        const topic = user.progress[topicName];
+                        topics.push({
+                            topicName:          topicName,
+                            tutorialCompleted:  topic.tutorialCompleted  || false,
+                            puzzleCompleted:    topic.puzzleCompleted     || false,
+                            puzzleScore:        topic.score              || 0,
+                            progressPercentage: topic.progressPercentage || 0,
+                            lastAccessed:       topic.lastAccessed       || '',
+                            timeSpent:          topic.timeSpent          || 0,
+                            lessonsCompleted:   topic.lessonsCompleted   || 0,
+                            difficultyScores:   topic.difficultyScores   || { easy:0, medium:0, hard:0, mixed:0 },
+                            arAssessmentScore:  topic.arAssessmentScore  || 0,
+                            codeScore:          topic.codeScore          || 0,
+                            quizScore:          topic.quizScore          || 0,
+                            quizAttempts:       topic.quizAttempts        || 0,
+                            quizTotalCorrect:   topic.quizTotalCorrect   || 0,   // ✅ ADD
+                            quizTotalQuestions: topic.quizTotalQuestions || 0,   // ✅ ADD
+                        });
                     });
-                });
-            }
-
-            return {
-                username: user.username,
-                name: user.name || '',
-                email: user.email || '',
-                streak: user.streak || 0,
-                completedTopics: user.completedTopics || 0,
-                lastUpdated: user.lastUpdated || '',
-                topics: topics
-            };
-        });
+                }
+                return {
+                    username:        user.username,
+                    name:            user.name            || '',
+                    email:           user.email           || '',
+                    streak:          user.streak          || 0,
+                    completedTopics: user.completedTopics || 0,
+                    lastUpdated:     user.lastUpdated     || '',
+                    topics:          topics
+                };
+            });
 
         res.json({
             success: true,
