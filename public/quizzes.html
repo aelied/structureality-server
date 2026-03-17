@@ -20,6 +20,7 @@
         .answer-option input[type="text"] { flex: 1; }
         .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
         .lesson-badge { display: inline-block; background: #e0e7ff; color: #3730a3; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 9999px; }
+        .code-lab-badge { display: inline-block; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 6px; margin-left: 4px; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -51,8 +52,8 @@
     <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
-                <p class="text-sm text-gray-500">Manage quiz questions — one quiz set <strong>per lesson</strong> per topic</p>
+                <h2 class="text-2xl font-bold text-gray-800">Quiz & Code Lab Management</h2>
+                <p class="text-sm text-gray-500">Manage quiz questions and code challenges — per lesson per topic</p>
             </div>
             <div class="flex items-center space-x-4">
                 <button class="p-2 hover:bg-gray-100 rounded-lg transition"><i class="fas fa-bell text-gray-600"></i></button>
@@ -143,7 +144,7 @@
                     </button>
                     <button onclick="openAddQuizModal()"
                         class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Quiz Question
+                        <i class="fas fa-plus mr-2"></i>New Quiz
                     </button>
                 </div>
             </div>
@@ -153,9 +154,8 @@
         <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
             <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
             <div class="text-sm text-blue-800">
-                <strong>Per-Lesson Quizzes:</strong> Each quiz question is now tagged to a specific <em>lesson title</em>.
-                In the app, students see one quiz card per lesson — containing all questions tagged to that lesson.
-                Assign the <strong>Lesson Title</strong> carefully to match the exact lesson name in the Lessons panel.
+                <strong>Per-Lesson Quizzes & Code Labs:</strong> Each quiz question and code challenge is tagged to a specific <em>lesson title</em>.
+                In the app, students see one quiz card + one code lab per lesson. Assign the <strong>Lesson Title</strong> to match the exact lesson name in Lessons panel.
             </div>
         </div>
 
@@ -249,6 +249,37 @@
                         rows="3"></textarea>
                 </div>
 
+                <!-- Code Lab Challenge -->
+                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                        <input type="checkbox" id="hasCodeLab" class="w-4 h-4" onchange="toggleCodeLabFields()">
+                        <span>Link Code Lab Challenge</span>
+                        <i class="fas fa-code text-blue-600"></i>
+                    </label>
+                    <div id="codeLabFields" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Challenge Type</label>
+                            <select id="codeLangType" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500">
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Template/Challenge Index</label>
+                            <select id="codeLabIndex" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500">
+                                <option value="0">Hello World</option>
+                                <option value="1">Fibonacci</option>
+                                <option value="2">Linked List</option>
+                                <option value="3">Stack</option>
+                                <option value="4">Queue</option>
+                                <option value="5">Arrays</option>
+                                <option value="6">Trees</option>
+                                <option value="7">Graphs</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Display Order -->
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Display Order (within lesson)</label>
@@ -314,6 +345,37 @@
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
                 </div>
 
+                <!-- Code Lab Challenge (Edit) -->
+                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <label class="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                        <input type="checkbox" id="editHasCodeLab" class="w-4 h-4" onchange="toggleEditCodeLabFields()">
+                        <span>Link Code Lab Challenge</span>
+                        <i class="fas fa-code text-blue-600"></i>
+                    </label>
+                    <div id="editCodeLabFields" class="hidden space-y-3">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Challenge Type</label>
+                            <select id="editCodeLangType" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500">
+                                <option value="python">Python</option>
+                                <option value="java">Java</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600 mb-1">Template/Challenge Index</label>
+                            <select id="editCodeLabIndex" class="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-indigo-500">
+                                <option value="0">Hello World</option>
+                                <option value="1">Fibonacci</option>
+                                <option value="2">Linked List</option>
+                                <option value="3">Stack</option>
+                                <option value="4">Queue</option>
+                                <option value="5">Arrays</option>
+                                <option value="6">Trees</option>
+                                <option value="7">Graphs</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
                     <input type="number" id="editQuizOrder" min="1"
@@ -360,6 +422,27 @@
             }
         }
 
+        // ── Code Lab Toggle ────────────────────────────────────────
+        function toggleCodeLabFields() {
+            const hasCodeLab = document.getElementById('hasCodeLab').checked;
+            const codeLabFields = document.getElementById('codeLabFields');
+            if (hasCodeLab) {
+                codeLabFields.classList.remove('hidden');
+            } else {
+                codeLabFields.classList.add('hidden');
+            }
+        }
+
+        function toggleEditCodeLabFields() {
+            const editHasCodeLab = document.getElementById('editHasCodeLab').checked;
+            const editCodeLabFields = document.getElementById('editCodeLabFields');
+            if (editHasCodeLab) {
+                editCodeLabFields.classList.remove('hidden');
+            } else {
+                editCodeLabFields.classList.add('hidden');
+            }
+        }
+
         // ── Load lessons for selected topic into dropdown ─────────────
         async function loadLessonsForTopic() {
             const topic = document.getElementById('quizTopic').value;
@@ -391,7 +474,6 @@
             }
         }
 
-        // ✅ NEW: Auto-fill lesson title from dropdown selection
         function selectLessonTitle() {
             const selected = document.getElementById('quizLessonSelect').value;
             if (selected) {
@@ -399,7 +481,6 @@
             }
         }
 
-        // ✅ NEW: Auto-fill lesson title from edit dropdown selection
         function selectEditLessonTitle() {
             const selected = document.getElementById('editQuizLessonSelect').value;
             if (selected) {
@@ -470,7 +551,6 @@
                 LinkedLists: 'purple', Trees: 'yellow', Graphs: 'red'
             };
 
-            // Group: topic → lesson → questions
             const grouped = {};
             quizzes.forEach(q => {
                 const t = q.topicName || 'Uncategorised';
@@ -506,10 +586,14 @@
                         <div class="divide-y divide-gray-100">`;
 
                     questions.forEach(quiz => {
+                        const hasCodeLab = quiz.codeLab && quiz.codeLab.enabled;
                         html += `
                         <div class="quiz-card bg-white p-5 flex items-start justify-between gap-4">
                             <div class="flex-1">
-                                <p class="font-medium text-gray-800 mb-3">${quiz.questionText}</p>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <p class="font-medium text-gray-800">${quiz.questionText}</p>
+                                    ${hasCodeLab ? `<span class="code-lab-badge"><i class="fas fa-code mr-1"></i>${quiz.codeLab.language.toUpperCase()}</span>` : ''}
+                                </div>
                                 <div class="grid grid-cols-2 gap-2 mb-3">
                                     ${quiz.answerOptions.map((opt, idx) => `
                                     <div class="flex items-center gap-2 p-2 rounded ${idx === quiz.correctAnswerIndex ? 'bg-green-50 border border-green-200' : 'bg-gray-50'}">
@@ -567,6 +651,7 @@
             document.getElementById('addQuizModal').classList.remove('active');
             document.getElementById('addQuizForm').reset();
             document.getElementById('quizLessonSelect').innerHTML = '<option value="">— pick a topic first —</option>';
+            document.getElementById('codeLabFields').classList.add('hidden');
         }
 
         async function openEditModal(quiz) {
@@ -576,6 +661,17 @@
             document.getElementById('editQuizQuestion').value   = quiz.questionText;
             document.getElementById('editQuizExplanation').value= quiz.explanation;
             document.getElementById('editQuizOrder').value      = quiz.order || 1;
+
+            // Code Lab fields
+            const hasCodeLab = quiz.codeLab && quiz.codeLab.enabled;
+            document.getElementById('editHasCodeLab').checked = hasCodeLab;
+            if (hasCodeLab) {
+                document.getElementById('editCodeLabFields').classList.remove('hidden');
+                document.getElementById('editCodeLangType').value = quiz.codeLab.language || 'python';
+                document.getElementById('editCodeLabIndex').value = quiz.codeLab.templateIndex || '0';
+            } else {
+                document.getElementById('editCodeLabFields').classList.add('hidden');
+            }
 
             // Load lessons for this topic
             const select = document.getElementById('editQuizLessonSelect');
@@ -623,13 +719,19 @@
             const answerInputs  = document.querySelectorAll('#editAnswerOptions input[type="text"]');
             const answerOptions = Array.from(answerInputs).map(i => i.value);
 
+            const hasCodeLab = document.getElementById('editHasCodeLab').checked;
             const payload = {
                 lessonTitle:        document.getElementById('editQuizLesson').value.trim(),
                 questionText:       document.getElementById('editQuizQuestion').value,
                 answerOptions:      answerOptions,
                 correctAnswerIndex: parseInt(correctRadio.value),
                 explanation:        document.getElementById('editQuizExplanation').value,
-                order:              parseInt(document.getElementById('editQuizOrder').value)
+                order:              parseInt(document.getElementById('editQuizOrder').value),
+                codeLab: hasCodeLab ? {
+                    enabled: true,
+                    language: document.getElementById('editCodeLangType').value,
+                    templateIndex: parseInt(document.getElementById('editCodeLabIndex').value)
+                } : { enabled: false }
             };
 
             try {
@@ -663,6 +765,7 @@
             const lessonTitle = document.getElementById('quizLesson').value.trim();
             if (!lessonTitle) { alert('Please enter a lesson title'); return; }
 
+            const hasCodeLab = document.getElementById('hasCodeLab').checked;
             const quizData = {
                 topicName:          document.getElementById('quizTopic').value,
                 lessonTitle:        lessonTitle,
@@ -671,7 +774,12 @@
                 correctAnswerIndex: parseInt(correctRadio.value),
                 explanation:        document.getElementById('quizExplanation').value,
                 difficulty:         'medium',
-                order:              parseInt(document.getElementById('quizOrder').value)
+                order:              parseInt(document.getElementById('quizOrder').value),
+                codeLab: hasCodeLab ? {
+                    enabled: true,
+                    language: document.getElementById('codeLangType').value,
+                    templateIndex: parseInt(document.getElementById('codeLabIndex').value)
+                } : { enabled: false }
             };
 
             try {
