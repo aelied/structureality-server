@@ -355,7 +355,7 @@ app.post('/api/progress/:username/ar-assessment', async (req, res) => {
 app.post('/api/progress/:username/quiz-score', async (req, res) => {
     try {
         const { username } = req.params;
-        const { topicName, score } = req.body;
+        const { topicName, score, correctAnswers, totalQuestions } = req.body;
 
         if (!topicName || score === undefined)
             return res.status(400).json({ success: false, error: 'topicName and score required' });
@@ -363,25 +363,35 @@ app.post('/api/progress/:username/quiz-score', async (req, res) => {
         const user = await usersCollection.findOne({ username });
         if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
-        const clamped  = Math.min(100, Math.max(0, parseFloat(score)));
-        const existing = user.progress?.[topicName]?.quizScore || 0;
-        // Keep a running average instead of just the best score
-        const attempts = (user.progress?.[topicName]?.quizAttempts || 0) + 1;
-        const newAvg   = Math.round(((existing * (attempts - 1)) + clamped) / attempts);
+        const attempts  = (user.progress?.[topicName]?.quizAttempts || 0) + 1;
+
+        // ✅ Accumulate correct/total across all attempts for true lifetime percentage
+        const prevCorrect = user.progress?.[topicName]?.quizTotalCorrect   || 0;
+        const prevTotal   = user.progress?.[topicName]?.quizTotalQuestions || 0;
+        const newCorrect  = prevCorrect + (parseInt(correctAnswers) || 0);
+        const newTotal    = prevTotal   + (parseInt(totalQuestions) || 0);
+
+        // True percentage over ALL attempts combined
+        const trueScore = newTotal > 0
+            ? Math.round((newCorrect / newTotal) * 100)
+            : Math.min(100, Math.max(0, parseFloat(score)));
 
         await usersCollection.updateOne(
             { username },
             {
                 $set: {
-                    [`progress.${topicName}.quizScore`]:    newAvg,
-                    [`progress.${topicName}.quizAttempts`]: attempts,
-                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                    [`progress.${topicName}.quizScore`]:          trueScore,
+                    [`progress.${topicName}.quizAttempts`]:       attempts,
+                    [`progress.${topicName}.quizTotalCorrect`]:   newCorrect,
+                    [`progress.${topicName}.quizTotalQuestions`]: newTotal,
+                    [`progress.${topicName}.lastAccessed`]:       new Date().toISOString()
                 }
             }
         );
 
-        console.log(`📝 Quiz score: ${username} → ${topicName} = ${newAvg}% (avg over ${attempts} attempts)`);
-        res.json({ success: true, topicName, quizScore: newAvg, quizAttempts: attempts });
+        console.log(`📝 Quiz: ${username} → ${topicName} = ${trueScore}% (${newCorrect}/${newTotal} over ${attempts} attempts)`);
+        res.json({ success: true, topicName, quizScore: trueScore, quizAttempts: attempts,
+                   quizTotalCorrect: newCorrect, quizTotalQuestions: newTotal });
 
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -1968,34 +1978,40 @@ app.get('/api/progress', async (req, res) => {
             .project({ password: 0 })
             .toArray();
 
-        const progressData = users.map(user => {
-            const topics = [];
-            if (user.progress) {
-                Object.keys(user.progress).forEach(topicName => {
-                    const topic = user.progress[topicName];
-                    topics.push({
-                        topicName: topicName,
-                        tutorialCompleted: topic.tutorialCompleted || false,
-                        puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,
-                        progressPercentage: topic.progressPercentage || 0,
-                        lastAccessed: topic.lastAccessed || '',
-                        timeSpent: topic.timeSpent || 0,
-                        lessonsCompleted: topic.lessonsCompleted || 0
+            const progressData = users.map(user => {
+                const topics = [];
+                if (user.progress) {
+                    Object.keys(user.progress).forEach(topicName => {
+                        const topic = user.progress[topicName];
+                        topics.push({
+                            topicName:          topicName,
+                            tutorialCompleted:  topic.tutorialCompleted  || false,
+                            puzzleCompleted:    topic.puzzleCompleted     || false,
+                            puzzleScore:        topic.score              || 0,
+                            progressPercentage: topic.progressPercentage || 0,
+                            lastAccessed:       topic.lastAccessed       || '',
+                            timeSpent:          topic.timeSpent          || 0,
+                            lessonsCompleted:   topic.lessonsCompleted   || 0,
+                            difficultyScores:   topic.difficultyScores   || { easy:0, medium:0, hard:0, mixed:0 },
+                            arAssessmentScore:  topic.arAssessmentScore  || 0,
+                            codeScore:          topic.codeScore          || 0,
+                            quizScore:          topic.quizScore          || 0,
+                            quizAttempts:       topic.quizAttempts        || 0,
+                            quizTotalCorrect:   topic.quizTotalCorrect   || 0,   // ✅ ADD
+                            quizTotalQuestions: topic.quizTotalQuestions || 0,   // ✅ ADD
+                        });
                     });
-                });
-            }
-
-            return {
-                username: user.username,
-                name: user.name || '',
-                email: user.email || '',
-                streak: user.streak || 0,
-                completedTopics: user.completedTopics || 0,
-                lastUpdated: user.lastUpdated || '',
-                topics: topics
-            };
-        });
+                }
+                return {
+                    username:        user.username,
+                    name:            user.name            || '',
+                    email:           user.email           || '',
+                    streak:          user.streak          || 0,
+                    completedTopics: user.completedTopics || 0,
+                    lastUpdated:     user.lastUpdated     || '',
+                    topics:          topics
+                };
+            });
 
         res.json({
             success: true,

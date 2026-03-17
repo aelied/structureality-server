@@ -320,6 +320,7 @@ async function loadAnalytics(username) {
 //                    ProgressScoreReporter.SaveCodeScore).
 // ═══════════════════════════════════════════════════════════════════
 function buildTopicBreakdown(allUsers, allQuizzes) {
+    // Count total quiz questions available per topic
     const quizCountByTopic = {};
     allQuizzes.forEach(q => {
         quizCountByTopic[q.topicName] = (quizCountByTopic[q.topicName] || 0) + 1;
@@ -330,33 +331,51 @@ function buildTopicBreakdown(allUsers, allQuizzes) {
         let conceptSum = 0, guidedSum = 0, challengeSum = 0, codeSum = 0, n = 0;
 
         allUsers.forEach(user => {
-                if (!user.topics) return;
-                const t = user.topics.find(tp => tp.topicName === topic);
-                if (!t) return;
-                n++;
+            if (!user.topics) return;
+            const t = user.topics.find(tp => tp.topicName === topic);
+            if (!t) return;
+            n++;
 
-                // 1. Concept Quiz
+            // ── 1. Concept Quiz ──────────────────────────────────────
+            // True percentage: quizTotalCorrect / quizTotalQuestions
+            // Falls back to quizScore (running avg) if new fields not yet populated
+            if (t.quizTotalQuestions > 0) {
+                conceptSum += Math.round((t.quizTotalCorrect / t.quizTotalQuestions) * 100);
+            } else {
                 conceptSum += Math.min(100, t.quizScore || 0);
+            }
 
-                // 2. AR Guided
-                const lessonPortion = Math.min(50, t.progressPercentage || 0);
-                guidedSum += Math.round((lessonPortion / 50) * 100);
+            // ── 2. AR Guided ─────────────────────────────────────────
+            // % of guided AR lessons finished out of total for that topic
+            const totalForTopic = quizCountByTopic[topic] || 1; // fallback
+            // Use lessonsCompleted vs total lessons from DB
+            // We don't have per-user total here, so use progressPercentage lesson portion
+            // progressPercentage = lessons(0-50) + puzzle(0-50)
+            // lesson portion = min(50, progressPercentage) rescaled to 0-100
+            const lessonPct = Math.min(50, t.progressPercentage || 0);
+            guidedSum += Math.round((lessonPct / 50) * 100);
 
-                // 3. AR Challenge
-                const ds = t.difficultyScores || {};   // ✅ define ds here
-                const arScore = (t.arAssessmentScore != null)
-                    ? t.arAssessmentScore
-                    : Math.max(ds.hard || 0, ds.mixed || 0);
-                challengeSum += Math.min(100, arScore);
+            // ── 3. AR Challenge ──────────────────────────────────────
+            // Use arAssessmentScore if saved, else treat as binary (did they do AR?)
+            // For now: arAssessmentScore is 0-100, or if 0 check tutorialCompleted as proxy
+            const ds = t.difficultyScores || {};
+            let arScore = 0;
+            if (t.arAssessmentScore > 0) {
+                arScore = t.arAssessmentScore;
+            } else if (t.tutorialCompleted) {
+                // They finished lessons → they used AR guided at least once → 50%
+                arScore = 50;
+            }
+            challengeSum += Math.min(100, arScore);
 
-                // 4. Code Score
-                codeSum += Math.min(100, t.codeScore || 0);
-            });
+            // ── 4. Code Score ────────────────────────────────────────
+            codeSum += Math.min(100, t.codeScore || 0);
+        });
 
         result[topic] = {
             conceptQuizPct : n ? Math.round(conceptSum  / n) : 0,
             arGuidedPct    : n ? Math.round(guidedSum   / n) : 0,
-            arChallengePct : n ? Math.round(challengeSum/ n) : 0,
+            arChallengePct : n ? Math.round(challengeSum / n) : 0,
             codePct        : n ? Math.round(codeSum     / n) : 0,
             userCount      : n,
             totalQuizzes   : quizCountByTopic[topic] || 0,
