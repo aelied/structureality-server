@@ -336,10 +336,7 @@ function buildTopicBreakdown(allUsers, allQuizzes) {
             n++;
 
             // 1. Concept Quiz — average of 4 difficulty scores
-            const ds = t.difficultyScores || { easy:0, medium:0, hard:0, mixed:0 };
-            conceptSum += Math.min(100,
-                ((ds.easy||0) + (ds.medium||0) + (ds.hard||0) + (ds.mixed||0)) / 4
-            );
+            conceptSum += Math.min(100, t.quizScore || 0);
 
             // 2. AR Guided — lesson-completed portion (0-50) → (0-100)
             const lessonPortion = Math.min(50, t.progressPercentage || 0);

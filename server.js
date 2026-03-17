@@ -352,6 +352,41 @@ app.post('/api/progress/:username/ar-assessment', async (req, res) => {
 //  POST /api/progress/:username/code-score
 //  Body: { "topicName": "Arrays", "score": 0-100 }
 //
+app.post('/api/progress/:username/quiz-score', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score } = req.body;
+
+        if (!topicName || score === undefined)
+            return res.status(400).json({ success: false, error: 'topicName and score required' });
+
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+
+        const clamped  = Math.min(100, Math.max(0, parseFloat(score)));
+        const existing = user.progress?.[topicName]?.quizScore || 0;
+        // Keep a running average instead of just the best score
+        const attempts = (user.progress?.[topicName]?.quizAttempts || 0) + 1;
+        const newAvg   = Math.round(((existing * (attempts - 1)) + clamped) / attempts);
+
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.quizScore`]:    newAvg,
+                    [`progress.${topicName}.quizAttempts`]: attempts,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+
+        console.log(`📝 Quiz score: ${username} → ${topicName} = ${newAvg}% (avg over ${attempts} attempts)`);
+        res.json({ success: true, topicName, quizScore: newAvg, quizAttempts: attempts });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 app.post('/api/progress/:username/code-score', async (req, res) => {
     try {
         const { username } = req.params;
@@ -404,6 +439,10 @@ app.post('/api/admin/init-score-fields', async (req, res) => {
                 }
                 if (topic.codeScore === undefined) {
                     updates[`progress.${topicName}.codeScore`] = 0;
+                }
+                if (topic.quizScore === undefined) {
+                    updates[`progress.${topicName}.quizScore`]    = 0;
+                    updates[`progress.${topicName}.quizAttempts`] = 0;
                 }
             });
 
@@ -1891,7 +1930,9 @@ app.get('/api/progress/:username', async (req, res) => {
                         
                     },
                     arAssessmentScore:  topic.arAssessmentScore  || 0,   // ← ADD THIS
-                     codeScore:          topic.codeScore          || 0,
+                    codeScore:          topic.codeScore          || 0,
+                    quizScore:    topic.quizScore    || 0,   // ← ADD
+                    quizAttempts: topic.quizAttempts || 0,   // ← ADD
                 });
             });
         }
