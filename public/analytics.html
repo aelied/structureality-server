@@ -330,27 +330,28 @@ function buildTopicBreakdown(allUsers, allQuizzes) {
         let conceptSum = 0, guidedSum = 0, challengeSum = 0, codeSum = 0, n = 0;
 
         allUsers.forEach(user => {
-            if (!user.topics) return;
-            const t = user.topics.find(tp => tp.topicName === topic);
-            if (!t) return;
-            n++;
+                if (!user.topics) return;
+                const t = user.topics.find(tp => tp.topicName === topic);
+                if (!t) return;
+                n++;
 
-            // 1. Concept Quiz — average of 4 difficulty scores
-            conceptSum += Math.min(100, t.quizScore || 0);
+                // 1. Concept Quiz
+                conceptSum += Math.min(100, t.quizScore || 0);
 
-            // 2. AR Guided — lesson-completed portion (0-50) → (0-100)
-            const lessonPortion = Math.min(50, t.progressPercentage || 0);
-            guidedSum += Math.round((lessonPortion / 50) * 100);
+                // 2. AR Guided
+                const lessonPortion = Math.min(50, t.progressPercentage || 0);
+                guidedSum += Math.round((lessonPortion / 50) * 100);
 
-            // 3. AR Challenge — real value if saved, proxy fallback
-            const arScore = (t.arAssessmentScore != null)
-                ? t.arAssessmentScore
-                : Math.max(ds.hard || 0, ds.mixed || 0);
-            challengeSum += Math.min(100, arScore);
+                // 3. AR Challenge
+                const ds = t.difficultyScores || {};   // ✅ define ds here
+                const arScore = (t.arAssessmentScore != null)
+                    ? t.arAssessmentScore
+                    : Math.max(ds.hard || 0, ds.mixed || 0);
+                challengeSum += Math.min(100, arScore);
 
-            // 4. Code Score
-            codeSum += Math.min(100, t.codeScore || 0);
-        });
+                // 4. Code Score
+                codeSum += Math.min(100, t.codeScore || 0);
+            });
 
         result[topic] = {
             conceptQuizPct : n ? Math.round(conceptSum  / n) : 0,
