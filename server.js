@@ -386,6 +386,46 @@ app.post('/api/progress/:username/code-score', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+app.post('/api/admin/init-score-fields', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+            const updates = {};
+
+            Object.keys(user.progress).forEach(topicName => {
+                const topic = user.progress[topicName];
+
+                if (topic.arAssessmentScore === undefined) {
+                    updates[`progress.${topicName}.arAssessmentScore`] = 0;
+                }
+                if (topic.codeScore === undefined) {
+                    updates[`progress.${topicName}.codeScore`] = 0;
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne(
+                    { _id: user._id },
+                    { $set: updates }
+                );
+                updated++;
+            }
+        }
+
+        console.log(`✅ Score fields initialized for ${updated} users`);
+        res.json({
+            success: true,
+            message: `Score fields initialized`,
+            usersUpdated: updated
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
  
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
@@ -1250,7 +1290,9 @@ app.put('/api/progress/:username', async (req, res) => {
                         parseFloat(existingTopic.timeSpent || 0)
                     ),
                     lessonsCompleted: finalLessonsCompleted,
-                    difficultyScores: finalDifficultyScores
+                    difficultyScores: finalDifficultyScores,
+                    arAssessmentScore:  existingTopic.arAssessmentScore || 0,   // ← ADD THIS
+                    codeScore:          existingTopic.codeScore         || 0,   // ← ADD THIS
                 };
             });
             
@@ -1846,7 +1888,10 @@ app.get('/api/progress/:username', async (req, res) => {
                         medium: 0,
                         hard: 0,
                         mixed: 0
-                    }
+                        
+                    },
+                    arAssessmentScore:  topic.arAssessmentScore  || 0,   // ← ADD THIS
+                     codeScore:          topic.codeScore          || 0,
                 });
             });
         }
