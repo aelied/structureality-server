@@ -9,503 +9,503 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * {
-            font-family: "Poppins", sans-serif;
+        * { font-family: "Poppins", sans-serif; }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .score-bar-track { height: 7px; background: #f1f5f9; border-radius: 9999px; overflow: hidden; }
+        .score-bar-fill  { height: 100%; border-radius: 9999px; transition: width 1s ease; }
+        .topic-card {
+            background: #fff; border-radius: 16px; border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05); overflow: hidden;
+            transition: box-shadow 0.25s, transform 0.25s;
         }
-        .card-hover {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card-hover:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
+        .topic-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.11); transform: translateY(-3px); }
+        .accent-arrays      { border-top: 4px solid #6366f1; }
+        .accent-stacks      { border-top: 4px solid #22c55e; }
+        .accent-queue       { border-top: 4px solid #3b82f6; }
+        .accent-linkedlists { border-top: 4px solid #a855f7; }
+        .accent-trees       { border-top: 4px solid #eab308; }
+        .accent-graphs      { border-top: 4px solid #ef4444; }
+        .badge-pct { font-size:0.7rem; font-weight:700; padding:2px 9px; border-radius:9999px; }
     </style>
 </head>
 <body class="bg-gray-100">
-    <!-- Sidebar -->
-    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-        <div class="p-6 border-b border-indigo-700">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold">StructuReality</h1>
-                    <p class="text-xs text-indigo-300">Admin Portal</p>
-                </div>
-            </div>
-        </div>
-        <nav class="mt-6 px-4">
-            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
-            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-users w-5"></i>
-                <span class="font-medium">Users</span>
-            </a>
-            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-book w-5"></i>
-                <span class="font-medium">Lessons</span>
-            </a>
-            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-question-circle w-5"></i>
-                <span class="font-medium">Quizzes</span>
-            </a>
-            <a href="analytics.html" id="analyticsLink" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
-            </a>
-            <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-vr-cardboard w-5"></i>
-                <span class="font-medium">AR Scenarios</span>
-            </a>
-        </nav>
-    </aside>
 
-    <!-- Navbar -->
-    <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-        <div class="px-8 py-4 flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Analytics</h2>
-                <p class="text-sm text-gray-500">Platform performance insights</p>
+<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <div class="p-6 border-b border-indigo-700">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <i class="fas fa-cube text-indigo-700 text-xl"></i>
             </div>
-            <div class="flex items-center space-x-4">
-                <button onclick="refreshAnalytics()" id="refreshBtn" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
-                    <i class="fas fa-sync mr-2"></i>Refresh Data
-                </button>
-                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <i class="fas fa-bell text-gray-600"></i>
-                </button>
-                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-indigo-700 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-                    </div>
-                </div>
-                <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
-                    <i class="fas fa-sign-out-alt text-gray-600"></i>
-                </button>
-            </div>
+            <div><h1 class="text-xl font-bold">StructuReality</h1><p class="text-xs text-indigo-300">Admin Portal</p></div>
         </div>
+    </div>
+    <nav class="mt-6 px-4">
+        <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
+        <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
+        <a href="lessons.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span></a>
+        <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
+        <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
+        <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
     </nav>
+</aside>
 
-    <!-- Main Content -->
-    <main class="ml-64 mt-20 p-8">
-        <!-- Access Denied Message (hidden by default) -->
-        <div id="accessDenied" class="hidden">
-            <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-lock text-red-600 text-3xl"></i>
+<nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+    <div class="px-8 py-4 flex items-center justify-between">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Analytics</h2>
+            <p class="text-sm text-gray-500">Platform performance insights</p>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="refreshAnalytics()" id="refreshBtn" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
+                <i class="fas fa-sync mr-2"></i>Refresh
+            </button>
+            <button class="p-2 hover:bg-gray-100 rounded-lg"><i class="fas fa-bell text-gray-600"></i></button>
+            <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+                <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center"><i class="fas fa-user text-indigo-700 text-sm"></i></div>
+                <div>
+                    <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin</p>
+                    <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
                 </div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
-                <p class="text-gray-600 mb-6">You don't have permission to view analytics. This page is only accessible to administrators.</p>
-                <a href="index.html" class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-home mr-2"></i>Return to Dashboard
-                </a>
+            </div>
+            <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg" title="Logout"><i class="fas fa-sign-out-alt text-gray-600"></i></button>
+        </div>
+    </div>
+</nav>
+
+<main class="ml-64 mt-20 p-8">
+    <div id="accessDenied" class="hidden">
+        <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-lock text-red-600 text-3xl"></i></div>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
+            <p class="text-gray-600 mb-6">Only administrators can view analytics.</p>
+            <a href="index.html" class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"><i class="fas fa-home mr-2"></i>Return to Dashboard</a>
+        </div>
+    </div>
+
+    <div id="loadingState" class="text-center py-20">
+        <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
+        <p class="text-gray-600">Loading analytics data…</p>
+    </div>
+
+    <div id="analyticsContent" style="display:none;">
+
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-green-600 text-xl"></i></div>
+                    <span id="completionTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
+                <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
+                <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-clock text-purple-600 text-xl"></i></div>
+                    <span id="sessionTrend" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">--</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium">Avg. Time / User</h3>
+                <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
+                <p class="text-xs text-gray-400 mt-2">total time / users</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-hourglass-half text-blue-600 text-xl"></i></div>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
+                <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
+                <p class="text-xs text-gray-400 mt-2">all users combined</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-star text-orange-600 text-xl"></i></div>
+                    <span id="engagementTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
+                </div>
+                <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
+                <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
+                <p class="text-xs text-gray-400 mt-2">engagement score</p>
             </div>
         </div>
 
-        <!-- Loading State -->
-        <div id="loadingState" class="text-center py-20">
-            <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
-            <p class="text-gray-600">Loading analytics data...</p>
-        </div>
-
-        <!-- Analytics Content -->
-        <div id="analyticsContent" style="display: none;">
-            <!-- Key Metrics -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-graduation-cap text-green-600 text-xl"></i>
-                        </div>
-                        <span id="completionTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
-                    </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
-                    <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-clock text-purple-600 text-xl"></i>
-                        </div>
-                        <span id="sessionTrend" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">--</span>
-                    </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Avg. Time per User</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
-                    <p class="text-xs text-gray-400 mt-2">total time / users</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-hourglass-half text-blue-600 text-xl"></i>
-                        </div>
-                    </div>
-                    <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
-                    <p class="text-xs text-gray-400 mt-2">all users combined</p>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-star text-orange-600 text-xl"></i>
-                        </div>
-                        <span id="engagementTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
-                    </div>
-                    <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
-                    <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
-                    <p class="text-xs text-gray-400 mt-2">engagement score</p>
-                </div>
+        <!-- Charts Row 1 -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">User Activity (Last 7 Days)</h3>
+                <canvas id="activityChart" height="80"></canvas>
             </div>
-
-            <!-- Charts Row 1 -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-gray-800">User Activity (Last 7 Days)</h3>
-                    </div>
-                    <canvas id="activityChart" height="80"></canvas>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Topic Popularity</h3>
-                    <canvas id="topicChart"></canvas>
-                    <div class="mt-6 space-y-3" id="topicLegend"></div>
-                </div>
-            </div>
-
-            <!-- Charts Row 2 -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-6">User Progress Distribution</h3>
-                    <canvas id="progressChart" height="120"></canvas>
-                </div>
-                <div class="bg-white rounded-xl shadow-sm p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-6">Streak Distribution</h3>
-                    <canvas id="streakChart" height="120"></canvas>
-                </div>
-            </div>
-
-            <!-- Performance Table -->
-            <div class="bg-white rounded-xl shadow-sm mb-8">
-                <div class="p-6 border-b border-gray-100">
-                    <h3 class="text-lg font-semibold text-gray-800">Lesson Performance</h3>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full">
-                        <thead>
-                            <tr class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
-                                <th class="px-6 py-4">Lesson Name</th>
-                                <th class="px-6 py-4">Topic</th>
-                                <th class="px-6 py-4">Completions</th>
-                                <th class="px-6 py-4">Avg. Score</th>
-                                <th class="px-6 py-4">Avg. Time</th>
-                                <th class="px-6 py-4">Rating</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
-                            <tr>
-                                <td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading lesson performance data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Topic Popularity</h3>
+                <canvas id="topicChart"></canvas>
+                <div class="mt-6 space-y-3" id="topicLegend"></div>
             </div>
         </div>
-    </main>
 
-    <script>
-        const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api'
-            : 'https://structureality-admin.onrender.com/api';
+        <!-- Charts Row 2 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">User Progress Distribution</h3>
+                <canvas id="progressChart" height="120"></canvas>
+            </div>
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-6">Streak Distribution</h3>
+                <canvas id="streakChart" height="120"></canvas>
+            </div>
+        </div>
 
-        let activityChart, topicChart, progressChart, streakChart;
-        let currentUsername = null;
+        <!-- ══ TOPIC SCORE BREAKDOWN ══ -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+            <div class="p-6 border-b border-gray-100">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">Topic Score Breakdown</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Average scores per topic across all users</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500">
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>Concept Quiz</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>AR Guided</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>AR Challenge</span>
+                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>Code Score</span>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="topicBreakdownGrid">
+                <p class="text-gray-400 col-span-3 text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading…</p>
+            </div>
+        </div>
 
-        function logout() {
-            localStorage.removeItem('adminUser');
-            window.location.href = 'login.html';
-        }
+        <!-- Lesson Performance Table -->
+        <div class="bg-white rounded-xl shadow-sm mb-8">
+            <div class="p-6 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Lesson Performance</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
+                            <th class="px-6 py-4">Lesson Name</th>
+                            <th class="px-6 py-4">Topic</th>
+                            <th class="px-6 py-4">Completions</th>
+                            <th class="px-6 py-4">Avg. Score</th>
+                            <th class="px-6 py-4">Avg. Time</th>
+                            <th class="px-6 py-4">Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
+                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading…</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-        function checkAuth() {
-            const adminUser = localStorage.getItem('adminUser');
-            if (!adminUser || adminUser === 'undefined') {
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-            try {
-                const user = JSON.parse(adminUser);
-                if (!user.role) {
-                    user.role = 'admin';
-                }
-                return user;
-            } catch (e) {
-                console.error("Failed to parse adminUser JSON:", e);
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
+    </div>
+</main>
 
-        function isInstructor(user) {
-            return user && user.role === 'instructor';
-        }
+<script>
+const API_URL = window.location.hostname === 'localhost'
+    ? 'http://localhost:3000/api'
+    : 'https://structureality-admin.onrender.com/api';
 
-        function isAdmin(user) {
-            return user && (user.role === 'admin' || !user.role);
-        }
+let activityChart, topicChart, progressChart, streakChart;
+let currentUsername = null;
 
-        function canAccessAnalytics(user) {
-            return isAdmin(user);
-        }
+// ── Add new topics here when you build them — nothing else needs changing ──
+const ALL_TOPICS = [
+    { key: 'Arrays',      label: 'Arrays',      icon: 'fa-layer-group',     accentClass: 'accent-arrays',      color: '#6366f1' },
+    { key: 'Stacks',      label: 'Stacks',       icon: 'fa-layer-group',     accentClass: 'accent-stacks',      color: '#22c55e' },
+    { key: 'Queue',       label: 'Queue',        icon: 'fa-stream',          accentClass: 'accent-queue',       color: '#3b82f6' },
+    { key: 'LinkedLists', label: 'Linked Lists', icon: 'fa-link',            accentClass: 'accent-linkedlists', color: '#a855f7' },
+    { key: 'Trees',       label: 'Trees',        icon: 'fa-project-diagram', accentClass: 'accent-trees',       color: '#eab308' },
+    { key: 'Graphs',      label: 'Graphs',       icon: 'fa-sitemap',         accentClass: 'accent-graphs',      color: '#ef4444' },
+];
 
-        function formatTime(seconds) {
-            if (!seconds || seconds === 0) return '0m';
-            const hours = Math.floor(seconds / 3600);
-            const minutes = Math.floor((seconds % 3600) / 60);
-            if (hours > 0) {
-                return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`;
-            }
-            return `${minutes}m`;
-        }
+const SCORE_ROWS = [
+    { key: 'conceptQuizPct', label: 'Concept Quiz', icon: '📝', color: '#6366f1', track: '#e0e7ff' },
+    { key: 'arGuidedPct',    label: 'AR Guided',    icon: '🥽', color: '#10b981', track: '#d1fae5' },
+    { key: 'arChallengePct', label: 'AR Challenge', icon: '🎮', color: '#f59e0b', track: '#fef3c7' },
+    { key: 'codePct',        label: 'Code Score',   icon: '💻', color: '#0ea5e9', track: '#e0f2fe' },
+];
 
-        function refreshAnalytics() {
-            if (currentUsername) {
-                loadAnalytics(currentUsername);
-            }
-        }
+function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
 
-        async function loadAnalytics(username) {
-            try {
-                currentUsername = username;
-                document.getElementById('loadingState').style.display = 'block';
-                document.getElementById('analyticsContent').style.display = 'none';
-                document.getElementById('accessDenied').classList.add('hidden');
+function checkAuth() {
+    const raw = localStorage.getItem('adminUser');
+    if (!raw || raw === 'undefined') { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
+    try { const u = JSON.parse(raw); if (!u.role) u.role = 'admin'; return u; }
+    catch(e) { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
+}
 
-                const response = await fetch(`${API_URL}/analytics?username=${username}`);
-                const result = await response.json();
+function canAccessAnalytics(u) { return u && (u.role === 'admin' || !u.role); }
+function formatTime(s) {
+    if (!s) return '0m';
+    const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+    return h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+}
+function refreshAnalytics() { if (currentUsername) loadAnalytics(currentUsername); }
 
-                if (!result.success) {
-                    if (response.status === 403) {
-                        document.getElementById('accessDenied').classList.remove('hidden');
-                        document.getElementById('loadingState').style.display = 'none';
-                        console.log('❌ Access denied by server');
-                        return;
-                    }
-                    throw new Error(result.error || 'Failed to load analytics');
-                }
+// ── Main loader ───────────────────────────────────────────────────────
+async function loadAnalytics(username) {
+    try {
+        currentUsername = username;
+        document.getElementById('loadingState').style.display     = 'block';
+        document.getElementById('analyticsContent').style.display = 'none';
+        document.getElementById('accessDenied').classList.add('hidden');
 
-                const data = result.data;
+        const [analyticsResp, progressResp, quizzesResp] = await Promise.all([
+            fetch(`${API_URL}/analytics?username=${username}`),
+            fetch(`${API_URL}/progress`),
+            fetch(`${API_URL}/quizzes`),
+        ]);
 
-                // Update key metrics
-                document.getElementById('completionRate').textContent = data.metrics.completionRate.toFixed(1) + '%';
-                document.getElementById('avgTimePerUser').textContent = formatTime(data.metrics.avgTimePerUser);
-                document.getElementById('totalTimeSpent').textContent = formatTime(data.metrics.totalTimeSpent);
-                document.getElementById('engagementScore').textContent = data.metrics.engagementScore.toFixed(1) + '/10';
-
-                // Update trend indicators
-                document.getElementById('completionTrend').textContent = data.metrics.completionRate > 50 ? '+Good' : 'Low';
-                document.getElementById('sessionTrend').textContent = data.metrics.avgTimePerUser > 900 ? 'Good' : 'Low';
-                document.getElementById('engagementTrend').textContent = data.metrics.engagementScore > 7 ? '+High' : 'Medium';
-
-                // Update charts
-                updateActivityChart(data.activity);
-                updateTopicChart(data.topicPopularity);
-                updateProgressChart(data.progressDistribution);
-                updateStreakChart(data.streakDistribution);
-                updateLessonPerformanceTable(data.lessonPerformance);
-
+        const analyticsResult = await analyticsResp.json();
+        if (!analyticsResult.success) {
+            if (analyticsResp.status === 403) {
+                document.getElementById('accessDenied').classList.remove('hidden');
                 document.getElementById('loadingState').style.display = 'none';
-                document.getElementById('analyticsContent').style.display = 'block';
-            } catch (error) {
-                console.error('Error loading analytics:', error);
-                document.getElementById('loadingState').innerHTML = `
-                    <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
-                    <p class="text-gray-600">Failed to load analytics data</p>
-                    <button onclick="loadAnalytics('${username}')" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                        Retry
-                    </button>
-                `;
-            }
-        }
-
-        function updateActivityChart(activityData) {
-            const ctx = document.getElementById("activityChart").getContext("2d");
-            if (activityChart) activityChart.destroy();
-            activityChart = new Chart(ctx, {
-                type: "line",
-                data: {
-                    labels: activityData.labels,
-                    datasets: [{
-                        label: "Active Users",
-                        data: activityData.activeUsers,
-                        borderColor: "#6366f1",
-                        backgroundColor: "rgba(99, 102, 241, 0.1)",
-                        tension: 0.4,
-                        fill: true,
-                        borderWidth: 2
-                    }, {
-                        label: "Lessons Completed",
-                        data: activityData.lessonsCompleted,
-                        borderColor: "#10b981",
-                        backgroundColor: "rgba(16, 185, 129, 0.1)",
-                        tension: 0.4,
-                        fill: true,
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: true, position: "bottom" } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function updateTopicChart(topicPopularity) {
-            const ctx = document.getElementById("topicChart").getContext("2d");
-            if (topicChart) topicChart.destroy();
-            const topics = ['Arrays', 'Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
-            const labels = ['Arrays', 'Queue', 'Stacks', 'Linked Lists', 'Trees', 'Graphs'];
-            const data = topics.map(t => topicPopularity[t] || 0);
-            const colors = ["#6366f1", "#3b82f6", "#10b981", "#a855f7", "#eab308", "#ef4444"];
-            topicChart = new Chart(ctx, {
-                type: "doughnut",
-                data: {
-                    labels: labels,
-                    datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } }
-                }
-            });
-            let legendHtml = '';
-            labels.forEach((label, i) => {
-                legendHtml += `
-                    <div class="flex items-center justify-between text-sm">
-                        <div class="flex items-center space-x-2">
-                            <div class="w-3 h-3 rounded-full" style="background-color: ${colors[i]}"></div>
-                            <span class="text-gray-700">${label}</span>
-                        </div>
-                        <span class="font-semibold text-gray-800">${data[i]}%</span>
-                    </div>
-                `;
-            });
-            document.getElementById('topicLegend').innerHTML = legendHtml;
-        }
-
-        function updateProgressChart(progressData) {
-            const ctx = document.getElementById("progressChart").getContext("2d");
-            if (progressChart) progressChart.destroy();
-            progressChart = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: ["0-20%", "21-40%", "41-60%", "61-80%", "81-100%"],
-                    datasets: [{
-                        label: "Number of Users",
-                        data: [progressData['0-20'], progressData['21-40'], progressData['41-60'], progressData['61-80'], progressData['81-100']],
-                        backgroundColor: ["rgba(239, 68, 68, 0.8)", "rgba(251, 146, 60, 0.8)", "rgba(234, 179, 8, 0.8)", "rgba(34, 197, 94, 0.8)", "rgba(16, 185, 129, 0.8)"],
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function updateStreakChart(streakData) {
-            const ctx = document.getElementById("streakChart").getContext("2d");
-            if (streakChart) streakChart.destroy();
-            streakChart = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: ["1-3 days", "4-7 days", "8-14 days", "15-30 days", "30+ days"],
-                    datasets: [{
-                        label: "Number of Users",
-                        data: [streakData['1-3'], streakData['4-7'], streakData['8-14'], streakData['15-30'], streakData['30+']],
-                        backgroundColor: "rgba(168, 85, 247, 0.8)",
-                        borderRadius: 6,
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: true, color: "rgba(0, 0, 0, 0.05)" } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function updateLessonPerformanceTable(lessonData) {
-            const tbody = document.getElementById('lessonPerformanceTable');
-            if (lessonData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No lesson performance data available</td></tr>';
                 return;
             }
-            let html = '';
-            lessonData.forEach(lesson => {
-                html += `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4"><p class="font-medium text-gray-800">${lesson.name}</p></td>
-                        <td class="px-6 py-4"><span class="px-3 py-1 bg-${lesson.color}-100 text-${lesson.color}-700 rounded-full text-xs font-semibold">${lesson.topic}</span></td>
-                        <td class="px-6 py-4 text-gray-700">${lesson.completions}</td>
-                        <td class="px-6 py-4"><span class="font-semibold text-gray-800">${lesson.avgScore}</span></td>
-                        <td class="px-6 py-4 text-gray-700">${lesson.avgTime}</td>
-                        <td class="px-6 py-4"><div class="flex items-center space-x-1"><i class="fas fa-star text-yellow-400 text-sm"></i><span class="text-gray-800 font-medium">${lesson.rating}</span></div></td>
-                    </tr>
-                `;
-            });
-            tbody.innerHTML = html;
+            throw new Error(analyticsResult.error || 'Failed');
         }
 
-        // Initialize
-        window.addEventListener('load', () => {
-            const user = checkAuth();
-            if (user) {
-                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-                document.getElementById('adminEmailDisplay').textContent = user.email;
+        const progressResult = await progressResp.json();
+        const quizzesResult  = await quizzesResp.json();
+        const allUsers       = progressResult.success ? progressResult.data : [];
+        const allQuizzes     = quizzesResult.success  ? quizzesResult.quizzes : [];
 
-                if (!canAccessAnalytics(user)) {
-                    document.getElementById('accessDenied').classList.remove('hidden');
-                    document.getElementById('loadingState').style.display = 'none';
-                    document.getElementById('refreshBtn').style.display = 'none';
-                    console.log('❌ Access denied: User does not have analytics permissions');
-                } else {
-                    loadAnalytics(user.username);
-                }
+        // Metrics
+        const m = analyticsResult.data.metrics;
+        document.getElementById('completionRate').textContent  = m.completionRate.toFixed(1) + '%';
+        document.getElementById('avgTimePerUser').textContent  = formatTime(m.avgTimePerUser);
+        document.getElementById('totalTimeSpent').textContent  = formatTime(m.totalTimeSpent);
+        document.getElementById('engagementScore').textContent = m.engagementScore.toFixed(1) + '/10';
+        document.getElementById('completionTrend').textContent = m.completionRate > 50  ? '+Good' : 'Low';
+        document.getElementById('sessionTrend').textContent    = m.avgTimePerUser > 900 ? 'Good'  : 'Low';
+        document.getElementById('engagementTrend').textContent = m.engagementScore > 7  ? '+High' : 'Medium';
 
-                if (isInstructor(currentUser)) {
-            const instructorsLink = document.getElementById('instructorsLink');
-            if (instructorsLink) {
-                instructorsLink.style.display = 'none';
-            }
-        }
-            }
+        updateActivityChart(analyticsResult.data.activity);
+        updateTopicChart(analyticsResult.data.topicPopularity);
+        updateProgressChart(analyticsResult.data.progressDistribution);
+        updateStreakChart(analyticsResult.data.streakDistribution);
+        updateLessonPerformanceTable(analyticsResult.data.lessonPerformance);
+
+        renderTopicBreakdown(buildTopicBreakdown(allUsers, allQuizzes));
+
+        document.getElementById('loadingState').style.display     = 'none';
+        document.getElementById('analyticsContent').style.display = 'block';
+
+    } catch(err) {
+        console.error(err);
+        document.getElementById('loadingState').innerHTML = `
+            <i class="fas fa-exclamation-circle text-red-600 text-4xl mb-4"></i>
+            <p class="text-gray-600">Failed to load analytics data</p>
+            <button onclick="loadAnalytics('${username}')" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg">Retry</button>`;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  TOPIC BREAKDOWN — works for every topic automatically
+//
+//  conceptQuizPct  = avg(easy + medium + hard + mixed) / 4
+//                    (each bucket is 0-100; average of 4 = overall%)
+//
+//  arGuidedPct     = lessonsCompleted portion of progressPercentage
+//                    rescaled from 0-50 → 0-100
+//
+//  arChallengePct  = arAssessmentScore field (written by Unity via
+//                    ProgressScoreReporter.SaveARAssessmentScore).
+//                    Proxy: max(hard, mixed) until real value exists.
+//
+//  codePct         = codeScore field (written by Unity via
+//                    ProgressScoreReporter.SaveCodeScore).
+// ═══════════════════════════════════════════════════════════════════
+function buildTopicBreakdown(allUsers, allQuizzes) {
+    const quizCountByTopic = {};
+    allQuizzes.forEach(q => {
+        quizCountByTopic[q.topicName] = (quizCountByTopic[q.topicName] || 0) + 1;
+    });
+
+    const result = {};
+    ALL_TOPICS.forEach(({ key: topic }) => {
+        let conceptSum = 0, guidedSum = 0, challengeSum = 0, codeSum = 0, n = 0;
+
+        allUsers.forEach(user => {
+            if (!user.topics) return;
+            const t = user.topics.find(tp => tp.topicName === topic);
+            if (!t) return;
+            n++;
+
+            // 1. Concept Quiz — average of 4 difficulty scores
+            const ds = t.difficultyScores || { easy:0, medium:0, hard:0, mixed:0 };
+            conceptSum += Math.min(100,
+                ((ds.easy||0) + (ds.medium||0) + (ds.hard||0) + (ds.mixed||0)) / 4
+            );
+
+            // 2. AR Guided — lesson-completed portion (0-50) → (0-100)
+            const lessonPortion = Math.min(50, t.progressPercentage || 0);
+            guidedSum += Math.round((lessonPortion / 50) * 100);
+
+            // 3. AR Challenge — real value if saved, proxy fallback
+            const arScore = (t.arAssessmentScore != null)
+                ? t.arAssessmentScore
+                : Math.max(ds.hard || 0, ds.mixed || 0);
+            challengeSum += Math.min(100, arScore);
+
+            // 4. Code Score
+            codeSum += Math.min(100, t.codeScore || 0);
         });
-    </script>
+
+        result[topic] = {
+            conceptQuizPct : n ? Math.round(conceptSum  / n) : 0,
+            arGuidedPct    : n ? Math.round(guidedSum   / n) : 0,
+            arChallengePct : n ? Math.round(challengeSum/ n) : 0,
+            codePct        : n ? Math.round(codeSum     / n) : 0,
+            userCount      : n,
+            totalQuizzes   : quizCountByTopic[topic] || 0,
+        };
+    });
+
+    return result;
+}
+
+function renderTopicBreakdown(breakdown) {
+    const grid = document.getElementById('topicBreakdownGrid');
+    let html = '';
+
+    ALL_TOPICS.forEach(topic => {
+        const d = breakdown[topic.key] || { conceptQuizPct:0, arGuidedPct:0, arChallengePct:0, codePct:0, userCount:0 };
+        const overall = Math.round((d.conceptQuizPct + d.arGuidedPct + d.arChallengePct + d.codePct) / 4);
+        const badgeBg = overall >= 70 ? '#dcfce7' : overall >= 40 ? '#fef9c3' : '#fee2e2';
+        const badgeFg = overall >= 70 ? '#166534' : overall >= 40 ? '#92400e' : '#991b1b';
+
+        html += `
+        <div class="topic-card ${topic.accentClass}">
+            <div class="px-5 pt-4 pb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fas ${topic.icon} text-sm" style="color:${topic.color}"></i>
+                    <span class="font-semibold text-gray-800 text-sm">${topic.label}</span>
+                    ${d.totalQuizzes > 0 ? `<span class="text-xs text-gray-400">(${d.totalQuizzes} Q)</span>` : ''}
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-gray-400">${d.userCount} user${d.userCount !== 1 ? 's' : ''}</span>
+                    <span class="badge-pct" style="background:${badgeBg};color:${badgeFg}">${overall}%</span>
+                </div>
+            </div>
+            <div class="px-5 pb-5 space-y-3">
+                ${SCORE_ROWS.map(row => {
+                    const pct = d[row.key] || 0;
+                    return `
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
+                                <span>${row.icon}</span>${row.label}
+                            </span>
+                            <span class="text-xs font-bold tabular-nums" style="color:${row.color}">${pct}%</span>
+                        </div>
+                        <div class="score-bar-track" style="background:${row.track}">
+                            <div class="score-bar-fill" style="width:${pct}%;background:${row.color}"></div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>`;
+    });
+
+    grid.innerHTML = html;
+}
+
+// ── Standard charts ───────────────────────────────────────────────────
+function updateActivityChart(d) {
+    const ctx = document.getElementById("activityChart").getContext("2d");
+    if (activityChart) activityChart.destroy();
+    activityChart = new Chart(ctx, {
+        type: "line",
+        data: { labels: d.labels, datasets: [
+            { label: "Active Users",      data: d.activeUsers,      borderColor: "#6366f1", backgroundColor: "rgba(99,102,241,0.1)",  tension: 0.4, fill: true, borderWidth: 2 },
+            { label: "Lessons Completed", data: d.lessonsCompleted, borderColor: "#10b981", backgroundColor: "rgba(16,185,129,0.1)", tension: 0.4, fill: true, borderWidth: 2 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: "bottom" } }, scales: { y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } }, x: { grid: { display: false } } } }
+    });
+}
+
+function updateTopicChart(tp) {
+    const ctx = document.getElementById("topicChart").getContext("2d");
+    if (topicChart) topicChart.destroy();
+    const labels = ALL_TOPICS.map(t => t.label);
+    const data   = ALL_TOPICS.map(t => tp[t.key] || 0);
+    const colors = ALL_TOPICS.map(t => t.color);
+    topicChart = new Chart(ctx, {
+        type: "doughnut",
+        data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } } }
+    });
+    document.getElementById('topicLegend').innerHTML = labels.map((lbl,i) => `
+        <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center space-x-2">
+                <div class="w-3 h-3 rounded-full" style="background:${colors[i]}"></div>
+                <span class="text-gray-700">${lbl}</span>
+            </div>
+            <span class="font-semibold text-gray-800">${data[i]}%</span>
+        </div>`).join('');
+}
+
+function updateProgressChart(d) {
+    const ctx = document.getElementById("progressChart").getContext("2d");
+    if (progressChart) progressChart.destroy();
+    progressChart = new Chart(ctx, {
+        type: "bar",
+        data: { labels: ["0-20%","21-40%","41-60%","61-80%","81-100%"], datasets: [{
+            label: "Users", data: [d['0-20'],d['21-40'],d['41-60'],d['61-80'],d['81-100']],
+            backgroundColor: ["rgba(239,68,68,.8)","rgba(251,146,60,.8)","rgba(234,179,8,.8)","rgba(34,197,94,.8)","rgba(16,185,129,.8)"],
+            borderRadius: 6, borderWidth: 0
+        }]},
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+    });
+}
+
+function updateStreakChart(d) {
+    const ctx = document.getElementById("streakChart").getContext("2d");
+    if (streakChart) streakChart.destroy();
+    streakChart = new Chart(ctx, {
+        type: "bar",
+        data: { labels: ["1-3 days","4-7 days","8-14 days","15-30 days","30+ days"], datasets: [{
+            label: "Users", data: [d['1-3'],d['4-7'],d['8-14'],d['15-30'],d['30+']],
+            backgroundColor: "rgba(168,85,247,.8)", borderRadius: 6, borderWidth: 0
+        }]},
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+    });
+}
+
+function updateLessonPerformanceTable(lessonData) {
+    const tbody = document.getElementById('lessonPerformanceTable');
+    if (!lessonData || !lessonData.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No data available</td></tr>';
+        return;
+    }
+    tbody.innerHTML = lessonData.map(l => `
+        <tr class="hover:bg-gray-50">
+            <td class="px-6 py-4 font-medium text-gray-800">${l.name}</td>
+            <td class="px-6 py-4"><span class="px-3 py-1 bg-${l.color}-100 text-${l.color}-700 rounded-full text-xs font-semibold">${l.topic}</span></td>
+            <td class="px-6 py-4 text-gray-700">${l.completions}</td>
+            <td class="px-6 py-4 font-semibold text-gray-800">${l.avgScore}</td>
+            <td class="px-6 py-4 text-gray-700">${l.avgTime}</td>
+            <td class="px-6 py-4"><i class="fas fa-star text-yellow-400 text-sm mr-1"></i><span class="font-medium text-gray-800">${l.rating}</span></td>
+        </tr>`).join('');
+}
+
+window.addEventListener('load', () => {
+    const user = checkAuth();
+    if (!user) return;
+    document.getElementById('adminUserDisplay').textContent  = user.name || user.username;
+    document.getElementById('adminEmailDisplay').textContent = user.email;
+    if (!canAccessAnalytics(user)) {
+        document.getElementById('accessDenied').classList.remove('hidden');
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('refreshBtn').style.display   = 'none';
+    } else {
+        loadAnalytics(user.username);
+    }
+});
+</script>
 </body>
 </html>

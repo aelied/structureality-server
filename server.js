@@ -306,6 +306,87 @@ app.post('/api/quizzes/bulk', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to bulk import quizzes', details: error.message });
     }
 });
+
+app.post('/api/progress/:username/ar-assessment', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score } = req.body;
+ 
+        if (!topicName || score === undefined) {
+            return res.status(400).json({ success: false, error: 'topicName and score are required' });
+        }
+ 
+        const validTopics = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Trees', 'Graphs'];
+        if (!validTopics.includes(topicName)) {
+            return res.status(400).json({ success: false, error: `Invalid topicName. Must be one of: ${validTopics.join(', ')}` });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        const clampedScore = Math.min(100, Math.max(0, parseFloat(score)));
+        const existing     = user.progress?.[topicName]?.arAssessmentScore || 0;
+        const finalScore   = Math.max(existing, clampedScore); // never go backwards
+ 
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.arAssessmentScore`]: finalScore,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+ 
+        console.log(`🎮 AR Assessment saved: ${username} → ${topicName} = ${finalScore}%`);
+        res.json({ success: true, username, topicName, arAssessmentScore: finalScore });
+ 
+    } catch (error) {
+        console.error('❌ AR assessment save error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+ 
+ 
+// ── 2.  Save Code Lab score (any topic) ──────────────────────────────
+//  POST /api/progress/:username/code-score
+//  Body: { "topicName": "Arrays", "score": 0-100 }
+//
+app.post('/api/progress/:username/code-score', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, score } = req.body;
+ 
+        if (!topicName || score === undefined) {
+            return res.status(400).json({ success: false, error: 'topicName and score are required' });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        const clampedScore = Math.min(100, Math.max(0, parseFloat(score)));
+        const existing     = user.progress?.[topicName]?.codeScore || 0;
+        const finalScore   = Math.max(existing, clampedScore);
+ 
+        await usersCollection.updateOne(
+            { username },
+            {
+                $set: {
+                    [`progress.${topicName}.codeScore`]: finalScore,
+                    [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+                }
+            }
+        );
+ 
+        console.log(`💻 Code Score saved: ${username} → ${topicName} = ${finalScore}%`);
+        res.json({ success: true, username, topicName, codeScore: finalScore });
+ 
+    } catch (error) {
+        console.error('❌ Code score save error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+ 
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
     res.json({
