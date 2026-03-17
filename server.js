@@ -138,14 +138,22 @@ app.get('/api/quizzes/:topicName/mixed', async (req, res) => {
 // Get all quizzes for a topic (no difficulty filter)
 app.get('/api/quizzes/:topicName', async (req, res) => {
     try {
-        const quizzes = await quizzesCollection.find({ topicName: req.params.topicName })
-            .sort({ order: 1 })
+        const { topicName } = req.params;
+        // LESSON_TAG_PATCH: optional ?lesson= query param to fetch a single lesson's quizzes
+        const lessonFilter = req.query.lesson;
+        const query = lessonFilter
+            ? { topicName, lessonTitle: lessonFilter }
+            : { topicName };
+ 
+        const quizzes = await quizzesCollection.find(query)
+            .sort({ lessonTitle: 1, order: 1 })
             .toArray();
-        res.json({ success: true, topicName: req.params.topicName, count: quizzes.length, quizzes });
+        res.json({ success: true, topicName, count: quizzes.length, quizzes });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
     }
 });
+ 
 
 // Get quizzes for a topic filtered by difficulty
 app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
@@ -172,16 +180,18 @@ app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
 app.post('/api/quizzes', async (req, res) => {
     try {
         const quizData = {
-            topicName: req.body.topicName,
-            questionText: req.body.questionText,
-            answerOptions: req.body.answerOptions,
+            topicName:          req.body.topicName,
+            // LESSON_TAG_PATCH: store lessonTitle so Unity groups by lesson
+            lessonTitle:        req.body.lessonTitle   || '',
+            questionText:       req.body.questionText,
+            answerOptions:      req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
-            explanation: req.body.explanation,
-            difficulty: (req.body.difficulty || 'medium').toLowerCase(),
-            order: req.body.order || 1,
-            createdAt: new Date().toISOString()
+            explanation:        req.body.explanation,
+            difficulty:         (req.body.difficulty || 'medium').toLowerCase(),
+            order:              req.body.order || 1,
+            createdAt:          new Date().toISOString()
         };
-
+ 
         if (!quizData.topicName || !quizData.questionText || !quizData.answerOptions ||
             quizData.correctAnswerIndex === undefined || !quizData.explanation) {
             return res.status(400).json({ success: false, error: 'Topic name, question, answers, correct answer index, and explanation are required' });
@@ -195,15 +205,14 @@ app.post('/api/quizzes', async (req, res) => {
         if (quizData.correctAnswerIndex < 0 || quizData.correctAnswerIndex >= quizData.answerOptions.length) {
             return res.status(400).json({ success: false, error: 'Invalid correct answer index' });
         }
-
+ 
         const result = await quizzesCollection.insertOne(quizData);
-        console.log(`✅ New quiz added: ${quizData.questionText.substring(0, 50)}... (${quizData.topicName} - ${quizData.difficulty})`);
+        console.log(`✅ Quiz added: "${quizData.questionText.substring(0,50)}…" | topic=${quizData.topicName} lesson="${quizData.lessonTitle}"`);
         res.status(201).json({ success: true, message: 'Quiz question added successfully', quizId: result.insertedId });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to add quiz question', details: error.message });
     }
 });
-
 // 5. UPDATE quiz
 app.put('/api/quizzes/:quizId', async (req, res) => {
     try {
@@ -280,14 +289,15 @@ app.post('/api/quizzes/bulk', async (req, res) => {
             return res.status(400).json({ success: false, error: 'Quizzes array is required' });
         }
         const quizzesToInsert = quizzes.map(quiz => ({
-            topicName: quiz.topicName,
-            questionText: quiz.questionText,
-            answerOptions: quiz.answerOptions,
+            topicName:          quiz.topicName,
+            lessonTitle:        quiz.lessonTitle   || '',  // LESSON_TAG_PATCH
+            questionText:       quiz.questionText,
+            answerOptions:      quiz.answerOptions,
             correctAnswerIndex: quiz.correctAnswerIndex,
-            explanation: quiz.explanation,
-            difficulty: (quiz.difficulty || 'medium').toLowerCase(),
-            order: quiz.order || 1,
-            createdAt: new Date().toISOString()
+            explanation:        quiz.explanation,
+            difficulty:         (quiz.difficulty || 'medium').toLowerCase(),
+            order:              quiz.order || 1,
+            createdAt:          new Date().toISOString()
         }));
         const result = await quizzesCollection.insertMany(quizzesToInsert);
         console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
@@ -296,7 +306,6 @@ app.post('/api/quizzes/bulk', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to bulk import quizzes', details: error.message });
     }
 });
-
 // ==================== ROOT & HEALTH CHECK ====================
 app.get('/', (req, res) => {
     res.json({
