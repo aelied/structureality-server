@@ -177,11 +177,13 @@ app.get('/api/quizzes/:topicName/:difficulty', async (req, res) => {
 });
 
 // 4. ADD quiz
+// ==================== QUIZ ENDPOINTS - UPDATED WITH CODELAB ====================
+
+// 4. ADD quiz
 app.post('/api/quizzes', async (req, res) => {
     try {
         const quizData = {
             topicName:          req.body.topicName,
-            // LESSON_TAG_PATCH: store lessonTitle so Unity groups by lesson
             lessonTitle:        req.body.lessonTitle   || '',
             questionText:       req.body.questionText,
             answerOptions:      req.body.answerOptions,
@@ -189,6 +191,7 @@ app.post('/api/quizzes', async (req, res) => {
             explanation:        req.body.explanation,
             difficulty:         (req.body.difficulty || 'medium').toLowerCase(),
             order:              req.body.order || 1,
+            codeLab:            req.body.codeLab || { enabled: false },  // ✅ ADD THIS LINE
             createdAt:          new Date().toISOString()
         };
  
@@ -207,10 +210,69 @@ app.post('/api/quizzes', async (req, res) => {
         }
  
         const result = await quizzesCollection.insertOne(quizData);
-        console.log(`✅ Quiz added: "${quizData.questionText.substring(0,50)}…" | topic=${quizData.topicName} lesson="${quizData.lessonTitle}"`);
+        console.log(`✅ Quiz added: "${quizData.questionText.substring(0,50)}…" | topic=${quizData.topicName} lesson="${quizData.lessonTitle}" ${quizData.codeLab.enabled ? '+ CodeLab' : ''}`);
         res.status(201).json({ success: true, message: 'Quiz question added successfully', quizId: result.insertedId });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to add quiz question', details: error.message });
+    }
+});
+
+// 5. UPDATE quiz
+app.put('/api/quizzes/:quizId', async (req, res) => {
+    try {
+        const updateData = {
+            questionText: req.body.questionText,
+            answerOptions: req.body.answerOptions,
+            correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
+            explanation: req.body.explanation,
+            difficulty: req.body.difficulty ? req.body.difficulty.toLowerCase() : undefined,
+            order: req.body.order,
+            codeLab: req.body.codeLab || { enabled: false },  // ✅ ADD THIS LINE
+            updatedAt: new Date().toISOString()
+        };
+        Object.keys(updateData).forEach(key => updateData[key] === undefined && delete updateData[key]);
+
+        if (updateData.difficulty && !['easy', 'medium', 'hard', 'mixed'].includes(updateData.difficulty)) {
+            return res.status(400).json({ success: false, error: 'Difficulty must be easy, medium, hard, or mixed' });
+        }
+
+        const result = await quizzesCollection.updateOne(
+            { _id: new ObjectId(req.params.quizId) },
+            { $set: updateData }
+        );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, error: 'Quiz question not found' });
+        }
+        res.json({ success: true, message: 'Quiz question updated successfully' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to update quiz question', details: error.message });
+    }
+});
+
+// 8. BULK IMPORT
+app.post('/api/quizzes/bulk', async (req, res) => {
+    try {
+        const { quizzes } = req.body;
+        if (!Array.isArray(quizzes) || quizzes.length === 0) {
+            return res.status(400).json({ success: false, error: 'Quizzes array is required' });
+        }
+        const quizzesToInsert = quizzes.map(quiz => ({
+            topicName:          quiz.topicName,
+            lessonTitle:        quiz.lessonTitle   || '',
+            questionText:       quiz.questionText,
+            answerOptions:      quiz.answerOptions,
+            correctAnswerIndex: quiz.correctAnswerIndex,
+            explanation:        quiz.explanation,
+            difficulty:         (quiz.difficulty || 'medium').toLowerCase(),
+            order:              quiz.order || 1,
+            codeLab:            quiz.codeLab || { enabled: false },  // ✅ ADD THIS LINE
+            createdAt:          new Date().toISOString()
+        }));
+        const result = await quizzesCollection.insertMany(quizzesToInsert);
+        console.log(`✅ Bulk imported ${result.insertedCount} quizzes`);
+        res.json({ success: true, message: `${result.insertedCount} quizzes added successfully`, insertedCount: result.insertedCount });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to bulk import quizzes', details: error.message });
     }
 });
 // 5. UPDATE quiz
