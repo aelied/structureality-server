@@ -1982,6 +1982,34 @@ app.post('/api/admin/fix-lesson-difficulty', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+app.post('/api/admin/migrate-code-stats', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+            const updates = {};
+
+            Object.keys(user.progress).forEach(topicName => {
+                if (!user.progress[topicName].codeOperationStats) {
+                    updates[`progress.${topicName}.codeOperationStats`] = {};
+                }
+            });
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                updated++;
+            }
+        }
+
+        res.json({ success: true, message: 'Migration complete', usersUpdated: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.get('/api/progress/:username', async (req, res) => {
     try {
         const user = await usersCollection.findOne({ username: req.params.username });
