@@ -209,6 +209,7 @@ app.post('/api/quizzes', async (req, res) => {
 app.put('/api/quizzes/:quizId', async (req, res) => {
     try {
         const updateData = {
+            lessonTitle: req.body.lessonTitle,
             questionText: req.body.questionText,
             answerOptions: req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
