@@ -1525,6 +1525,108 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
     }
 });
 
+
+app.post('/api/progress/:username/lesson-quiz', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, lessonTitle, score } = req.body;
+ 
+        console.log(`📝 Lesson quiz score: ${username} / ${topicName} / "${lessonTitle}" = ${score}%`);
+ 
+        if (!topicName || !lessonTitle || score === undefined) {
+            return res.status(400).json({ success: false, error: 'topicName, lessonTitle and score are required' });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        // ── Ensure progress sub-document exists ──────────────────
+        if (!user.progress || !user.progress[topicName]) {
+            await usersCollection.updateOne({ username }, {
+                $set: {
+                    [`progress.${topicName}`]: {
+                        tutorialCompleted: false,
+                        puzzleCompleted:   false,
+                        score:             0,
+                        progressPercentage: 0,
+                        lastAccessed:      new Date().toISOString(),
+                        timeSpent:         0,
+                        lessonsCompleted:  0,
+                        lessonQuizScores:  {}
+                    }
+                }
+            });
+        }
+ 
+        // ── Ensure lessonQuizScores map exists ────────────────────
+        if (!user.progress?.[topicName]?.lessonQuizScores) {
+            await usersCollection.updateOne({ username }, {
+                $set: { [`progress.${topicName}.lessonQuizScores`]: {} }
+            });
+        }
+ 
+        // ── Keep highest score per lesson ─────────────────────────
+        const currentScore = user.progress?.[topicName]?.lessonQuizScores?.[lessonTitle] || 0;
+        const newScore     = Math.max(currentScore, Math.min(100, parseInt(score)));
+ 
+        await usersCollection.updateOne({ username }, {
+            $set: {
+                [`progress.${topicName}.lessonQuizScores.${lessonTitle.replace(/\./g, '_')}`]: newScore,
+                [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+            }
+        });
+ 
+        // ── Recalculate progress ──────────────────────────────────
+        const updatedUser  = await usersCollection.findOne({ username });
+        const topicData    = updatedUser.progress[topicName];
+        const quizScores   = topicData.lessonQuizScores || {};
+ 
+        // Total lessons for this topic (respect user difficulty level)
+        const userLevel    = updatedUser.difficultyLevel || 'beginner';
+        const totalLessons = await lessonsCollection.countDocuments({ topicName, difficultyLevel: userLevel });
+ 
+        // Lesson progress (50%)
+        let lessonProgress = 0;
+        if (totalLessons > 0 && topicData.lessonsCompleted > 0) {
+            lessonProgress = topicData.lessonsCompleted >= totalLessons
+                ? 50
+                : Math.min(50, (topicData.lessonsCompleted / totalLessons) * 50);
+        }
+ 
+        // Quiz progress (50%) — each lesson quiz worth an equal share
+        const quizSlotValue  = totalLessons > 0 ? 50 / totalLessons : 0;
+        const completedQuizzes = Object.values(quizScores).filter(s => s > 0).length;
+        const quizProgress   = Math.min(50, completedQuizzes * quizSlotValue);
+ 
+        const totalProgress  = Math.min(100, lessonProgress + quizProgress);
+        const allQuizzesDone = totalLessons > 0 && completedQuizzes >= totalLessons;
+ 
+        await usersCollection.updateOne({ username }, {
+            $set: {
+                [`progress.${topicName}.progressPercentage`]: totalProgress,
+                [`progress.${topicName}.puzzleCompleted`]:    allQuizzesDone
+            }
+        });
+ 
+        console.log(`✅ ${topicName} progress: lessons=${lessonProgress.toFixed(1)}% quizzes=${quizProgress.toFixed(1)}% total=${totalProgress.toFixed(1)}%`);
+ 
+        res.json({
+            success: true,
+            message: 'Lesson quiz score saved',
+            lessonTitle,
+            score:            newScore,
+            totalProgress,
+            completedQuizzes,
+            totalLessons
+        });
+ 
+    } catch (error) {
+        console.error('❌ lesson-quiz error:', error);
+        res.status(500).json({ success: false, error: 'Failed to save quiz score', details: error.message });
+    }
+});
+ 
+
 app.post('/api/admin/fix-tutorial-completed', async (req, res) => {
     try {
         console.log('🔄 Fixing tutorialCompleted for all users...');
@@ -1756,7 +1858,8 @@ app.get('/api/progress/:username', async (req, res) => {
                         medium: 0,
                         hard: 0,
                         mixed: 0
-                    }
+                    },
+                    lessonQuizScores: topic.lessonQuizScores || {} 
                 });
             });
         }
@@ -1798,14 +1901,15 @@ app.get('/api/progress', async (req, res) => {
                 Object.keys(user.progress).forEach(topicName => {
                     const topic = user.progress[topicName];
                     topics.push({
-                        topicName: topicName,
-                        tutorialCompleted: topic.tutorialCompleted || false,
-                        puzzleCompleted: topic.puzzleCompleted || false,
-                        puzzleScore: topic.score || 0,
+                        topicName:         topicName,
+                        tutorialCompleted: topic.tutorialCompleted  || false,
+                        puzzleCompleted:   topic.puzzleCompleted    || false,
+                        puzzleScore:       topic.score              || 0,
                         progressPercentage: topic.progressPercentage || 0,
-                        lastAccessed: topic.lastAccessed || '',
-                        timeSpent: topic.timeSpent || 0,
-                        lessonsCompleted: topic.lessonsCompleted || 0
+                        lastAccessed:      topic.lastAccessed       || '',
+                        timeSpent:         topic.timeSpent          || 0,
+                        lessonsCompleted:  topic.lessonsCompleted   || 0,
+                        lessonQuizScores:  topic.lessonQuizScores   || {}   // ← ADD THIS LINE
                     });
                 });
             }
