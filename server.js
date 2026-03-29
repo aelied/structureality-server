@@ -1752,6 +1752,62 @@ app.post('/api/admin/recalculate-progress', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+app.post('/api/admin/migrate-lesson-progress', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            if (!user.progress) continue;
+
+            const userLevel = user.difficultyLevel || 'beginner';
+            const updates = {};
+
+            for (const topicName of Object.keys(user.progress)) {
+                const topic = user.progress[topicName];
+
+                const totalLessons = await lessonsCollection.countDocuments({
+                    topicName,
+                    difficultyLevel: userLevel
+                });
+
+                // Calculate lessonProgress
+                let lessonProgress = 0;
+                if (totalLessons > 0 && topic.lessonsCompleted > 0) {
+                    lessonProgress = Math.min(100, (topic.lessonsCompleted / totalLessons) * 100);
+                }
+
+                // Calculate quizProgress from existing lessonQuizScores
+                const quizScores = topic.lessonQuizScores || {};
+                const quizScoreValues = Object.values(quizScores).filter(s => s > 0);
+                let quizProgress = 0;
+                if (quizScoreValues.length > 0) {
+                    quizProgress = Math.round(
+                        quizScoreValues.reduce((a, b) => a + b, 0) / quizScoreValues.length
+                    );
+                }
+
+                const progressPercentage = Math.min(100, Math.round((lessonProgress + quizProgress) / 2));
+
+                updates[`progress.${topicName}.lessonProgress`]     = Math.round(lessonProgress);
+                updates[`progress.${topicName}.quizProgress`]       = quizProgress;
+                updates[`progress.${topicName}.progressPercentage`] = progressPercentage;
+                updates[`progress.${topicName}.lessonQuizScores`]   = quizScores;
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                updated++;
+            }
+        }
+
+        res.json({ success: true, message: 'Migration complete', usersUpdated: updated });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 app.post('/api/admin/fix-lesson-difficulty', async (req, res) => {
     try {
         console.log('🔄 Fixing missing difficultyLevel on lessons...');
