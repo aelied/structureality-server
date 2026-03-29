@@ -1578,48 +1578,53 @@ app.post('/api/progress/:username/lesson-quiz', async (req, res) => {
         });
  
         // ── Recalculate progress ──────────────────────────────────
-        const updatedUser  = await usersCollection.findOne({ username });
-        const topicData    = updatedUser.progress[topicName];
-        const quizScores   = topicData.lessonQuizScores || {};
- 
-        // Total lessons for this topic (respect user difficulty level)
-        const userLevel    = updatedUser.difficultyLevel || 'beginner';
-        const totalLessons = await lessonsCollection.countDocuments({ topicName, difficultyLevel: userLevel });
- 
-        // Lesson progress (50%)
-        let lessonProgress = 0;
-        if (totalLessons > 0 && topicData.lessonsCompleted > 0) {
-            lessonProgress = topicData.lessonsCompleted >= totalLessons
-                ? 50
-                : Math.min(50, (topicData.lessonsCompleted / totalLessons) * 50);
-        }
- 
-        // Quiz progress (50%) — each lesson quiz worth an equal share
-        const quizSlotValue  = totalLessons > 0 ? 50 / totalLessons : 0;
-        const completedQuizzes = Object.values(quizScores).filter(s => s > 0).length;
-        const quizProgress   = Math.min(50, completedQuizzes * quizSlotValue);
- 
-        const totalProgress  = Math.min(100, lessonProgress + quizProgress);
-        const allQuizzesDone = totalLessons > 0 && completedQuizzes >= totalLessons;
- 
-        await usersCollection.updateOne({ username }, {
-            $set: {
-                [`progress.${topicName}.progressPercentage`]: totalProgress,
-                [`progress.${topicName}.puzzleCompleted`]:    allQuizzesDone
-            }
-        });
- 
-        console.log(`✅ ${topicName} progress: lessons=${lessonProgress.toFixed(1)}% quizzes=${quizProgress.toFixed(1)}% total=${totalProgress.toFixed(1)}%`);
- 
-        res.json({
-            success: true,
-            message: 'Lesson quiz score saved',
-            lessonTitle,
-            score:            newScore,
-            totalProgress,
-            completedQuizzes,
-            totalLessons
-        });
+      // ── Recalculate progress ──────────────────────────────────────
+const updatedUser  = await usersCollection.findOne({ username });
+const topicData    = updatedUser.progress[topicName];
+const quizScores   = topicData.lessonQuizScores || {};
+
+const userLevel    = updatedUser.difficultyLevel || 'beginner';
+const totalLessons = await lessonsCollection.countDocuments({ topicName, difficultyLevel: userLevel });
+
+// Lesson progress — based on lessons completed
+let lessonProgress = 0;
+if (totalLessons > 0 && topicData.lessonsCompleted > 0) {
+    lessonProgress = Math.min(100, (topicData.lessonsCompleted / totalLessons) * 100);
+}
+
+// Quiz progress — average of all quiz scores taken so far
+const quizScoreValues = Object.values(quizScores).filter(s => s > 0);
+const completedQuizzes = quizScoreValues.length;
+let quizProgress = 0;
+if (completedQuizzes > 0) {
+    const avgScore = quizScoreValues.reduce((a, b) => a + b, 0) / completedQuizzes;
+    quizProgress = Math.round(avgScore);
+}
+
+// Overall progress = average of both
+const totalProgress = Math.min(100, Math.round((lessonProgress + quizProgress) / 2));
+const allQuizzesDone = totalLessons > 0 && completedQuizzes >= totalLessons;
+
+await usersCollection.updateOne({ username }, {
+    $set: {
+        [`progress.${topicName}.lessonProgress`]:   Math.round(lessonProgress),
+        [`progress.${topicName}.quizProgress`]:     quizProgress,
+        [`progress.${topicName}.progressPercentage`]: totalProgress,
+        [`progress.${topicName}.puzzleCompleted`]:  allQuizzesDone
+    }
+});
+
+res.json({
+    success: true,
+    message: 'Lesson quiz score saved',
+    lessonTitle,
+    score:          newScore,
+    lessonProgress: Math.round(lessonProgress),
+    quizProgress,
+    totalProgress,
+    completedQuizzes,
+    totalLessons
+});
  
     } catch (error) {
         console.error('❌ lesson-quiz error:', error);
@@ -1846,21 +1851,18 @@ app.get('/api/progress/:username', async (req, res) => {
             Object.keys(user.progress).forEach(topicName => {
                 const topic = user.progress[topicName];
                 topics.push({
-                    topicName: topicName,
-                    tutorialCompleted: topic.tutorialCompleted || false,
-                    puzzleCompleted: topic.puzzleCompleted || false,
-                    puzzleScore: topic.score || 0,
+                    topicName:          topicName,
+                    tutorialCompleted:  topic.tutorialCompleted || false,
+                    puzzleCompleted:    topic.puzzleCompleted   || false,
+                    puzzleScore:        topic.score             || 0,
                     progressPercentage: topic.progressPercentage || 0,
-                    lastAccessed: topic.lastAccessed || '',
-                    timeSpent: topic.timeSpent || 0,
-                    lessonsCompleted: topic.lessonsCompleted || 0,
-                    difficultyScores: topic.difficultyScores || {
-                        easy: 0,
-                        medium: 0,
-                        hard: 0,
-                        mixed: 0
-                    },
-                    lessonQuizScores: topic.lessonQuizScores || {} 
+                    lessonProgress:     topic.lessonProgress    || 0,   // ← ADD
+                    quizProgress:       topic.quizProgress      || 0,   // ← ADD
+                    lastAccessed:       topic.lastAccessed      || '',
+                    timeSpent:          topic.timeSpent         || 0,
+                    lessonsCompleted:   topic.lessonsCompleted  || 0,
+                    difficultyScores:   topic.difficultyScores  || { easy: 0, medium: 0, hard: 0, mixed: 0 },
+                    lessonQuizScores:   topic.lessonQuizScores  || {}
                 });
             });
         }
@@ -1902,15 +1904,17 @@ app.get('/api/progress', async (req, res) => {
                 Object.keys(user.progress).forEach(topicName => {
                     const topic = user.progress[topicName];
                     topics.push({
-                        topicName:         topicName,
-                        tutorialCompleted: topic.tutorialCompleted  || false,
-                        puzzleCompleted:   topic.puzzleCompleted    || false,
-                        puzzleScore:       topic.score              || 0,
+                        topicName:          topicName,
+                        tutorialCompleted:  topic.tutorialCompleted  || false,
+                        puzzleCompleted:    topic.puzzleCompleted     || false,
+                        puzzleScore:        topic.score              || 0,
                         progressPercentage: topic.progressPercentage || 0,
-                        lastAccessed:      topic.lastAccessed       || '',
-                        timeSpent:         topic.timeSpent          || 0,
-                        lessonsCompleted:  topic.lessonsCompleted   || 0,
-                        lessonQuizScores:  topic.lessonQuizScores   || {}   // ← ADD THIS LINE
+                        lessonProgress:     topic.lessonProgress     || 0,   // ← ADD
+                        quizProgress:       topic.quizProgress       || 0,   // ← ADD
+                        lastAccessed:       topic.lastAccessed       || '',
+                        timeSpent:          topic.timeSpent          || 0,
+                        lessonsCompleted:   topic.lessonsCompleted   || 0,
+                        lessonQuizScores:   topic.lessonQuizScores   || {}
                     });
                 });
             }
