@@ -402,8 +402,26 @@
             return `${diffDays} days ago`;
         }
 
-       
-         
+        // Initialize
+        window.addEventListener('load', () => {
+            const user = checkAuth(); // Executes immediately upon script load
+            if (user) {
+                // Only proceed with setting up the dashboard if checkAuth succeeded
+                document.getElementById('adminName').textContent = user.name || user.username;
+                document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+                document.getElementById('adminEmailDisplay').textContent = user.email;
+
+                // Load dashboard data immediately
+                loadDashboardData();
+
+                if (isInstructor(currentUser)) {
+            const instructorsLink = document.getElementById('instructorsLink');
+            if (instructorsLink) {
+                instructorsLink.style.display = 'none';
+            }
+        }
+            }
+        });
         function checkAuth() {
     const adminUser = localStorage.getItem('adminUser');
 
