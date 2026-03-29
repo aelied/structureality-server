@@ -482,14 +482,15 @@ async function submitAdd(e) {
     const opts = Array.from(document.querySelectorAll('#addAnswers input[type="text"]')).map(i => i.value);
 
     const body = {
-        topicName:          document.getElementById('addTopic').value,
-        lessonTitle,
-        questionText:       document.getElementById('addQuestion').value,
-        answerOptions:      opts,
-        correctAnswerIndex: parseInt(correctRadio.value),
-        explanation:        document.getElementById('addExplanation').value,
-        order:              1,
-    };
+    topicName:          document.getElementById('addTopic').value,
+    lessonTitle,
+    questionText:       document.getElementById('addQuestion').value,
+    answerOptions:      opts,
+    correctAnswerIndex: parseInt(correctRadio.value),
+    explanation:        document.getElementById('addExplanation').value,
+    difficulty:         'mixed',
+    order:              1,
+};
 
     try {
         const res  = await fetch(`${API}/quizzes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
