@@ -1637,6 +1637,94 @@ res.json({
     }
 });
  
+app.post('/api/progress/:username/code-challenge', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, challengeName, passed } = req.body;
+ 
+        console.log(`💻 Code challenge attempt: ${username} / ${topicName} / "${challengeName}" = ${passed ? 'PASS' : 'FAIL'}`);
+ 
+        if (!topicName || !challengeName || passed === undefined) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'topicName, challengeName, and passed (boolean) are required' 
+            });
+        }
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+ 
+        // ── Ensure progress sub-document exists ──────────────────
+        if (!user.progress || !user.progress[topicName]) {
+            await usersCollection.updateOne({ username }, {
+                $set: {
+                    [`progress.${topicName}`]: {
+                        tutorialCompleted: false,
+                        puzzleCompleted:   false,
+                        score:             0,
+                        progressPercentage: 0,
+                        lastAccessed:      new Date().toISOString(),
+                        timeSpent:         0,
+                        lessonsCompleted:  0,
+                        lessonQuizScores:  {},
+                        codeOperationStats: {}
+                    }
+                }
+            });
+        }
+ 
+        // ── Ensure codeOperationStats map exists ────────────────────
+        if (!user.progress?.[topicName]?.codeOperationStats) {
+            await usersCollection.updateOne({ username }, {
+                $set: { [`progress.${topicName}.codeOperationStats`]: {} }
+            });
+        }
+ 
+        // ── Get or initialize stats for this challenge ────────────────
+        const currentStats = user.progress?.[topicName]?.codeOperationStats?.[challengeName] || {
+            successes: 0,
+            failures: 0,
+            lastAttempt: null
+        };
+ 
+        // ── Update counts ────────────────────────────────────────────
+        const newStats = {
+            successes: currentStats.successes + (passed ? 1 : 0),
+            failures:  currentStats.failures + (passed ? 0 : 1),
+            lastAttempt: new Date().toISOString()
+        };
+ 
+        const sanitizedChallengeName = challengeName.replace(/\./g, '_');
+ 
+        await usersCollection.updateOne({ username }, {
+            $set: {
+                [`progress.${topicName}.codeOperationStats.${sanitizedChallengeName}`]: newStats,
+                [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+            }
+        });
+ 
+        console.log(`✅ Code challenge recorded: ${topicName}/${challengeName}`);
+        console.log(`   Successes: ${newStats.successes}, Failures: ${newStats.failures}`);
+ 
+        res.json({
+            success: true,
+            message: 'Code challenge result recorded',
+            topicName,
+            challengeName,
+            passed,
+            stats: newStats
+        });
+ 
+    } catch (error) {
+        console.error('❌ Code challenge error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to record code challenge result', 
+            details: error.message 
+        });
+    }
+});
+ 
 
 app.post('/api/admin/fix-tutorial-completed', async (req, res) => {
     try {
@@ -1923,7 +2011,8 @@ app.get('/api/progress/:username', async (req, res) => {
                     timeSpent:          topic.timeSpent         || 0,
                     lessonsCompleted:   topic.lessonsCompleted  || 0,
                     difficultyScores:   topic.difficultyScores  || { easy: 0, medium: 0, hard: 0, mixed: 0 },
-                    lessonQuizScores:   topic.lessonQuizScores  || {}
+                    lessonQuizScores:   topic.lessonQuizScores  || {},
+                    codeOperationStats: topic.codeOperationStats || {}
                 });
             });
         }
@@ -1975,7 +2064,8 @@ app.get('/api/progress', async (req, res) => {
                         lastAccessed:       topic.lastAccessed       || '',
                         timeSpent:          topic.timeSpent          || 0,
                         lessonsCompleted:   topic.lessonsCompleted   || 0,
-                        lessonQuizScores:   topic.lessonQuizScores   || {}
+                        lessonQuizScores:   topic.lessonQuizScores   || {},
+                        codeOperationStats: topic.codeOperationStats || {}
                     });
                 });
             }
