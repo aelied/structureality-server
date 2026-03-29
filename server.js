@@ -1144,7 +1144,7 @@ app.put('/api/progress/:username', async (req, res) => {
                 console.log(`   Total: ${calculatedProgress.toFixed(1)}%`);
             
                 mergedProgress[topic.topicName] = {
-                    tutorialCompleted: finalTutorialCompleted,   // ✅ FIXED
+                    tutorialCompleted: finalTutorialCompleted,
                     puzzleCompleted: completedDifficulties >= 4,
                     score: Math.max(
                         parseInt(topic.puzzleScore || topic.score || 0),
@@ -1161,7 +1161,12 @@ app.put('/api/progress/:username', async (req, res) => {
                         parseFloat(existingTopic.timeSpent || 0)
                     ),
                     lessonsCompleted: finalLessonsCompleted,
-                    difficultyScores: finalDifficultyScores
+                    difficultyScores: finalDifficultyScores,
+                    // ✅ ADD THESE THREE — preserve fields Unity doesn't send
+                    lessonProgress:     existingTopic.lessonProgress     || 0,
+                    quizProgress:       existingTopic.quizProgress       || 0,
+                    lessonQuizScores:   existingTopic.lessonQuizScores   || {},
+                    codeOperationStats: existingTopic.codeOperationStats || {}
                 };
             });
             
