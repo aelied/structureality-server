@@ -1882,6 +1882,7 @@ app.post('/api/admin/migrate-lesson-progress', async (req, res) => {
                 updates[`progress.${topicName}.quizProgress`]       = quizProgress;
                 updates[`progress.${topicName}.progressPercentage`] = progressPercentage;
                 updates[`progress.${topicName}.lessonQuizScores`]   = quizScores;
+                updates[`progress.${topicName}.codeOperationStats`] = user.progress[topicName].codeOperationStats || {};
             }
 
             if (Object.keys(updates).length > 0) {
