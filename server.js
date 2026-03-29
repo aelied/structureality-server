@@ -1507,7 +1507,12 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
         const totalProgress = Math.min(100, lessonProgress + puzzleProgress);
 
         await usersCollection.updateOne({ username }, {
-            $set: { [`progress.${topicName}.progressPercentage`]: totalProgress }
+            $set: { 
+                [`progress.${topicName}.progressPercentage`]: totalProgress,
+                [`progress.${topicName}.lessonProgress`]: Math.round(
+                    totalLessonCount > 0 ? Math.min(100, (lessonsCount / totalLessonCount) * 100) : 0
+                )
+            }
         });
 
         console.log(`📊 ${topicName}: Lessons ${lessonsCount}/${totalLessonCount} = ${lessonProgress.toFixed(1)}% | Puzzle ${puzzleProgress}% | Total ${totalProgress.toFixed(1)}%`);
