@@ -173,6 +173,7 @@ app.post('/api/quizzes', async (req, res) => {
     try {
         const quizData = {
             topicName: req.body.topicName,
+            lessonTitle: req.body.lessonTitle || '',   // ← ADD THIS
             questionText: req.body.questionText,
             answerOptions: req.body.answerOptions,
             correctAnswerIndex: parseInt(req.body.correctAnswerIndex),
