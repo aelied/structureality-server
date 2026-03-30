@@ -2029,6 +2029,13 @@ app.get('/api/progress/:username', async (req, res) => {
         }
 
         const topics = [];
+        const userLevel = user.difficultyLevel || 'beginner';
+        const allLessons = await lessonsCollection.find({ difficultyLevel: userLevel }).toArray();
+        const lessonCounts = {};
+        allLessons.forEach(lesson => {
+            const t = lesson.topicName.trim();
+            lessonCounts[t] = (lessonCounts[t] || 0) + 1;
+        });
         
         // ✅ FIX: If user has no progress, return EMPTY array (not null)
         if (user.progress && typeof user.progress === 'object') {
@@ -2044,7 +2051,9 @@ app.get('/api/progress/:username', async (req, res) => {
                     quizProgress:       topic.quizProgress      || 0,   // ← ADD
                     lastAccessed:       topic.lastAccessed      || '',
                     timeSpent:          topic.timeSpent         || 0,
-                    lessonsCompleted:   topic.lessonsCompleted  || 0,
+                    lessonsCompleted: lessonCounts[topicName] > 0
+                    ? Math.min(topic.lessonsCompleted || 0, lessonCounts[topicName])
+                    : (topic.lessonsCompleted || 0),
                     difficultyScores:   topic.difficultyScores  || { easy: 0, medium: 0, hard: 0, mixed: 0 },
                     lessonQuizScores:   topic.lessonQuizScores  || {},
                     codeOperationStats: topic.codeOperationStats || {}
