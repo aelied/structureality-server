@@ -93,6 +93,72 @@ app.get('/api/quizzes', async (req, res) => {
     }
 });
 
+// ADD THIS ENDPOINT RIGHT AFTER THE EXISTING `/api/quizzes` ENDPOINT (around line 120)
+
+// GET QUIZ RESULTS FOR A SPECIFIC USER (for analytics modal)
+app.get('/api/quizzes/results/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        
+        const user = await usersCollection.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // Extract quiz results from user progress
+        const results = [];
+        
+        if (user.progress) {
+            Object.entries(user.progress).forEach(([topicName, topicData]) => {
+                // Get lesson quiz scores
+                if (topicData.lessonQuizScores) {
+                    Object.entries(topicData.lessonQuizScores).forEach(([lessonTitle, score]) => {
+                        results.push({
+                            topicName: topicName,
+                            quizName: lessonTitle.replace(/_/g, '.'), // Restore original format
+                            score: score,
+                            maxScore: 100,
+                            timestamp: topicData.lastAccessed || new Date().toISOString()
+                        });
+                    });
+                }
+                
+                // Also include difficulty scores as quiz results
+                if (topicData.difficultyScores) {
+                    Object.entries(topicData.difficultyScores).forEach(([difficulty, score]) => {
+                        if (score > 0) {
+                            results.push({
+                                topicName: topicName,
+                                quizName: `${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Quiz`,
+                                score: score,
+                                maxScore: 100,
+                                timestamp: topicData.lastAccessed || new Date().toISOString()
+                            });
+                        }
+                    });
+                }
+            });
+        }
+
+        console.log(`📊 Fetched ${results.length} quiz results for ${username}`);
+        
+        res.json({
+            success: true,
+            username: username,
+            count: results.length,
+            results: results
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching quiz results:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: 'Failed to fetch quiz results', 
+            details: error.message 
+        });
+    }
+});
+
 // 2. NAMED SPECIFIC ROUTES — must come BEFORE any wildcard /:topicName routes
 // Summary of quiz counts per difficulty for a topic
 app.get('/api/quizzes/:topicName/summary', async (req, res) => {
