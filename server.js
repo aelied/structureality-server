@@ -3249,6 +3249,74 @@ app.get('/api/scenarios/leaderboard', async (req, res) => {
         res.status(500).json({ success: false, error: 'Failed to fetch leaderboard' });
     }
 });
+
+// ==================== SEED DUMMY SCENARIO DATA ====================
+app.post('/api/admin/seed-scenario-data', async (req, res) => {
+    try {
+        console.log('🎮 Seeding dummy scenario data for all users...');
+
+        const scenarioMap = {
+            Arrays:      ['Parking', 'Vending', 'Supermarket'],
+            Queue:       ['CoffeeShop', 'ConveyorBelt', 'Hospital'],
+            Stacks:      ['Plates', 'Warehouse', 'Kitchen'],
+            LinkedLists: ['Train', 'Solar', 'CityMetro'],
+            Trees:       ['FamilyTree', 'FruitTree', 'ForestTrail'],
+            Graphs:      ['CityMap', 'IslandNetwork', 'SpaceStation']
+        };
+
+        const users = await usersCollection.find({}).toArray();
+        let updated = 0;
+
+        for (const user of users) {
+            const updates = {};
+
+            for (const [topicName, scenarios] of Object.entries(scenarioMap)) {
+                // Only seed topics the user has already accessed
+                if (!user.progress || !user.progress[topicName]) continue;
+
+                // Pick a random "favorite" scenario (gets more picks)
+                const favoriteIndex = Math.floor(Math.random() * scenarios.length);
+
+                const scenarioUsage = {};
+                scenarios.forEach((scenarioId, idx) => {
+                    // Favorite gets 3-7 picks, others get 1-3 picks
+                    const isFavorite = idx === favoriteIndex;
+                    const pickCount = isFavorite
+                        ? Math.floor(Math.random() * 5) + 3   // 3-7
+                        : Math.floor(Math.random() * 3) + 1;  // 1-3
+
+                    scenarioUsage[scenarioId] = {
+                        name: scenarioId,
+                        pickCount: pickCount,
+                        lastPicked: new Date(
+                            Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000)
+                        ).toISOString()
+                    };
+                });
+
+                updates[`progress.${topicName}.scenarioUsage`] = scenarioUsage;
+                updates[`progress.${topicName}.lastScenario`]  = scenarios[favoriteIndex];
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await usersCollection.updateOne({ _id: user._id }, { $set: updates });
+                updated++;
+                console.log(`✅ Seeded scenario data for: ${user.username}`);
+            }
+        }
+
+        console.log(`✅ Done! Seeded ${updated} users.`);
+        res.json({
+            success: true,
+            message: `Dummy scenario data seeded for ${updated} users`,
+            usersUpdated: updated
+        });
+
+    } catch (error) {
+        console.error('❌ Seed error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
