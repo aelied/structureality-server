@@ -746,10 +746,10 @@ app.post('/api/users', async (req, res) => {
         }
 
         // Validate difficulty level
-        if (!['beginner', 'intermediate'].includes(userData.difficultyLevel)) {
+        if (!['beginner', 'intermediate', 'advanced'].includes(userData.difficultyLevel)) {
             return res.status(400).json({
                 success: false,
-                error: 'Difficulty level must be "beginner" or "intermediate"'
+                error: 'Difficulty level must be "beginner", "intermediate", or "advanced"'
             });
         }
 
@@ -2211,10 +2211,10 @@ app.post('/api/lessons', async (req, res) => {
         }
 
         // Validate difficulty level
-        if (!['beginner', 'intermediate'].includes(lessonData.difficultyLevel)) {
+        if (!['beginner', 'intermediate', 'advanced'].includes(lessonData.difficultyLevel)) {
             return res.status(400).json({
                 success: false,
-                error: 'Difficulty level must be "beginner" or "intermediate"'
+                error: 'Difficulty level must be "beginner", "intermediate", or "advanced"'
             });
         }
 
@@ -2247,10 +2247,10 @@ app.put('/api/lessons/:lessonId', async (req, res) => {
         };
 
         // Validate difficulty level if provided
-        if (updateData.difficultyLevel && !['beginner', 'intermediate'].includes(updateData.difficultyLevel)) {
+        if (updateData.difficultyLevel && !['beginner', 'intermediate', 'advanced'].includes(updateData.difficultyLevel)) {
             return res.status(400).json({
                 success: false,
-                error: 'Difficulty level must be "beginner" or "intermediate"'
+                error: 'Difficulty level must be "beginner", "intermediate", or "advanced"'
             });
         }
 
