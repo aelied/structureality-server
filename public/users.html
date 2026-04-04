@@ -1,484 +1,539 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Users - StructuReality Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
-    <style>
-        * {
-            font-family: "Poppins", sans-serif;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Users - StructuReality Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: "Poppins", sans-serif; }
+    
+    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
 
-        .stat-card-hover {
-            transition: all 0.3s ease;
-        }
+    .stat-card { animation: slideUp 0.3s ease; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-        .stat-card-hover:hover {
-            transform: translateY(-4px);
-        }
-    </style>
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 999; max-width: 340px; pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
+
+    .loading-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 200;
+      align-items: center; justify-content: center; backdrop-filter: blur(3px);
+    }
+    .loading-overlay.show { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .user-row { transition: background 0.15s; cursor: pointer; }
+    .user-row:hover { background: #f9fafb; }
+    .user-row.expanded { background: #f3f4f6; }
+
+    .progress-bar-track { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
+
+    .ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .ds-badge-Arrays { background: #e0e7ff; color: #4f46e5; }
+    .ds-badge-Stacks { background: #f3e8ff; color: #7c3aed; }
+    .ds-badge-Queue { background: #d1fae5; color: #059669; }
+    .ds-badge-LinkedList { background: #ffe4e6; color: #be185d; }
+    .ds-badge-Graph { background: #cffafe; color: #0369a1; }
+    .ds-badge-Trees { background: #dcfce7; color: #15803d; }
+
+    .quiz-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+    .quiz-excellent { background: #dcfce7; color: #15803d; }
+    .quiz-good { background: #fef3c7; color: #b45309; }
+    .quiz-fair { background: #fed7aa; color: #92400e; }
+    .quiz-poor { background: #fecaca; color: #b91c1c; }
+
+    .ds-icon { font-size: 14px; }
+    
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 300;
+      align-items: center; justify-content: center;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: white; border-radius: 16px; width: 90%;
+      max-width: 900px; max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      animation: modalSlide 0.3s ease;
+    }
+    @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: #6b7280; }
+    .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
+
+    .scenario-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #f3f4f6; border-radius: 6px; font-size: 11px; margin: 2px; }
+  </style>
 </head>
+<body class="bg-gray-100">
 
-<body class="bg-gray-50">
-    <!-- Sidebar -->
-    <aside
-        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-        <div class="p-6 border-b border-indigo-700">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
+  <!-- Sidebar -->
+  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <div class="p-6 border-b border-indigo-700">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+          <i class="fas fa-cube text-indigo-700 text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">StructuReality</h1>
+          <p class="text-xs text-indigo-300">Admin Portal</p>
+        </div>
+      </div>
+    </div>
+    <nav class="mt-6 px-4">
+      <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
+      <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
+      <a href="lessons.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span></a>
+      <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
+      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
+      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
+    </nav>
+  </aside>
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+    <div class="px-8 py-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">Users</h2>
+        <p class="text-sm text-gray-500">Manage and analyze user progress</p>
+      </div>
+      <div class="flex items-center space-x-4">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
+          <span class="text-gray-500">API:</span>
+          <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
+        </div>
+        <button class="p-2 hover:bg-gray-100 rounded-lg transition"><i class="fas fa-bell text-gray-600"></i></button>
+        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
+          <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
+            <i class="fas fa-user text-indigo-700 text-sm"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
+            <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+          </div>
+        </div>
+        <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
+          <i class="fas fa-sign-out-alt text-gray-600"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="ml-64 mt-20 p-8">
+
+    <!-- Search & Filter -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+      <div class="flex items-center gap-3 flex-wrap">
+        <div class="relative flex-1 min-w-64">
+          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <input type="text" id="searchInput" placeholder="Search username, email, or name…"
+            class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            oninput="filterUsers()" />
+        </div>
+        <button onclick="loadUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition text-sm font-semibold">
+          <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
+              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
+              <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Activity</th>
+              <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody" class="divide-y divide-gray-100">
+            <tr class="text-center py-8"><td colspan="5" class="py-8 text-gray-400 text-sm">Loading users…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- User Details Modal -->
+  <div id="userModal" class="modal">
+    <div class="modal-content">
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg" id="modalUserAvatar">?</div>
+          <div>
+            <h2 class="text-xl font-bold text-gray-800" id="modalUserName">—</h2>
+            <p class="text-sm text-gray-500" id="modalUserEmail">—</p>
+          </div>
+        </div>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Modal Tabs -->
+      <div class="flex gap-0 border-b border-gray-100 px-6 bg-gray-50">
+        <button class="tab-btn active" id="tabQuizPerf" onclick="switchModalTab('quiz')">
+          <i class="fas fa-chart-bar mr-2"></i>Quiz Performance
+        </button>
+        <button class="tab-btn" id="tabScenarioUsage" onclick="switchModalTab('scenario')">
+          <i class="fas fa-vr-cardboard mr-2"></i>Scenario Usage
+        </button>
+      </div>
+
+      <!-- Tab Content -->
+      <div class="p-6">
+
+        <!-- QUIZ PERFORMANCE TAB -->
+        <div id="tabQuizContent" class="space-y-6">
+          <p class="text-sm text-gray-500 mb-4">Quiz completion percentage per Data Structure</p>
+          <div id="quizPerformanceList" class="space-y-5">
+            <!-- Quiz stats injected here -->
+          </div>
+        </div>
+
+        <!-- SCENARIO USAGE TAB -->
+        <div id="tabScenarioContent" class="hidden space-y-6">
+          <p class="text-sm text-gray-500 mb-4">Most frequently used scenario per Data Structure</p>
+          <div id="scenarioUsageList" class="space-y-5">
+            <!-- Scenario usage injected here -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+  <script>
+    const SERVER_URL = 'https://structureality-admin.onrender.com';
+
+    const DS_CONFIG = {
+      Arrays:     { label: 'Arrays',       icon: '📊', color: '#6366f1' },
+      Stacks:     { label: 'Stacks',       icon: '📚', color: '#8b5cf6' },
+      Queue:      { label: 'Queue',        icon: '⏳', color: '#10b981' },
+      LinkedList: { label: 'Linked List',  icon: '🔗', color: '#f43f5e' },
+      Graph:      { label: 'Graph',        icon: '🕸️', color: '#0ea5e9' },
+      Trees:      { label: 'Trees',        icon: '🌳', color: '#16a34a' },
+    };
+
+    let allUsers = [];
+    let filteredUsers = [];
+    let currentUserModal = null;
+
+    // ── AUTH ──────────────────────────────────────────────────────────────────
+    function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
+    function checkAuth() {
+      const raw = localStorage.getItem('adminUser');
+      if (!raw || raw === 'undefined') { logout(); return null; }
+      try { return JSON.parse(raw); } catch { logout(); return null; }
+    }
+
+    // ── TOAST ────────────────────────────────────────────────────────────────
+    function showToast(msg, type = 'info') {
+      const colorMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
+      const iconMap  = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+      const t = document.getElementById('toast');
+      t.className = `toast ${colorMap[type]}`;
+      t.innerHTML = `<i class="fas ${iconMap[type]}"></i> ${msg}`;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3500);
+    }
+
+    function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
+
+    // ── LOAD USERS ────────────────────────────────────────────────────────────
+    async function loadUsers() {
+      showLoading(true);
+      try {
+        const res = await fetch(`${SERVER_URL}/api/users`);
+        const data = await res.json();
+        if (data.success) {
+          allUsers = data.users || [];
+          filteredUsers = [...allUsers];
+          renderUsersTable();
+          document.getElementById('apiStatus').textContent = 'connected';
+          document.getElementById('apiStatus').className = 'font-medium text-green-500';
+          showToast('Users loaded successfully', 'success');
+        }
+      } catch (err) {
+        showToast('Failed to load users: ' + err.message, 'error');
+        document.getElementById('apiStatus').textContent = 'offline';
+        document.getElementById('apiStatus').className = 'font-medium text-red-500';
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // ── FILTER USERS ──────────────────────────────────────────────────────────
+    function filterUsers() {
+      const term = document.getElementById('searchInput').value.toLowerCase();
+      filteredUsers = allUsers.filter(u =>
+        (u.username || '').toLowerCase().includes(term) ||
+        (u.email || '').toLowerCase().includes(term) ||
+        (u.name || '').toLowerCase().includes(term)
+      );
+      renderUsersTable();
+    }
+
+    // ── RENDER USERS TABLE ────────────────────────────────────────────────────
+    function renderUsersTable() {
+      const tbody = document.getElementById('usersTableBody');
+      if (!filteredUsers.length) {
+        tbody.innerHTML = '<tr class="text-center"><td colspan="5" class="py-8 text-gray-400 text-sm">No users found</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = filteredUsers.map(user => {
+        const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
+        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+        const sessions = (user.progress && Object.keys(user.progress).length) || 0;
+        return `
+          <tr class="user-row border-b border-gray-100">
+            <td class="px-6 py-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">
+                  ${initials}
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold">StructuReality</h1>
-                    <p class="text-xs text-indigo-300">Admin Portal</p>
+                  <p class="font-semibold text-gray-800 text-sm">${user.name || user.username}</p>
+                  <p class="text-xs text-gray-500">@${user.username}</p>
                 </div>
-            </div>
-        </div>
-
-        <nav class="mt-6 px-4">
-            <a href="index.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
-
-            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-users w-5"></i>
-                <span class="font-medium">Users</span>
-            </a>
-
-            <a href="lessons.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-                <i class="fas fa-book w-5"></i>
-                <span class="font-medium">Lessons</span>
-            </a>
-
-            <a href="quizzes.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-                <i class="fas fa-question-circle w-5"></i>
-                <span class="font-medium">Quizzes</span>
-            </a>
-
-            <a href="analytics.html" id="analyticsLink"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2 transition">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
-            </a>
-
-            <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-vr-cardboard w-5"></i>
-                <span class="font-medium">AR Scenarios</span>
-            </a>
-        </nav>
-    </aside>
-
-    <!-- Navbar -->
-    <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-        <div class="px-8 py-4 flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Users</h2>
-                <p class="text-sm text-gray-500">Manage system users <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span></p>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <i class="fas fa-bell text-gray-600"></i>
-                </button>
-                <div
-                    class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-indigo-700 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-                    </div>
-                </div>
-
-                <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <i class="fas fa-sign-out-alt text-gray-600"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="ml-64 p-8 mt-20">
-        <!-- Search and Filters -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4 flex-1">
-                    <div class="flex-1">
-                        <div class="relative">
-                            <i
-                                class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchInput"
-                                placeholder="Search users by name, email, or username..."
-                                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                onkeyup="filterUsers()" />
-                        </div>
-                    </div>
-
-                    <select id="statusFilter" onchange="filterUsers()"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="idle">Idle</option>
-                        <option value="inactive">Inactive</option>
-                    </select>
-                </div>
-
-                <div class="flex items-center space-x-3 ml-6">
-                    <button onclick="loadUsers()"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-sync mr-2"></i>Refresh
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Users Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-semibold text-gray-800">All Users</h3>
-                    <div class="flex items-center space-x-2 text-sm text-gray-500">
-                        <span id="userCount">Showing 0 users</span>
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-x-auto" id="usersTableContainer">
-                <p class="text-center p-8 text-gray-500">Loading users...</p>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api'
-            : 'https://structureality-admin.onrender.com/api';
-
-        let allUsersData = [];
-        let currentUser = null;
-
-        function logout() {
-            localStorage.removeItem('adminUser');
-            window.location.href = 'login.html';
-        }
-
-        function checkAuth() {
-            const adminUser = localStorage.getItem('adminUser');
-
-            if (!adminUser || adminUser === 'undefined') {
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-
-            try {
-                const user = JSON.parse(adminUser);
-                if (!user.role) {
-                    user.role = 'admin'; // Default to admin for backward compatibility
-                }
-                return user;
-            } catch (e) {
-                console.error("Failed to parse adminUser JSON:", e);
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
-
-        function isInstructor(user) {
-            return user && user.role === 'instructor';
-        }
-
-        function isAdmin(user) {
-            return user && (user.role === 'admin' || !user.role);
-        }
-
-        function canDeleteUsers(user) {
-            return isAdmin(user);
-        }
-
-        function updateNavigationForRole(user) {
-            // Show role indicator
-            const roleIndicator = document.getElementById('roleIndicator');
-            if (roleIndicator) {
-                if (isInstructor(user)) {
-                    roleIndicator.textContent = '👨‍🏫 Instructor View';
-                    roleIndicator.className = 'ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold';
-                } else {
-                    roleIndicator.textContent = '👑 Admin View';
-                    roleIndicator.className = 'ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold';
-                }
-            }
-        }
-
-        async function loadUsers() {
-    try {
-        // ✅ NEW: Check if there's an instructor filter in the URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const instructorFilter = urlParams.get('instructor');
-        
-        let url = `${API_URL}/progress`;
-        
-        if (instructorFilter) {
-            // Load students for specific instructor
-            url = `${API_URL}/instructors/${instructorFilter}/students`;
-            console.log(`📚 Loading students for instructor: ${instructorFilter}`);
-        } else if (currentUser && isInstructor(currentUser)) {
-            // If instructor, only load their students
-            url = `${API_URL}/instructors/${currentUser.username}/students`;
-            console.log(`📚 Loading students for instructor: ${currentUser.username}`);
-        } else {
-            console.log('👑 Admin view - loading all users');
-        }
-        
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.success) {
-            if (instructorFilter || isInstructor(currentUser)) {
-                allUsersData = data.students || [];
-            } else {
-                allUsersData = data.data || [];
-            }
-            
-            displayUsers(allUsersData);
-        }
-    } catch (error) {
-        console.error('Error loading users:', error);
-        document.getElementById('usersTableContainer').innerHTML =
-            '<p class="text-center p-8 text-red-500">Failed to load users</p>';
-    }
-}
-
-function displayUsers(users) {
-    const container = document.getElementById('usersTableContainer');
-    document.getElementById('userCount').textContent = `Showing ${users.length} users`;
-
-    if (users.length === 0) {
-        container.innerHTML = '<p class="text-center p-8 text-gray-500">No users found</p>';
-        return;
-    }
-
-    const showActions = canDeleteUsers(currentUser);
-
-    let html = `
-      <table class="w-full">
-        <thead>
-          <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
-            <th class="px-6 py-4">User</th>
-            <th class="px-6 py-4">Email</th>
-            ${isAdmin(currentUser) ? '<th class="px-6 py-4">Instructor</th>' : ''}
-            <th class="px-6 py-4">Streak</th>
-            <th class="px-6 py-4">Progress</th>
-            <th class="px-6 py-4">Last Active</th>
-            <th class="px-6 py-4">Status</th>
-            ${showActions ? '<th class="px-6 py-4">Actions</th>' : ''}
-          </tr>
-        </thead>
-        <tbody class="text-sm divide-y divide-gray-100">
-    `;
-
-    users.forEach(user => {
-        const completedTopics = user.topics?.filter(t => t.puzzleCompleted).length || 0;
-        const progressPercent = Math.round((completedTopics / 6) * 100);
-
-        let lastActive = 'Never';
-        let status = 'inactive';
-
-        if (user.topics && user.topics.length > 0) {
-            const mostRecent = user.topics.reduce((latest, topic) => {
-                if (!topic.lastAccessed) return latest;
-                const topicDate = new Date(topic.lastAccessed);
-                return !latest || topicDate > latest ? topicDate : latest;
-            }, null);
-
-            if (mostRecent) {
-                lastActive = getTimeAgo(mostRecent);
-                const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
-
-                if (hoursSince < 24) status = 'active';
-                else if (hoursSince < 168) status = 'idle';
-                else status = 'inactive';
-            }
-        }
-
-        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
-        const colors = ['indigo', 'green', 'yellow', 'purple', 'pink', 'blue'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-
-        const statusColors = {
-            active: { bg: 'green', text: 'Active' },
-            idle: { bg: 'yellow', text: 'Idle' },
-            inactive: { bg: 'gray', text: 'Inactive' }
-        };
-
-        html += `
-        <tr class="hover:bg-gray-50">
-          <td class="px-6 py-4">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-${color}-100 rounded-full flex items-center justify-center">
-                <span class="text-${color}-600 font-semibold">${initials}</span>
               </div>
+            </td>
+            <td class="px-6 py-4 text-sm text-gray-600">${user.email}</td>
+            <td class="px-6 py-4 text-sm text-gray-500">${joined}</td>
+            <td class="px-6 py-4 text-center">
+              <div class="flex items-center justify-center gap-3">
+                <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">${sessions} topics</span>
+              </div>
+            </td>
+            <td class="px-6 py-4 text-center">
+              <button onclick="openUserModal('${user.username}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold">
+                View Analytics
+              </button>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    // ── MODAL FUNCTIONS ───────────────────────────────────────────────────────
+    async function openUserModal(username) {
+      showLoading(true);
+      try {
+        const [userRes, quizRes] = await Promise.all([
+          fetch(`${SERVER_URL}/api/users/${username}`),
+          fetch(`${SERVER_URL}/api/quizzes/results/${username}`)
+        ]);
+        const userData = await userRes.json();
+        const quizData = await quizRes.json();
+
+        if (userData.success) {
+          currentUserModal = userData.user;
+          const initials = (userData.user.name || userData.user.username).substring(0, 2).toUpperCase();
+          document.getElementById('modalUserAvatar').textContent = initials;
+          document.getElementById('modalUserName').textContent = userData.user.name || userData.user.username;
+          document.getElementById('modalUserEmail').textContent = userData.user.email;
+
+          renderQuizPerformance(userData.user, quizData.results || []);
+          renderScenarioUsage(userData.user);
+
+          document.getElementById('userModal').classList.add('show');
+        }
+      } catch (err) {
+        showToast('Failed to load user analytics: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('userModal').classList.remove('show');
+      currentUserModal = null;
+    }
+
+    function switchModalTab(tab) {
+      document.getElementById('tabQuizPerf').classList.toggle('active', tab === 'quiz');
+      document.getElementById('tabScenarioUsage').classList.toggle('active', tab === 'scenario');
+      document.getElementById('tabQuizContent').classList.toggle('hidden', tab !== 'quiz');
+      document.getElementById('tabScenarioContent').classList.toggle('hidden', tab !== 'scenario');
+    }
+
+    // ── RENDER QUIZ PERFORMANCE ───────────────────────────────────────────────
+    function renderQuizPerformance(user, quizResults) {
+      const container = document.getElementById('quizPerformanceList');
+      const progress = user.progress || {};
+      const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
+
+      container.innerHTML = ALL_DS.map(ds => {
+        const dsProgress = progress[ds] || {};
+        const topicQuizzes = quizResults.filter(q => q.topicName === ds) || [];
+        
+        let percentage = 0, attempted = 0;
+        if (topicQuizzes.length > 0) {
+          const totalScore = topicQuizzes.reduce((sum, q) => sum + (q.score || 0), 0);
+          const totalMax = topicQuizzes.reduce((sum, q) => sum + (q.maxScore || 100), 0);
+          percentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+          attempted = topicQuizzes.length;
+        }
+
+        const badge = percentage >= 80 ? 'quiz-excellent' : percentage >= 60 ? 'quiz-good' : percentage >= 40 ? 'quiz-fair' : 'quiz-poor';
+        const badgeText = percentage >= 80 ? 'Excellent' : percentage >= 60 ? 'Good' : percentage >= 40 ? 'Fair' : 'Needs Work';
+
+        return `
+          <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">${DS_CONFIG[ds].icon}</span>
+                <div>
+                  <h3 class="font-semibold text-gray-800">${DS_CONFIG[ds].label}</h3>
+                  <p class="text-xs text-gray-500">${attempted} quiz${attempted !== 1 ? 'zes' : ''} attempted</p>
+                </div>
+              </div>
+              <span class="quiz-badge ${badge}">${percentage}% • ${badgeText}</span>
+            </div>
+
+            <div class="space-y-3">
               <div>
-                <p class="font-medium text-gray-800">${user.name || user.username}</p>
-                <p class="text-gray-500 text-xs">@${user.username}</p>
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-medium text-gray-700">Overall Score</span>
+                  <span class="text-xs font-bold" style="color:${DS_CONFIG[ds].color}">${percentage}%</span>
+                </div>
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" style="width:${percentage}%;background:${DS_CONFIG[ds].color}"></div>
+                </div>
+              </div>
+
+              ${topicQuizzes.length > 0 ? `
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                  <p class="text-xs font-semibold text-gray-700 mb-2">Recent Attempts</p>
+                  <div class="space-y-2">
+                    ${topicQuizzes.slice(0, 3).map(q => {
+                      const qScore = Math.round(((q.score || 0) / (q.maxScore || 100)) * 100);
+                      return `
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="text-gray-600">${q.quizName || 'Quiz'}</span>
+                          <div class="flex items-center gap-2">
+                            <span class="font-medium" style="color:${DS_CONFIG[ds].color}">${q.score || 0}/${q.maxScore || 100}</span>
+                            <span class="px-2 py-0.5 rounded text-white text-xs font-semibold" style="background:${qScore >= 80 ? '#10b981' : qScore >= 60 ? '#f59e0b' : '#ef4444'}">${qScore}%</span>
+                          </div>
+                        </div>`;
+                    }).join('')}
+                  </div>
+                </div>
+              ` : '<p class="text-xs text-gray-400 mt-2">No quiz attempts yet</p>'}
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // ── RENDER SCENARIO USAGE ─────────────────────────────────────────────────
+    function renderScenarioUsage(user) {
+      const container = document.getElementById('scenarioUsageList');
+      const progress = user.progress || {};
+      const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
+
+      container.innerHTML = ALL_DS.map(ds => {
+        const dsProgress = progress[ds] || {};
+        const scenarioUsage = dsProgress.scenarioUsage || {};
+
+        // Find most used scenario
+        let mostUsedScenario = null, maxPicks = 0;
+        Object.entries(scenarioUsage).forEach(([id, info]) => {
+          if (info.pickCount > maxPicks) {
+            maxPicks = info.pickCount;
+            mostUsedScenario = { id, ...info };
+          }
+        });
+
+        const totalPicks = Object.values(scenarioUsage).reduce((sum, s) => sum + (s.pickCount || 0), 0);
+
+        return `
+          <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">${DS_CONFIG[ds].icon}</span>
+                <div>
+                  <h3 class="font-semibold text-gray-800">${DS_CONFIG[ds].label}</h3>
+                  <p class="text-xs text-gray-500">${totalPicks} total scenario${totalPicks !== 1 ? 's' : ''} played</p>
+                </div>
               </div>
             </div>
-          </td>
-          <td class="px-6 py-4 text-gray-600">${user.email || 'N/A'}</td>
-          ${isAdmin(currentUser) ? `
-          <td class="px-6 py-4">
-            <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-              ${user.instructor || 'None'}
-            </span>
-          </td>
-          ` : ''}
-          <td class="px-6 py-4">
-            <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-semibold">
-              🔥 ${user.streak || 0} days
-            </span>
-          </td>
-          <td class="px-6 py-4">
-            <div class="flex items-center space-x-2">
-              <div class="flex-1 bg-gray-200 rounded-full h-2 max-w-[100px]">
-                <div class="bg-indigo-600 h-2 rounded-full" style="width: ${progressPercent}%"></div>
-              </div>
-              <span class="text-xs text-gray-600">${progressPercent}%</span>
+
+            <div class="space-y-3">
+              ${mostUsedScenario ? `
+                <div class="bg-white rounded-lg p-4 border-2" style="border-color:${DS_CONFIG[ds].color}20">
+                  <p class="text-xs font-semibold text-gray-600 mb-2">⭐ Most Used Scenario</p>
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-semibold text-gray-800">${mostUsedScenario.name || mostUsedScenario.id}</p>
+                      <p class="text-xs text-gray-500 mt-1">${mostUsedScenario.pickCount} times</p>
+                    </div>
+                    <div style="width:40px;height:40px;background:${DS_CONFIG[ds].color}20;border-radius:10px;display:flex;align-items:center;justify-center;color:${DS_CONFIG[ds].color};font-weight:bold">
+                      ${Math.round((mostUsedScenario.pickCount / totalPicks) * 100)}%
+                    </div>
+                  </div>
+                </div>
+              ` : '<p class="text-xs text-gray-400">No scenario usage data yet</p>'}
+
+              ${totalPicks > 0 ? `
+                <div>
+                  <p class="text-xs font-semibold text-gray-700 mb-3">All Scenarios</p>
+                  <div class="space-y-2">
+                    ${Object.entries(scenarioUsage).sort((a, b) => b[1].pickCount - a[1].pickCount).map(([id, info]) => {
+                      const pct = Math.round((info.pickCount / totalPicks) * 100);
+                      return `
+                        <div>
+                          <div class="flex items-center justify-between mb-1">
+                            <span class="text-xs text-gray-700 font-medium">${info.name || id}</span>
+                            <span class="text-xs font-bold" style="color:${DS_CONFIG[ds].color}">${info.pickCount}×</span>
+                          </div>
+                          <div class="progress-bar-track">
+                            <div class="progress-bar-fill" style="width:${pct}%;background:${DS_CONFIG[ds].color}"></div>
+                          </div>
+                        </div>`;
+                    }).join('')}
+                  </div>
+                </div>
+              ` : ''}
             </div>
-          </td>
-          <td class="px-6 py-4 text-gray-600">${lastActive}</td>
-          <td class="px-6 py-4">
-            <span class="px-3 py-1 bg-${statusColors[status].bg}-100 text-${statusColors[status].bg}-700 rounded-full text-xs font-semibold">
-              ${statusColors[status].text}
-            </span>
-          </td>
-          ${showActions ? `
-          <td class="px-6 py-4">
-            <div class="flex items-center space-x-2">
-              <button onclick="viewUser('${user.username}')" class="text-indigo-600 hover:text-indigo-700" title="View Details">
-                <i class="fas fa-eye"></i>
-              </button>
-              <button onclick="deleteUser('${user.username}')" class="text-red-600 hover:text-red-700" title="Delete User">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
-          </td>
-          ` : ''}
-        </tr>
-      `;
+          </div>`;
+      }).join('');
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────────────────
+    window.addEventListener('load', async () => {
+      const user = checkAuth();
+      if (user) {
+        document.getElementById('adminUserDisplay').textContent = user.name || user.username;
+        document.getElementById('adminEmailDisplay').textContent = user.email || '';
+      }
+      await loadUsers();
     });
 
-    html += '</tbody></table>';
-    container.innerHTML = html;
-}
-
-        function filterUsers() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-
-            let filtered = allUsersData.filter(user => {
-                const matchesSearch =
-                    (user.name || '').toLowerCase().includes(searchTerm) ||
-                    (user.username || '').toLowerCase().includes(searchTerm) ||
-                    (user.email || '').toLowerCase().includes(searchTerm);
-
-                if (!matchesSearch) return false;
-
-                if (statusFilter === 'all') return true;
-
-                if (!user.topics || user.topics.length === 0) {
-                    return statusFilter === 'inactive';
-                }
-
-                const mostRecent = user.topics.reduce((latest, topic) => {
-                    if (!topic.lastAccessed) return latest;
-                    const topicDate = new Date(topic.lastAccessed);
-                    return !latest || topicDate > latest ? topicDate : latest;
-                }, null);
-
-                if (!mostRecent) return statusFilter === 'inactive';
-
-                const hoursSince = (new Date() - mostRecent) / (1000 * 60 * 60);
-
-                if (statusFilter === 'active') return hoursSince < 24;
-                if (statusFilter === 'idle') return hoursSince >= 24 && hoursSince < 168;
-                if (statusFilter === 'inactive') return hoursSince >= 168;
-
-                return true;
-            });
-
-            displayUsers(filtered);
-        }
-
-        function viewUser(username) {
-            alert(`View details for user: ${username}\n\nThis would show detailed user information and progress.`);
-        }
-
-        async function deleteUser(username) {
-            if (!canDeleteUsers(currentUser)) {
-                alert('You do not have permission to delete users.');
-                return;
-            }
-
-            if (!confirm(`Are you sure you want to delete user "${username}"?`)) return;
-
-            try {
-                const response = await fetch(`${API_URL}/users/${username}`, {
-                    method: 'DELETE'
-                });
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('User deleted successfully');
-                    loadUsers();
-                } else {
-                    alert('Failed to delete user: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error deleting user: ' + error.message);
-            }
-        }
-
-        function getTimeAgo(date) {
-            const now = new Date();
-            const diffMs = now - date;
-            const diffMins = Math.floor(diffMs / 60000);
-            const diffHours = Math.floor(diffMs / 3600000);
-            const diffDays = Math.floor(diffMs / 86400000);
-
-            if (diffMins < 60) return `${diffMins} min ago`;
-            if (diffHours < 24) return `${diffHours} hours ago`;
-            if (diffDays === 1) return '1 day ago';
-            return `${diffDays} days ago`;
-        }
-
-        // Initialize
-        window.addEventListener('load', () => {
-            currentUser = checkAuth();
-            if (currentUser) {
-                document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
-                document.getElementById('adminEmailDisplay').textContent = currentUser.email;
-                updateNavigationForRole(currentUser);
-                loadUsers();
-
-                if (isInstructor(currentUser)) {
-            const instructorsLink = document.getElementById('instructorsLink');
-            if (instructorsLink) {
-                instructorsLink.style.display = 'none';
-            }
-        }
-            }
-        });
-    </script>
+    // Close modal on outside click
+    document.getElementById('userModal').addEventListener('click', (e) => {
+      if (e.target.id === 'userModal') closeModal();
+    });
+  </script>
 </body>
-
 </html>

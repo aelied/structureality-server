@@ -394,6 +394,31 @@
     let usageChart = null;
     let selectedUsageTopic = null;
 
+    // ── FETCH REAL USAGE DATA ─────────────────────────────────────────────────
+    let realUsageData = null;
+    
+    async function fetchRealUsageData() {
+      try {
+        const res = await fetch(`${SERVER_URL}/api/scenarios/usage`);
+        const data = await res.json();
+        if (data.success) {
+          realUsageData = data.globalUsage;
+          console.log('✅ Real usage data loaded');
+          return data.globalUsage;
+        }
+      } catch (err) {
+        console.warn('Could not fetch real usage data:', err);
+      }
+      return null;
+    }
+
+    function getScenarioStats(ds, scenarioId) {
+      if (!realUsageData || !realUsageData[ds] || !realUsageData[ds][scenarioId]) {
+        return null;
+      }
+      return realUsageData[ds][scenarioId];
+    }
+
     // ── MAIN TAB SWITCHING ────────────────────────────────────────────────────
     function switchMainTab(tab) {
       document.getElementById('btnConfig').classList.toggle('active', tab === 'config');
@@ -520,7 +545,10 @@
         const isActive   = activeIds.includes(sc.id);
         const pos        = activeIds.indexOf(sc.id) + 1;
         const maxReached = activeIds.length >= MAX_ACTIVE && !isActive;
-        const total      = sc.sessions.reduce((a, b) => a + b, 0);
+        
+        // ✅ USE REAL DATA if available, fall back to hardcoded
+        const realStats = realUsageData ? getScenarioStats(ds, sc.id) : null;
+        const total     = realStats && realStats.totalPicks ? realStats.totalPicks : sc.sessions.reduce((a, b) => a + b, 0);
         const sparkId    = `spark_${ds}_${sc.id}`;
 
         const card = document.createElement('div');
@@ -571,7 +599,7 @@
           <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
             <div class="text-center">
               <p class="text-lg font-bold text-gray-800">${total}</p>
-              <p class="text-xs text-gray-400">Sessions</p>
+              <p class="text-xs text-gray-400">${realStats ? 'Real Picks' : 'Sessions'}</p>
             </div>
             <svg class="sparkline flex-1 mx-3" id="${sparkId}" height="28" viewBox="0 0 100 28" preserveAspectRatio="none"></svg>
             <div class="text-center">
@@ -985,6 +1013,9 @@
       }
 
       document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
+
+      // ✅ Load real usage data first
+      await fetchRealUsageData();
 
       showLoading(true);
       try {
