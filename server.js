@@ -3011,6 +3011,244 @@ app.post('/api/quizzes/bulk', async (req, res) => {
     }
 });
 
+// ==================== SCENARIO TRACKING ENDPOINTS ====================
+// ADD THESE ROUTES TO server.js (before the START SERVER section)
+
+// 1. RECORD a scenario pick (called by Unity when user taps a scenario button)
+app.post('/api/progress/:username/scenario', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { topicName, scenarioId, scenarioName } = req.body;
+
+        if (!topicName || !scenarioId) {
+            return res.status(400).json({
+                success: false,
+                error: 'topicName and scenarioId are required'
+            });
+        }
+
+        const user = await usersCollection.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // Ensure progress sub-document exists
+        if (!user.progress || !user.progress[topicName]) {
+            await usersCollection.updateOne({ username }, {
+                $set: {
+                    [`progress.${topicName}`]: {
+                        tutorialCompleted: false,
+                        puzzleCompleted: false,
+                        score: 0,
+                        progressPercentage: 0,
+                        lastAccessed: new Date().toISOString(),
+                        timeSpent: 0,
+                        lessonsCompleted: 0,
+                        scenarioUsage: {}
+                    }
+                }
+            });
+        }
+
+        // Ensure scenarioUsage map exists
+        if (!user.progress?.[topicName]?.scenarioUsage) {
+            await usersCollection.updateOne({ username }, {
+                $set: { [`progress.${topicName}.scenarioUsage`]: {} }
+            });
+        }
+
+        // Re-fetch to get latest state
+        const freshUser = await usersCollection.findOne({ username });
+        const currentUsage = freshUser.progress?.[topicName]?.scenarioUsage?.[scenarioId] || {
+            name: scenarioName || scenarioId,
+            pickCount: 0,
+            lastPicked: null
+        };
+
+        const newUsage = {
+            name: scenarioName || scenarioId,
+            pickCount: currentUsage.pickCount + 1,
+            lastPicked: new Date().toISOString()
+        };
+
+        await usersCollection.updateOne({ username }, {
+            $set: {
+                [`progress.${topicName}.scenarioUsage.${scenarioId}`]: newUsage,
+                [`progress.${topicName}.lastScenario`]: scenarioId,
+                [`progress.${topicName}.lastAccessed`]: new Date().toISOString()
+            }
+        });
+
+        console.log(`🎮 Scenario picked: ${username} / ${topicName} / ${scenarioId} (total: ${newUsage.pickCount}x)`);
+
+        res.json({
+            success: true,
+            message: 'Scenario pick recorded',
+            topicName,
+            scenarioId,
+            pickCount: newUsage.pickCount
+        });
+
+    } catch (error) {
+        console.error('❌ Error recording scenario pick:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to record scenario pick',
+            details: error.message
+        });
+    }
+});
+
+// 2. GET scenario usage stats for ALL users (global analytics)
+app.get('/api/scenarios/usage', async (req, res) => {
+    try {
+        const users = await usersCollection.find({}).toArray();
+
+        // Global: { topicName -> { scenarioId -> { name, totalPicks, uniqueUsers } } }
+        const global = {};
+
+        users.forEach(user => {
+            if (!user.progress) return;
+
+            Object.entries(user.progress).forEach(([topicName, topicData]) => {
+                if (!topicData.scenarioUsage) return;
+
+                if (!global[topicName]) global[topicName] = {};
+
+                Object.entries(topicData.scenarioUsage).forEach(([scenarioId, usage]) => {
+                    if (!global[topicName][scenarioId]) {
+                        global[topicName][scenarioId] = {
+                            name: usage.name || scenarioId,
+                            totalPicks: 0,
+                            uniqueUsers: 0
+                        };
+                    }
+                    global[topicName][scenarioId].totalPicks += usage.pickCount || 0;
+                    if ((usage.pickCount || 0) > 0) {
+                        global[topicName][scenarioId].uniqueUsers++;
+                    }
+                });
+            });
+        });
+
+        // Add rank + percentage per topic
+        Object.keys(global).forEach(topicName => {
+            const scenarios = global[topicName];
+            const totalPicks = Object.values(scenarios).reduce((sum, s) => sum + s.totalPicks, 0);
+            const sorted = Object.entries(scenarios).sort((a, b) => b[1].totalPicks - a[1].totalPicks);
+
+            sorted.forEach(([id, data], idx) => {
+                data.rank = idx + 1;
+                data.percentage = totalPicks > 0 ? Math.round((data.totalPicks / totalPicks) * 100) : 0;
+            });
+        });
+
+        res.json({
+            success: true,
+            totalUsers: users.length,
+            globalUsage: global
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching scenario usage:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch scenario usage' });
+    }
+});
+
+// 3. GET scenario usage for ONE individual user
+app.get('/api/scenarios/usage/:username', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const user = await usersCollection.findOne({ username });
+
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        const userScenarios = {};
+
+        if (user.progress) {
+            Object.entries(user.progress).forEach(([topicName, topicData]) => {
+                if (!topicData.scenarioUsage) return;
+
+                userScenarios[topicName] = {
+                    lastScenario: topicData.lastScenario || null,
+                    scenarios: {}
+                };
+
+                const sorted = Object.entries(topicData.scenarioUsage)
+                    .sort((a, b) => (b[1].pickCount || 0) - (a[1].pickCount || 0));
+
+                const totalPicks = sorted.reduce((sum, [, s]) => sum + (s.pickCount || 0), 0);
+
+                sorted.forEach(([scenarioId, usage], idx) => {
+                    userScenarios[topicName].scenarios[scenarioId] = {
+                        name: usage.name || scenarioId,
+                        pickCount: usage.pickCount || 0,
+                        lastPicked: usage.lastPicked || null,
+                        rank: idx + 1,
+                        percentage: totalPicks > 0 ? Math.round(((usage.pickCount || 0) / totalPicks) * 100) : 0
+                    };
+                });
+            });
+        }
+
+        res.json({
+            success: true,
+            username,
+            name: user.name || username,
+            scenarioUsage: userScenarios
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching user scenario usage:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch user scenario usage' });
+    }
+});
+
+// 4. GET top N most popular scenarios across all users (leaderboard)
+app.get('/api/scenarios/leaderboard', async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const users = await usersCollection.find({}).toArray();
+
+        const flat = []; // { topicName, scenarioId, name, totalPicks, uniqueUsers }
+
+        const map = {};
+        users.forEach(user => {
+            if (!user.progress) return;
+            Object.entries(user.progress).forEach(([topicName, topicData]) => {
+                if (!topicData.scenarioUsage) return;
+                Object.entries(topicData.scenarioUsage).forEach(([scenarioId, usage]) => {
+                    const key = `${topicName}::${scenarioId}`;
+                    if (!map[key]) {
+                        map[key] = {
+                            topicName,
+                            scenarioId,
+                            name: usage.name || scenarioId,
+                            totalPicks: 0,
+                            uniqueUsers: 0
+                        };
+                    }
+                    map[key].totalPicks += usage.pickCount || 0;
+                    if ((usage.pickCount || 0) > 0) map[key].uniqueUsers++;
+                });
+            });
+        });
+
+        const leaderboard = Object.values(map)
+            .sort((a, b) => b.totalPicks - a.totalPicks)
+            .slice(0, limit);
+
+        res.json({
+            success: true,
+            leaderboard
+        });
+
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch leaderboard' });
+    }
+});
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {

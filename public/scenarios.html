@@ -21,25 +21,17 @@
     .scenario-card.active-Trees       { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a, 0 8px 24px rgba(22,163,74,0.15); }
 
     .ds-tab {
-      position: relative;
-      padding: 10px 24px;
-      border-radius: 10px 10px 0 0;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: 2px solid transparent;
-      border-bottom: none;
-      background: #f3f4f6;
-      color: #6b7280;
+      position: relative; padding: 10px 24px; border-radius: 10px 10px 0 0;
+      font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
+      border: 2px solid transparent; border-bottom: none; background: #f3f4f6; color: #6b7280;
     }
     .ds-tab.active-tab { background: white; border-color: #e5e7eb; border-bottom-color: white; z-index: 2; }
-    .ds-tab.active-tab.tab-Arrays      { color: #4f46e5; }
-    .ds-tab.active-tab.tab-Stacks      { color: #7c3aed; }
-    .ds-tab.active-tab.tab-Queue       { color: #059669; }
-    .ds-tab.active-tab.tab-LinkedList  { color: #e11d48; }
-    .ds-tab.active-tab.tab-Graph       { color: #0284c7; }
-    .ds-tab.active-tab.tab-Trees       { color: #15803d; }
+    .ds-tab.active-tab.tab-Arrays { color: #4f46e5; }
+    .ds-tab.active-tab.tab-Stacks { color: #7c3aed; }
+    .ds-tab.active-tab.tab-Queue  { color: #059669; }
+    .ds-tab.active-tab.tab-LinkedList { color: #e11d48; }
+    .ds-tab.active-tab.tab-Graph  { color: #0284c7; }
+    .ds-tab.active-tab.tab-Trees  { color: #15803d; }
     .ds-tab:hover:not(.active-tab) { background: #e9eaff; color: #4f46e5; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
@@ -87,6 +79,30 @@
     .diff-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.3px; }
     .diff-beginner     { background: #dcfce7; color: #15803d; }
     .diff-intermediate { background: #fef3c7; color: #b45309; }
+
+    /* ── Usage Analytics Styles ── */
+    .usage-section { animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .usage-bar-track { height: 8px; background: #f3f4f6; border-radius: 99px; overflow: hidden; }
+    .usage-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+
+    .rank-badge { width: 24px; height: 24px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    .rank-1 { background: #fef3c7; color: #92400e; }
+    .rank-2 { background: #f3f4f6; color: #374151; }
+    .rank-3 { background: #fce7f3; color: #9d174d; }
+
+    .user-search-result { cursor: pointer; transition: background 0.15s; }
+    .user-search-result:hover { background: #f5f3ff; }
+
+    .main-tab-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+    .main-tab-btn.active { background: #4f46e5; color: white; }
+    .main-tab-btn:not(.active) { background: #f3f4f6; color: #6b7280; }
+    .main-tab-btn:not(.active):hover { background: #e9eaff; color: #4f46e5; }
+
+    .usage-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300; align-items: center; justify-content: center; }
+    .usage-modal.show { display: flex; }
+    .usage-modal-box { background: white; border-radius: 16px; width: 90%; max-width: 560px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -105,12 +121,12 @@
       </div>
     </div>
     <nav class="mt-6 px-4">
-      <a href="index.html"       class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-      <a href="users.html"       class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-      <a href="lessons.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span></a>
-      <a href="quizzes.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-      <a href="analytics.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-      <a href="scenarios.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
+      <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
+      <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
+      <a href="lessons.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span></a>
+      <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
+      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
+      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
     </nav>
   </aside>
 
@@ -119,16 +135,14 @@
     <div class="px-8 py-4 flex items-center justify-between">
       <div>
         <h2 class="text-2xl font-bold text-gray-800">AR Scenarios</h2>
-        <p class="text-sm text-gray-500">Configure which scenarios appear in the AR app per data structure</p>
+        <p class="text-sm text-gray-500">Configure scenarios &amp; track usage</p>
       </div>
       <div class="flex items-center space-x-4">
         <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
           <span class="text-gray-500">API:</span>
           <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
         </div>
-        <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-          <i class="fas fa-bell text-gray-600"></i>
-        </button>
+        <button class="p-2 hover:bg-gray-100 rounded-lg transition"><i class="fas fa-bell text-gray-600"></i></button>
         <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
           <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
             <i class="fas fa-user text-indigo-700 text-sm"></i>
@@ -148,271 +162,161 @@
   <!-- Main Content -->
   <main class="ml-64 mt-20 p-8">
 
-    <!-- DS Tab Bar -->
-    <div class="tab-bar mb-0">
-      <button class="ds-tab tab-Arrays active-tab" id="tab-Arrays"      onclick="switchTab('Arrays')">
-        <i class="fas fa-list-ol mr-2 text-sm"></i>Arrays
+    <!-- ── TOP NAV: Config vs Analytics ── -->
+    <div class="flex items-center gap-3 mb-6">
+      <button class="main-tab-btn active" id="btnConfig" onclick="switchMainTab('config')">
+        <i class="fas fa-sliders-h mr-2"></i>Scenario Config
       </button>
-      <button class="ds-tab tab-Stacks"            id="tab-Stacks"      onclick="switchTab('Stacks')">
-        <i class="fas fa-layer-group mr-2 text-sm"></i>Stacks
-      </button>
-      <button class="ds-tab tab-Queue"             id="tab-Queue"       onclick="switchTab('Queue')">
-        <i class="fas fa-stream mr-2 text-sm"></i>Queue
-      </button>
-      <button class="ds-tab tab-LinkedList"        id="tab-LinkedList"  onclick="switchTab('LinkedList')">
-        <i class="fas fa-link mr-2 text-sm"></i>Linked List
-      </button>
-      <button class="ds-tab tab-Graph"             id="tab-Graph"       onclick="switchTab('Graph')">
-        <i class="fas fa-project-diagram mr-2 text-sm"></i>Graph
-      </button>
-      <button class="ds-tab tab-Trees"             id="tab-Trees"       onclick="switchTab('Trees')">
-        <i class="fas fa-tree mr-2 text-sm"></i>Trees
+      <button class="main-tab-btn" id="btnUsage" onclick="switchMainTab('usage')">
+        <i class="fas fa-chart-bar mr-2"></i>Usage Analytics
       </button>
     </div>
 
-    <!-- ══════════════ ARRAYS TAB ══════════════ -->
-    <div class="tab-panel active bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Arrays">
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-indigo-500"></i>
-          <span class="font-medium text-gray-700">Arrays Screen Preview</span>
-        </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="arrPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="arrPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="arrActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="arrStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="arrScenariosGrid"></div>
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Arrays Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Arrays launch and reset.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('Arrays')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-indigo-400 hover:text-indigo-600 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="arrPushBtn" onclick="pushConfig('Arrays')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Arrays
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- ════════════════════════════════════════════════
+         SECTION A: SCENARIO CONFIG (existing UI)
+    ════════════════════════════════════════════════ -->
+    <div id="sectionConfig">
 
-    <!-- ══════════════ STACKS TAB ══════════════ -->
-    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Stacks">
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-purple-500"></i>
-          <span class="font-medium text-gray-700">Stacks Screen Preview</span>
-        </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="stkPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="stkPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="stkActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="stkStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-        </div>
+      <!-- DS Tab Bar -->
+      <div class="tab-bar mb-0">
+        <button class="ds-tab tab-Arrays active-tab" id="tab-Arrays"     onclick="switchTab('Arrays')"><i class="fas fa-list-ol mr-2 text-sm"></i>Arrays</button>
+        <button class="ds-tab tab-Stacks"            id="tab-Stacks"     onclick="switchTab('Stacks')"><i class="fas fa-layer-group mr-2 text-sm"></i>Stacks</button>
+        <button class="ds-tab tab-Queue"             id="tab-Queue"      onclick="switchTab('Queue')"><i class="fas fa-stream mr-2 text-sm"></i>Queue</button>
+        <button class="ds-tab tab-LinkedList"        id="tab-LinkedList" onclick="switchTab('LinkedList')"><i class="fas fa-link mr-2 text-sm"></i>Linked List</button>
+        <button class="ds-tab tab-Graph"             id="tab-Graph"      onclick="switchTab('Graph')"><i class="fas fa-project-diagram mr-2 text-sm"></i>Graph</button>
+        <button class="ds-tab tab-Trees"             id="tab-Trees"      onclick="switchTab('Trees')"><i class="fas fa-tree mr-2 text-sm"></i>Trees</button>
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="stkScenariosGrid"></div>
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Stacks Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Stacks launch and reset.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('Stacks')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-purple-400 hover:text-purple-600 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="stkPushBtn" onclick="pushConfig('Stacks')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Stacks
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- ══════════════ QUEUE TAB ══════════════ -->
-    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Queue">
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-emerald-500"></i>
-          <span class="font-medium text-gray-700">Queue Screen Preview</span>
-        </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="quePreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="quePreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="queActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="queStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-        </div>
+      <!-- DS Panels (Arrays, Stacks, Queue, LinkedList, Graph, Trees) -->
+      <div id="dsPanels">
+        <!-- Panels injected by JS for brevity — same structure as original -->
       </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="queScenariosGrid"></div>
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Queue Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Queue launch and reset.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('Queue')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-emerald-400 hover:text-emerald-600 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="quePushBtn" onclick="pushConfig('Queue')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Queue
-          </button>
-        </div>
-      </div>
-    </div>
 
-    <!-- ══════════════ LINKED LIST TAB ══════════════ -->
-    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-LinkedList">
-      <div class="bg-rose-50 border border-rose-100 rounded-xl p-3 mb-5 flex items-start gap-3">
-        <i class="fas fa-info-circle text-rose-400 mt-0.5 flex-shrink-0"></i>
-        <div class="text-xs text-rose-700">
-          <span class="font-semibold">Linked List has 2 difficulty modes</span> — Beginner (Add Head/Tail, Remove, Traverse) and Intermediate (Insert At, Delete By Value, Reverse, Find Middle).
-          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
-        </div>
-      </div>
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-rose-500"></i>
-          <span class="font-medium text-gray-700">Linked List Screen Preview</span>
-        </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="llPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="llPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="llActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="llStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="llScenariosGrid"></div>
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Linked List Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Linked List launch and reset.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('LinkedList')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-rose-400 hover:text-rose-600 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="llPushBtn" onclick="pushConfig('LinkedList')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Linked List
-          </button>
-        </div>
-      </div>
-    </div>
+    </div><!-- /sectionConfig -->
 
-    <!-- ══════════════ GRAPH TAB ══════════════ -->
-    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Graph">
-      <div class="bg-sky-50 border border-sky-100 rounded-xl p-3 mb-5 flex items-start gap-3">
-        <i class="fas fa-info-circle text-sky-400 mt-0.5 flex-shrink-0"></i>
-        <div class="text-xs text-sky-700">
-          <span class="font-semibold">Graph has 2 difficulty modes</span> — Beginner (Add Node/Edge, Remove, BFS, DFS, Dijkstra) and Intermediate (MST, Path Check, Node Degree).
-          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
-        </div>
-      </div>
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-sky-500"></i>
-          <span class="font-medium text-gray-700">Graph Screen Preview</span>
-        </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="grpPreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="grpPreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="grpActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="grpStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-        </div>
-      </div>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="grpScenariosGrid"></div>
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Graph Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Graph launch and reset.</p>
-        </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('Graph')"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-sky-400 hover:text-sky-600 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="grpPushBtn" onclick="pushConfig('Graph')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-sky-500 to-cyan-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Graph
-          </button>
-        </div>
-      </div>
-    </div>
+    <!-- ════════════════════════════════════════════════
+         SECTION B: USAGE ANALYTICS
+    ════════════════════════════════════════════════ -->
+    <div id="sectionUsage" class="hidden usage-section">
 
-    <!-- ══════════════ TREES TAB ══════════════ -->
-    <div class="tab-panel bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-Trees">
-
-      <!-- Difficulty notice -->
-      <div class="bg-green-50 border border-green-100 rounded-xl p-3 mb-5 flex items-start gap-3">
-        <i class="fas fa-info-circle text-green-500 mt-0.5 flex-shrink-0"></i>
-        <div class="text-xs text-green-800">
-          <span class="font-semibold">Trees has 2 difficulty modes</span> — Beginner (Add Child, In-Order, Pre-Order, Post-Order) and Intermediate (Add Child, Search, Delete, Height).
-          The admin selects <strong>2 world scenarios</strong>; students then choose <strong>their own difficulty</strong> inside the app.
+      <!-- Summary Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Picks</p>
+          <p class="text-3xl font-bold text-gray-800" id="statTotalPicks">—</p>
+          <p class="text-xs text-gray-400 mt-1">across all users &amp; topics</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Most Popular</p>
+          <p class="text-lg font-bold text-indigo-600 leading-tight" id="statMostPopular">—</p>
+          <p class="text-xs text-gray-400 mt-1" id="statMostPopularSub">—</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Users Tracked</p>
+          <p class="text-3xl font-bold text-gray-800" id="statTrackedUsers">—</p>
+          <p class="text-xs text-gray-400 mt-1">with scenario data</p>
+        </div>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Topics w/ Picks</p>
+          <p class="text-3xl font-bold text-gray-800" id="statTopicsActive">—</p>
+          <p class="text-xs text-gray-400 mt-1">out of 6 topics</p>
         </div>
       </div>
 
-      <!-- App Preview -->
-      <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-mobile-alt text-green-600"></i>
-          <span class="font-medium text-gray-700">Trees Screen Preview</span>
+      <!-- Two-column layout: Global breakdown + Individual lookup -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- LEFT: Global per-topic breakdown (2/3 width) -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
+          <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-semibold text-gray-800">Global Scenario Usage</h3>
+              <p class="text-xs text-gray-400">Pick distribution across all users, by topic</p>
+            </div>
+            <button onclick="loadUsageData()" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-semibold transition">
+              <i class="fas fa-sync-alt mr-1"></i>Refresh
+            </button>
+          </div>
+
+          <!-- Topic selector pills -->
+          <div class="flex gap-2 flex-wrap px-5 pt-4" id="topicPills"></div>
+
+          <!-- Chart container -->
+          <div class="p-5">
+            <div id="globalChartWrap" style="position:relative;width:100%;height:220px;">
+              <canvas id="globalUsageChart"></canvas>
+            </div>
+            <!-- Scenario breakdown list -->
+            <div class="mt-4 space-y-3" id="globalBreakdownList">
+              <p class="text-center text-gray-400 text-sm py-4">Select a topic above to see breakdown</p>
+            </div>
+          </div>
         </div>
-        <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-        <div class="flex gap-3 flex-wrap">
-          <div id="treePreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-          <div id="treePreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-        </div>
-        <div class="ml-auto flex items-center gap-2 text-sm">
-          <span id="treeActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-          <span id="treeStatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+
+        <!-- RIGHT: Individual user lookup (1/3 width) -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
+          <div class="p-5 border-b border-gray-100">
+            <h3 class="text-base font-semibold text-gray-800">Individual User</h3>
+            <p class="text-xs text-gray-400">See which scenarios a user prefers</p>
+          </div>
+          <div class="p-5 flex-1 flex flex-col gap-4">
+            <!-- Search input -->
+            <div class="relative">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+              <input type="text" id="userSearchInput" placeholder="Search username…"
+                class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                oninput="searchUsers(this.value)" />
+            </div>
+
+            <!-- Dropdown results -->
+            <div id="userSearchResults" class="rounded-lg border border-gray-100 overflow-hidden hidden max-h-36 overflow-y-auto"></div>
+
+            <!-- Selected user display -->
+            <div id="userUsagePanel" class="hidden flex-1">
+              <div class="flex items-center gap-3 mb-4 p-3 bg-indigo-50 rounded-xl">
+                <div class="w-9 h-9 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm" id="userUsageAvatar">?</div>
+                <div>
+                  <p class="font-semibold text-gray-800 text-sm" id="userUsageName">—</p>
+                  <p class="text-xs text-gray-500" id="userUsageUsername">—</p>
+                </div>
+                <button onclick="clearUserSearch()" class="ml-auto text-gray-400 hover:text-gray-600 text-xs">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+              <div id="userUsageTopics" class="space-y-4 overflow-y-auto" style="max-height: 380px;"></div>
+              <p id="userNoData" class="hidden text-center text-gray-400 text-sm py-6">No scenario data for this user yet.</p>
+            </div>
+
+            <div id="userUsagePlaceholder" class="flex-1 flex flex-col items-center justify-center gap-3 py-8 text-center">
+              <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-user-circle text-gray-400 text-2xl"></i>
+              </div>
+              <p class="text-sm text-gray-500">Search for a user to<br>see their scenario history</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Scenario Cards -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="treeScenariosGrid"></div>
-
-      <!-- Push Section -->
-      <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-        <div>
-          <h3 class="text-base font-semibold text-gray-800 mb-0.5">Push Trees Config to App</h3>
-          <p class="text-xs text-gray-400">The AR app reads this on every Trees launch and reset.</p>
+      <!-- Leaderboard -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
+        <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-gray-800">Top Scenarios Leaderboard</h3>
+            <p class="text-xs text-gray-400">Most-played scenarios across all topics &amp; users</p>
+          </div>
+          <span class="text-xs px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg font-semibold border border-yellow-200">
+            <i class="fas fa-trophy mr-1"></i>All-time
+          </span>
         </div>
-        <div class="flex gap-3">
-          <button onclick="loadConfig('Trees')"
-            class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:border-green-500 hover:text-green-700 transition">
-            <i class="fas fa-sync-alt"></i> Reload
-          </button>
-          <button id="treePushBtn" onclick="pushConfig('Trees')" disabled
-            class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-500 hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-            <i class="fas fa-upload"></i> Push Trees
-          </button>
+        <div class="p-5" id="leaderboardList">
+          <p class="text-center text-gray-400 text-sm py-4">Loading leaderboard…</p>
         </div>
       </div>
-    </div>
+
+    </div><!-- /sectionUsage -->
 
     <!-- Activity Log -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-2">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6" id="activityLog">
       <div class="p-5 border-b border-gray-100 flex items-center justify-between">
         <h3 class="text-base font-semibold text-gray-800">Activity Log</h3>
         <button onclick="clearLog()" class="text-xs text-gray-400 hover:text-gray-600 transition">Clear</button>
@@ -425,11 +329,13 @@
         </div>
       </div>
     </div>
+
   </main>
 
   <div class="toast" id="toast"></div>
   <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <script>
     const SERVER_URL = 'https://structureality-admin.onrender.com';
     const MAX_ACTIVE = 2;
@@ -437,171 +343,67 @@
     // ── SCENARIO DEFINITIONS ─────────────────────────────────────────────────
     const SCENARIOS = {
       Arrays: [
-        {
-          id: 'ParkingLot', name: 'Parking Lot', icon: '🅿️',
-          desc: 'Cars in numbered parking spots. Students INSERT cars, REMOVE them, and ACCESS a spot by index.',
-          ops: ['INSERT', 'REMOVE', 'ACCESS', 'SORTED INSERT', 'BINARY SEARCH'],
-          sessions: [120, 145, 130, 160, 175, 155, 180], avgTime: '4.2 min',
-        },
-        {
-          id: 'VendingMachine', name: 'Vending Machine', icon: '🏪',
-          desc: '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address.',
-          ops: ['RESTOCK', 'DISPENSE', 'INSPECT', 'SORTED RESTOCK', 'PRICE SEARCH'],
-          sessions: [95, 110, 130, 145, 160, 140, 170], avgTime: '3.8 min',
-        },
-        {
-          id: 'Supermarket', name: 'Supermarket Shelf', icon: '🛒',
-          desc: 'Linear shelf with 6 grocery slots. Students STOCK items, PULL them off, and CHECK by index.',
-          ops: ['STOCK', 'PULL', 'CHECK', 'SORTED STOCK', 'BARCODE SCAN'],
-          sessions: [90, 110, 140, 175, 160, 155, 200], avgTime: '4.0 min',
-        },
+        { id: 'ParkingLot',     name: 'Parking Lot',       icon: '🅿️', desc: 'Cars in numbered parking spots. Students INSERT cars, REMOVE them, and ACCESS a spot by index.', ops: ['INSERT','REMOVE','ACCESS','SORTED INSERT','BINARY SEARCH'], sessions: [120,145,130,160,175,155,180], avgTime: '4.2 min' },
+        { id: 'VendingMachine', name: 'Vending Machine',   icon: '🏪', desc: '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address.', ops: ['RESTOCK','DISPENSE','INSPECT','SORTED RESTOCK','PRICE SEARCH'], sessions: [95,110,130,145,160,140,170], avgTime: '3.8 min' },
+        { id: 'Supermarket',    name: 'Supermarket Shelf', icon: '🛒', desc: 'Linear shelf with 6 grocery slots. Students STOCK items, PULL them off, and CHECK by index.', ops: ['STOCK','PULL','CHECK','SORTED STOCK','BARCODE SCAN'], sessions: [90,110,140,175,160,155,200], avgTime: '4.0 min' },
       ],
       Stacks: [
-        {
-          id: 'Plates', name: 'Plates', icon: '🍽️',
-          desc: 'Classic dinner plate stack on a round table. Students PUSH plates onto the stack and POP them off — pure LIFO.',
-          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
-          sessions: [110, 125, 138, 152, 167, 145, 180], avgTime: '3.9 min',
-        },
-        {
-          id: 'Warehouse', name: 'Warehouse', icon: '📦',
-          desc: 'Cardboard boxes stacked on a forklift pallet. PUSH boxes on, POP them off — LIFO in a storage context.',
-          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
-          sessions: [100, 118, 135, 148, 162, 140, 175], avgTime: '4.1 min',
-        },
-        {
-          id: 'Kitchen', name: 'Kitchen', icon: '🍳',
-          desc: 'Pots and pans stacked on a stove burner. PUSH cookware onto the stack, POP them off — intuitive LIFO.',
-          ops: ['PUSH', 'POP', 'PEEK', 'MULTI-POP', 'REVERSE'],
-          sessions: [85, 105, 128, 155, 168, 150, 195], avgTime: '4.0 min',
-        },
+        { id: 'Plates',    name: 'Plates',    icon: '🍽️', desc: 'Classic dinner plate stack. PUSH plates onto the stack and POP them off — pure LIFO.', ops: ['PUSH','POP','PEEK','MULTI-POP','REVERSE'], sessions: [110,125,138,152,167,145,180], avgTime: '3.9 min' },
+        { id: 'Warehouse', name: 'Warehouse', icon: '📦', desc: 'Cardboard boxes stacked on a forklift pallet. PUSH boxes on, POP them off — LIFO in a storage context.', ops: ['PUSH','POP','PEEK','MULTI-POP','REVERSE'], sessions: [100,118,135,148,162,140,175], avgTime: '4.1 min' },
+        { id: 'Kitchen',   name: 'Kitchen',   icon: '🍳', desc: 'Pots and pans stacked on a stove burner. PUSH cookware onto the stack, POP them off — intuitive LIFO.', ops: ['PUSH','POP','PEEK','MULTI-POP','REVERSE'], sessions: [85,105,128,155,168,150,195], avgTime: '4.0 min' },
       ],
       Queue: [
-        {
-          id: 'CoffeeShop', name: 'Coffee Shop', icon: '☕',
-          desc: 'Customers line up to order coffee. Students ENQUEUE new customers at the rear, DEQUEUE the front customer when served.',
-          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
-          note: 'Joystick movement — students physically guide each customer into the queue.',
-          sessions: [115, 130, 145, 160, 172, 155, 185], avgTime: '4.5 min',
-        },
-        {
-          id: 'ConveyorBelt', name: 'Conveyor Belt', icon: '📦',
-          desc: 'Packages arrive on a warehouse belt and queue for scanning. Students ENQUEUE packages and DEQUEUE them at the scanner.',
-          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
-          note: 'Instant slide animation — packages glide along the belt automatically.',
-          sessions: [95, 110, 130, 148, 162, 140, 175], avgTime: '3.8 min',
-        },
-        {
-          id: 'Hospital', name: 'Hospital ER', icon: '🏥',
-          desc: 'ER patients register at reception and wait in a triage queue. Priority Enqueue places critical patients (P1) ahead.',
-          ops: ['ENQUEUE', 'DEQUEUE', 'PEEK', 'PRIORITY ENQUEUE'],
-          note: 'Colour-coded wristbands show triage level: red=critical → green=minor.',
-          sessions: [80, 105, 138, 170, 155, 168, 210], avgTime: '4.1 min',
-        },
+        { id: 'CoffeeShop',    name: 'Coffee Shop',    icon: '☕', desc: 'Customers line up to order coffee. ENQUEUE new customers at the rear, DEQUEUE the front customer when served.', ops: ['ENQUEUE','DEQUEUE','PEEK','PRIORITY ENQUEUE'], sessions: [115,130,145,160,172,155,185], avgTime: '4.5 min' },
+        { id: 'ConveyorBelt',  name: 'Conveyor Belt',  icon: '📦', desc: 'Packages arrive on a warehouse belt and queue for scanning. ENQUEUE packages and DEQUEUE them at the scanner.', ops: ['ENQUEUE','DEQUEUE','PEEK','PRIORITY ENQUEUE'], sessions: [95,110,130,148,162,140,175], avgTime: '3.8 min' },
+        { id: 'Hospital',      name: 'Hospital ER',    icon: '🏥', desc: 'ER patients register at reception and wait in a triage queue. Priority Enqueue places critical patients ahead.', ops: ['ENQUEUE','DEQUEUE','PEEK','PRIORITY ENQUEUE'], sessions: [80,105,138,170,155,168,210], avgTime: '4.1 min' },
       ],
       LinkedList: [
-        {
-          id: 'Train', name: 'Train', icon: '🚂',
-          desc: 'Train cars on tracks linked by metal coupling rods. Students add cars to the HEAD or TAIL, remove from the front, or traverse the entire train.',
-          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Each car is a node; the coupling rod is the "next pointer".',
-          sessions: [105, 130, 150, 168, 182, 170, 200], avgTime: '5.1 min', colorHex: '#f43f5e',
-        },
-        {
-          id: 'Solar', name: 'Solar System', icon: '🪐',
-          desc: 'Planets in space linked by glowing orbital paths. Students build a planetary chain and manipulate it using all linked list operations.',
-          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Planets spin in place; the orbital bead-path represents the next pointer.',
-          sessions: [95, 118, 145, 172, 188, 175, 215], avgTime: '5.4 min', colorHex: '#8b5cf6',
-        },
-        {
-          id: 'CityMetro', name: 'City Metro', icon: '🚇',
-          desc: 'Underground metro carriages linked by glowing tunnel connectors. Students chain carriages together and manipulate the list.',
-          ops: ['ADD HEAD', 'ADD TAIL', 'REMOVE HEAD', 'TRAVERSE', 'INSERT AT', 'DELETE BY VALUE', 'REVERSE', 'FIND MIDDLE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Dark tunnel background with neon-lit connectors; each carriage shows its cargo on an LED display.',
-          sessions: [88, 112, 140, 165, 178, 160, 198], avgTime: '5.2 min', colorHex: '#0ea5e9',
-        },
+        { id: 'Train',     name: 'Train',         icon: '🚂', desc: 'Train cars linked by coupling rods. Add cars to HEAD or TAIL, remove, or traverse the entire train.', ops: ['ADD HEAD','ADD TAIL','REMOVE HEAD','TRAVERSE','INSERT AT','DELETE BY VALUE','REVERSE','FIND MIDDLE'], difficulties: ['Beginner','Intermediate'], sessions: [105,130,150,168,182,170,200], avgTime: '5.1 min', colorHex: '#f43f5e' },
+        { id: 'Solar',     name: 'Solar System',  icon: '🪐', desc: 'Planets linked by glowing orbital paths. Build a planetary chain and manipulate it using all linked list operations.', ops: ['ADD HEAD','ADD TAIL','REMOVE HEAD','TRAVERSE','INSERT AT','DELETE BY VALUE','REVERSE','FIND MIDDLE'], difficulties: ['Beginner','Intermediate'], sessions: [95,118,145,172,188,175,215], avgTime: '5.4 min', colorHex: '#8b5cf6' },
+        { id: 'CityMetro', name: 'City Metro',    icon: '🚇', desc: 'Underground metro carriages linked by glowing tunnel connectors. Students chain carriages and manipulate the list.', ops: ['ADD HEAD','ADD TAIL','REMOVE HEAD','TRAVERSE','INSERT AT','DELETE BY VALUE','REVERSE','FIND MIDDLE'], difficulties: ['Beginner','Intermediate'], sessions: [88,112,140,165,178,160,198], avgTime: '5.2 min', colorHex: '#0ea5e9' },
       ],
       Graph: [
-        {
-          id: 'CityMap', name: 'City Map', icon: '🏙️',
-          desc: 'Miniature city with buildings as nodes and roads as edges. Students ADD nodes/edges, REMOVE, run BFS, DFS, Dijkstra, MST, Path Check, and Node Degree.',
-          ops: ['ADD NODE', 'ADD ROAD', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Colourful procedural buildings; edge weights represent road distances in km.',
-          sessions: [100, 125, 148, 170, 185, 165, 210], avgTime: '5.8 min', colorHex: '#6366f1',
-        },
-        {
-          id: 'IslandNetwork', name: 'Island Network', icon: '🏝️',
-          desc: 'Tropical islands connected by wooden bridges over a blue ocean base. Each island is a graph node; bridges are weighted edges (nautical miles).',
-          ops: ['ADD ISLAND', 'ADD BRIDGE', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Sandy island mounds with palm trees; bridges shown as brown cylinders with distance labels.',
-          sessions: [90, 115, 142, 168, 180, 160, 205], avgTime: '5.5 min', colorHex: '#10b981',
-        },
-        {
-          id: 'SpaceStation', name: 'Space Station', icon: '🛸',
-          desc: 'Modular space station orbiting in deep space. Station modules are nodes connected by metallic docking tubes.',
-          ops: ['ADD MODULE', 'ADD TUBE', 'REMOVE', 'BFS', 'DFS', 'DIJKSTRA', 'MST', 'PATH CHECK', 'DEGREE'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Detailed procedural modules with solar panels, portholes, and status lights. Dark space base with a nebula ring.',
-          sessions: [85, 108, 138, 165, 178, 158, 200], avgTime: '5.9 min', colorHex: '#0ea5e9',
-        },
+        { id: 'CityMap',       name: 'City Map',       icon: '🏙️', desc: 'Miniature city with buildings as nodes and roads as edges. ADD nodes/edges, REMOVE, run BFS, DFS, Dijkstra.', ops: ['ADD NODE','ADD ROAD','REMOVE','BFS','DFS','DIJKSTRA','MST','PATH CHECK','DEGREE'], difficulties: ['Beginner','Intermediate'], sessions: [100,125,148,170,185,165,210], avgTime: '5.8 min', colorHex: '#6366f1' },
+        { id: 'IslandNetwork', name: 'Island Network', icon: '🏝️', desc: 'Tropical islands connected by wooden bridges. Each island is a node; bridges are weighted edges.', ops: ['ADD ISLAND','ADD BRIDGE','REMOVE','BFS','DFS','DIJKSTRA','MST','PATH CHECK','DEGREE'], difficulties: ['Beginner','Intermediate'], sessions: [90,115,142,168,180,160,205], avgTime: '5.5 min', colorHex: '#10b981' },
+        { id: 'SpaceStation',  name: 'Space Station',  icon: '🛸', desc: 'Modular space station orbiting in deep space. Station modules are nodes connected by metallic docking tubes.', ops: ['ADD MODULE','ADD TUBE','REMOVE','BFS','DFS','DIJKSTRA','MST','PATH CHECK','DEGREE'], difficulties: ['Beginner','Intermediate'], sessions: [85,108,138,165,178,158,200], avgTime: '5.9 min', colorHex: '#0ea5e9' },
       ],
       Trees: [
-        {
-          id: 'FamilyTree', name: 'Family Tree', icon: '🧑‍👩‍👦',
-          desc: 'Coloured person spheres arranged as a BST. Each sphere is a family member. Left child = younger, right child = older. Colour indicates generation level.',
-          ops: ['ADD CHILD', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Each generation gets a distinct colour. Root node is always the eldest ancestor.',
-          sessions: [110, 135, 155, 172, 188, 170, 205], avgTime: '5.3 min', colorHex: '#16a34a',
-        },
-        {
-          id: 'FruitTree', name: 'Fruit Tree', icon: '🍎',
-          desc: 'Fruit-shaped nodes hanging from a brown trunk. Each fruit is a BST node. Grows downward with left/right branches in a natural tree layout.',
-          ops: ['ADD CHILD', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'Brown trunk + green canopy acts as the root anchor. Fruit colour changes by level.',
-          sessions: [100, 122, 148, 168, 182, 165, 198], avgTime: '5.1 min', colorHex: '#dc2626',
-        },
-        {
-          id: 'ForestTrail', name: 'Forest Trail', icon: '🌲',
-          desc: 'Amber waypoint spheres on wooden posts in a mossy forest clearing. Each waypoint is a BST node. Signpost arrows indicate child pointers (left = west fork, right = east fork).',
-          ops: ['ADD WAYPOINT', 'IN-ORDER', 'PRE-ORDER', 'POST-ORDER', 'SEARCH', 'DELETE', 'HEIGHT'],
-          difficulties: ['Beginner', 'Intermediate'],
-          note: 'NEW scenario! Mossy ground disc + 3 pine trees as scenery. Amber/orange/red colour palette per level.',
-          sessions: [88, 112, 140, 162, 178, 158, 195], avgTime: '5.0 min', colorHex: '#d97706',
-        },
+        { id: 'FamilyTree',  name: 'Family Tree',  icon: '🧑‍👩‍👦', desc: 'Coloured person spheres arranged as a BST. Left child = younger, right = older.', ops: ['ADD CHILD','IN-ORDER','PRE-ORDER','POST-ORDER','SEARCH','DELETE','HEIGHT'], difficulties: ['Beginner','Intermediate'], sessions: [110,135,155,172,188,170,205], avgTime: '5.3 min', colorHex: '#16a34a' },
+        { id: 'FruitTree',   name: 'Fruit Tree',   icon: '🍎', desc: 'Fruit-shaped nodes hanging from a brown trunk. Grows downward with left/right branches.', ops: ['ADD CHILD','IN-ORDER','PRE-ORDER','POST-ORDER','SEARCH','DELETE','HEIGHT'], difficulties: ['Beginner','Intermediate'], sessions: [100,122,148,168,182,165,198], avgTime: '5.1 min', colorHex: '#dc2626' },
+        { id: 'ForestTrail', name: 'Forest Trail', icon: '🌲', desc: 'Amber waypoint spheres on wooden posts in a mossy forest clearing. Each waypoint is a BST node.', ops: ['ADD WAYPOINT','IN-ORDER','PRE-ORDER','POST-ORDER','SEARCH','DELETE','HEIGHT'], difficulties: ['Beginner','Intermediate'], sessions: [88,112,140,162,178,158,195], avgTime: '5.0 min', colorHex: '#d97706' },
       ],
     };
 
-    // ── DS CONFIG ─────────────────────────────────────────────────
     const DS_CONFIG = {
-      Arrays:     { prefix: 'arr',  accentColor: '#6366f1' },
-      Stacks:     { prefix: 'stk',  accentColor: '#8b5cf6' },
-      Queue:      { prefix: 'que',  accentColor: '#10b981' },
-      LinkedList: { prefix: 'll',   accentColor: '#f43f5e' },
-      Graph:      { prefix: 'grp',  accentColor: '#0ea5e9' },
-      Trees:      { prefix: 'tree', accentColor: '#16a34a' },
+      Arrays:     { prefix: 'arr',  accentColor: '#6366f1', label: 'Arrays' },
+      Stacks:     { prefix: 'stk',  accentColor: '#8b5cf6', label: 'Stacks' },
+      Queue:      { prefix: 'que',  accentColor: '#10b981', label: 'Queue' },
+      LinkedList: { prefix: 'll',   accentColor: '#f43f5e', label: 'Linked List' },
+      Graph:      { prefix: 'grp',  accentColor: '#0ea5e9', label: 'Graph' },
+      Trees:      { prefix: 'tree', accentColor: '#16a34a', label: 'Trees' },
     };
 
-    // ── STATE ─────────────────────────────────────────────────────
     const state = {
-      Arrays:     { activeIds: [] },
-      Stacks:     { activeIds: [] },
-      Queue:      { activeIds: [] },
-      LinkedList: { activeIds: [] },
-      Graph:      { activeIds: [] },
-      Trees:      { activeIds: [] },
+      Arrays: { activeIds: [] }, Stacks: { activeIds: [] }, Queue: { activeIds: [] },
+      LinkedList: { activeIds: [] }, Graph: { activeIds: [] }, Trees: { activeIds: [] },
     };
 
     let currentTab = 'Arrays';
+    let globalUsageData = null;
+    let allUsersCache = [];
+    let usageChart = null;
+    let selectedUsageTopic = null;
 
-    // ── TAB SWITCHING ─────────────────────────────────────────────
+    // ── MAIN TAB SWITCHING ────────────────────────────────────────────────────
+    function switchMainTab(tab) {
+      document.getElementById('btnConfig').classList.toggle('active', tab === 'config');
+      document.getElementById('btnUsage').classList.toggle('active', tab === 'usage');
+      document.getElementById('sectionConfig').classList.toggle('hidden', tab !== 'config');
+      document.getElementById('sectionUsage').classList.toggle('hidden', tab !== 'usage');
+      if (tab === 'usage' && !globalUsageData) loadUsageData();
+    }
+
+    // ── DS TAB SWITCHING ──────────────────────────────────────────────────────
     function switchTab(ds) {
       currentTab = ds;
       document.querySelectorAll('.ds-tab').forEach(t => t.classList.remove('active-tab'));
@@ -610,54 +412,104 @@
       document.getElementById(`panel-${ds}`).classList.add('active');
     }
 
-    // ── AUTH ──────────────────────────────────────────────────────
-    function logout() {
-      localStorage.removeItem('adminUser');
-      window.location.href = 'login.html';
+    // ── BUILD DS PANELS DYNAMICALLY ───────────────────────────────────────────
+    function buildPanels() {
+      const container = document.getElementById('dsPanels');
+      const ALL_DS = ['Arrays','Stacks','Queue','LinkedList','Graph','Trees'];
+      const DSLabels = { Arrays: 'Arrays', Stacks: 'Stacks', Queue: 'Queue', LinkedList: 'Linked List', Graph: 'Graph', Trees: 'Trees' };
+      const DSGradients = {
+        Arrays: 'from-indigo-500 to-purple-600', Stacks: 'from-purple-500 to-pink-500',
+        Queue: 'from-emerald-500 to-teal-600', LinkedList: 'from-rose-500 to-pink-500',
+        Graph: 'from-sky-500 to-cyan-500', Trees: 'from-green-600 to-emerald-500'
+      };
+      const DSHovers = {
+        Arrays: 'hover:border-indigo-400 hover:text-indigo-600', Stacks: 'hover:border-purple-400 hover:text-purple-600',
+        Queue: 'hover:border-emerald-400 hover:text-emerald-600', LinkedList: 'hover:border-rose-400 hover:text-rose-600',
+        Graph: 'hover:border-sky-400 hover:text-sky-600', Trees: 'hover:border-green-500 hover:text-green-700'
+      };
+      const { prefix } = DS_CONFIG;
+
+      container.innerHTML = ALL_DS.map((ds, i) => {
+        const p = DS_CONFIG[ds].prefix;
+        const isFirst = i === 0;
+        const hasLinkedListNote = ds === 'LinkedList' || ds === 'Graph' || ds === 'Trees';
+        const noteColors = { LinkedList: 'rose', Graph: 'sky', Trees: 'green' };
+        const noteTexts = {
+          LinkedList: `<span class="font-semibold">Linked List has 2 difficulty modes</span> — Beginner and Intermediate. The admin selects <strong>2 world scenarios</strong>; students choose <strong>their own difficulty</strong> inside the app.`,
+          Graph: `<span class="font-semibold">Graph has 2 difficulty modes</span> — Beginner and Intermediate. The admin selects <strong>2 world scenarios</strong>; students choose <strong>their own difficulty</strong> inside the app.`,
+          Trees: `<span class="font-semibold">Trees has 2 difficulty modes</span> — Beginner and Intermediate. The admin selects <strong>2 world scenarios</strong>; students choose <strong>their own difficulty</strong> inside the app.`,
+        };
+        const mobileColor = { Arrays:'indigo', Stacks:'purple', Queue:'emerald', LinkedList:'rose', Graph:'sky', Trees:'green' }[ds];
+        return `
+          <div class="tab-panel ${isFirst ? 'active' : ''} bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-${ds}">
+            ${hasLinkedListNote ? `<div class="bg-${noteColors[ds]}-50 border border-${noteColors[ds]}-100 rounded-xl p-3 mb-5 flex items-start gap-3"><i class="fas fa-info-circle text-${noteColors[ds]}-400 mt-0.5 flex-shrink-0"></i><div class="text-xs text-${noteColors[ds]}-700">${noteTexts[ds]}</div></div>` : ''}
+            <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
+              <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-mobile-alt text-${mobileColor}-500"></i>
+                <span class="font-medium text-gray-700">${DSLabels[ds]} Screen Preview</span>
+              </div>
+              <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
+              <div class="flex gap-3 flex-wrap">
+                <div id="${p}PreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
+                <div id="${p}PreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
+              </div>
+              <div class="ml-auto flex items-center gap-2 text-sm">
+                <span id="${p}ActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
+                <span id="${p}StatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="${p}ScenariosGrid"></div>
+            <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
+              <div>
+                <h3 class="text-base font-semibold text-gray-800">Push ${DSLabels[ds]} Config to App</h3>
+                <p class="text-xs text-gray-400">The AR app reads this on every ${DSLabels[ds]} launch and reset.</p>
+              </div>
+              <div class="flex gap-3">
+                <button onclick="loadConfig('${ds}')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 ${DSHovers[ds]} transition">
+                  <i class="fas fa-sync-alt"></i> Reload
+                </button>
+                <button id="${p}PushBtn" onclick="pushConfig('${ds}')" disabled
+                  class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r ${DSGradients[ds]} hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
+                  <i class="fas fa-upload"></i> Push ${DSLabels[ds]}
+                </button>
+              </div>
+            </div>
+          </div>`;
+      }).join('');
     }
 
+    // ── AUTH ──────────────────────────────────────────────────────────────────
+    function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
     function checkAuth() {
       const raw = localStorage.getItem('adminUser');
       if (!raw || raw === 'undefined') { logout(); return null; }
       try { return JSON.parse(raw); } catch { logout(); return null; }
     }
 
-    // ── TOAST ─────────────────────────────────────────────────────
+    // ── TOAST / LOG ───────────────────────────────────────────────────────────
     function showToast(msg, type = 'info') {
-      const colorMap = {
-        success: 'bg-green-50 border border-green-300 text-green-700',
-        error:   'bg-red-50 border border-red-300 text-red-700',
-        info:    'bg-indigo-50 border border-indigo-300 text-indigo-700',
-      };
-      const iconMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+      const colorMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
+      const iconMap  = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
       const t = document.getElementById('toast');
       t.className = `toast ${colorMap[type]}`;
       t.innerHTML = `<i class="fas ${iconMap[type]}"></i> ${msg}`;
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3500);
     }
-
-    function showLoading(v) {
-      document.getElementById('loadingOverlay').classList.toggle('show', v);
-    }
-
-    // ── LOG ───────────────────────────────────────────────────────
+    function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
     function addLog(msg, type = 'info') {
       const list = document.getElementById('logList');
       const now  = new Date().toLocaleTimeString();
-      const dotColor = type === 'success' ? 'bg-green-400' : type === 'error' ? 'bg-red-400' : 'bg-indigo-400';
-      const el = document.createElement('div');
+      const dot  = type === 'success' ? 'bg-green-400' : type === 'error' ? 'bg-red-400' : 'bg-indigo-400';
+      const el   = document.createElement('div');
       el.className = 'flex items-center gap-3 text-sm text-gray-600';
-      el.innerHTML = `<div class="w-2 h-2 rounded-full ${dotColor} flex-shrink-0"></div><span>${msg}</span><span class="ml-auto text-xs text-gray-400">${now}</span>`;
+      el.innerHTML = `<div class="w-2 h-2 rounded-full ${dot} flex-shrink-0"></div><span>${msg}</span><span class="ml-auto text-xs text-gray-400">${now}</span>`;
       list.prepend(el);
       while (list.children.length > 30) list.removeChild(list.lastChild);
     }
+    function clearLog() { document.getElementById('logList').innerHTML = ''; }
 
-    function clearLog() {
-      document.getElementById('logList').innerHTML = '';
-    }
-
-    // ── RENDER CARDS ──────────────────────────────────────────────
+    // ── SCENARIO CARD RENDERING ───────────────────────────────────────────────
     function renderGrid(ds) {
       const { prefix, accentColor } = DS_CONFIG[ds];
       const grid      = document.getElementById(`${prefix}ScenariosGrid`);
@@ -675,26 +527,23 @@
         card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? `border-2 active-${ds}` : 'border-gray-100'} p-5 cursor-pointer card-hover`;
         card.onclick = () => toggleScenario(ds, sc.id);
 
-        const activeOpClass = ds === 'Arrays'     ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
-                            : ds === 'Stacks'     ? 'bg-purple-50 text-purple-600 border border-purple-200'
-                            : ds === 'Queue'      ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-                            : ds === 'Graph'      ? 'bg-sky-50 text-sky-600 border border-sky-200'
-                            : ds === 'Trees'      ? 'bg-green-50 text-green-700 border border-green-200'
-                            : 'bg-rose-50 text-rose-600 border border-rose-200';
+        const activeOpClass = ds==='Arrays' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
+          : ds==='Stacks' ? 'bg-purple-50 text-purple-600 border border-purple-200'
+          : ds==='Queue'  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+          : ds==='Graph'  ? 'bg-sky-50 text-sky-600 border border-sky-200'
+          : ds==='Trees'  ? 'bg-green-50 text-green-700 border border-green-200'
+          : 'bg-rose-50 text-rose-600 border border-rose-200';
 
         const iconBgClass = isActive
-          ? (ds === 'Arrays' ? 'bg-indigo-100' : ds === 'Stacks' ? 'bg-purple-100' : ds === 'Queue' ? 'bg-emerald-100' : ds === 'Graph' ? 'bg-sky-100' : ds === 'Trees' ? 'bg-green-100' : 'bg-rose-100')
+          ? (ds==='Arrays'?'bg-indigo-100':ds==='Stacks'?'bg-purple-100':ds==='Queue'?'bg-emerald-100':ds==='Graph'?'bg-sky-100':ds==='Trees'?'bg-green-100':'bg-rose-100')
           : 'bg-gray-100';
 
         const badgeClass = isActive
-          ? (ds === 'Arrays' ? 'bg-indigo-100 text-indigo-600' : ds === 'Stacks' ? 'bg-purple-100 text-purple-600' : ds === 'Queue' ? 'bg-emerald-100 text-emerald-600' : ds === 'Graph' ? 'bg-sky-100 text-sky-600' : ds === 'Trees' ? 'bg-green-100 text-green-700' : 'bg-rose-100 text-rose-600')
+          ? (ds==='Arrays'?'bg-indigo-100 text-indigo-600':ds==='Stacks'?'bg-purple-100 text-purple-600':ds==='Queue'?'bg-emerald-100 text-emerald-600':ds==='Graph'?'bg-sky-100 text-sky-600':ds==='Trees'?'bg-green-100 text-green-700':'bg-rose-100 text-rose-600')
           : '';
 
         const diffBadges = sc.difficulties
-          ? sc.difficulties.map(d =>
-              `<span class="diff-badge ${d === 'Beginner' ? 'diff-beginner' : 'diff-intermediate'}">
-                <i class="fas ${d === 'Beginner' ? 'fa-seedling' : 'fa-fire'}" style="font-size:9px"></i> ${d}
-              </span>`).join('')
+          ? sc.difficulties.map(d => `<span class="diff-badge ${d==='Beginner'?'diff-beginner':'diff-intermediate'}"><i class="fas ${d==='Beginner'?'fa-seedling':'fa-fire'}" style="font-size:9px"></i> ${d}</span>`).join('')
           : '';
 
         card.innerHTML = `
@@ -709,22 +558,16 @@
             <div class="flex flex-col items-end gap-1.5">
               ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}">Button ${pos}</span>` : ''}
               <label class="toggle-switch toggle-${ds}" onclick="event.stopPropagation()">
-                <input type="checkbox" ${isActive ? 'checked' : ''} ${maxReached ? 'disabled' : ''} onchange="toggleScenario('${ds}', '${sc.id}')">
+                <input type="checkbox" ${isActive?'checked':''} ${maxReached?'disabled':''} onchange="toggleScenario('${ds}','${sc.id}')">
                 <span class="slider"></span>
               </label>
             </div>
           </div>
-
           ${diffBadges ? `<div class="flex gap-2 mb-2">${diffBadges}</div>` : ''}
-
           <p class="text-xs text-gray-500 leading-relaxed mb-3">${sc.desc}</p>
-
-          ${sc.note ? `<div class="mb-3 flex items-start gap-2 text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2"><i class="fas fa-info-circle mt-0.5 flex-shrink-0"></i><span>${sc.note}</span></div>` : ''}
-
           <div class="flex flex-wrap gap-1 mb-3">
-            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive ? activeOpClass : 'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
+            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive?activeOpClass:'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
           </div>
-
           <div class="border-t border-gray-100 pt-3 flex items-center justify-between">
             <div class="text-center">
               <p class="text-lg font-bold text-gray-800">${total}</p>
@@ -735,12 +578,10 @@
               <p class="text-lg font-bold text-gray-800">${sc.avgTime}</p>
               <p class="text-xs text-gray-400">Avg Time</p>
             </div>
-          </div>
-        `;
+          </div>`;
 
         grid.appendChild(card);
-        const sparkColor = isActive ? (sc.colorHex || accentColor) : '#d1d5db';
-        drawSparkline(sparkId, sc.sessions, sparkColor);
+        drawSparkline(sparkId, sc.sessions, isActive ? (sc.colorHex || accentColor) : '#d1d5db');
       });
 
       updateStatusBar(ds);
@@ -751,8 +592,7 @@
       const svg = document.getElementById(id);
       if (!svg) return;
       const w = 100, h = 28;
-      const min = Math.min(...data), max = Math.max(...data);
-      const range = max - min || 1;
+      const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
       const pts = data.map((v, i) => {
         const x = (i / (data.length - 1)) * w;
         const y = h - ((v - min) / range) * (h - 5) - 2.5;
@@ -764,59 +604,40 @@
     function updateStatusBar(ds) {
       const { prefix } = DS_CONFIG[ds];
       const n     = state[ds].activeIds.length;
-      const badge = document.getElementById(`${prefix}ActiveCountBadge`);
-      const hint  = document.getElementById(`${prefix}StatusHint`);
-      const btn   = document.getElementById(`${prefix}PushBtn`);
       const total = SCENARIOS[ds].length;
-
-      badge.textContent = `${n} of ${total} active`;
-      badge.className   = `px-3 py-1 rounded-full font-semibold text-xs ${n === MAX_ACTIVE ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`;
-
-      if (n === MAX_ACTIVE) {
-        hint.textContent = '✓ Exactly 2 selected — ready to push.';
-        hint.className   = 'text-green-600 text-xs font-medium';
-        btn.disabled     = false;
-      } else {
-        const need = MAX_ACTIVE - n;
-        hint.textContent = `Select ${need} more scenario${need !== 1 ? 's' : ''} to enable push.`;
-        hint.className   = 'text-gray-400 text-xs';
-        btn.disabled     = true;
-      }
+      document.getElementById(`${prefix}ActiveCountBadge`).textContent = `${n} of ${total} active`;
+      document.getElementById(`${prefix}ActiveCountBadge`).className   = `px-3 py-1 rounded-full font-semibold text-xs ${n===MAX_ACTIVE?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`;
+      const hint = document.getElementById(`${prefix}StatusHint`);
+      const btn  = document.getElementById(`${prefix}PushBtn`);
+      if (n === MAX_ACTIVE) { hint.textContent = '✓ Exactly 2 selected — ready to push.'; hint.className = 'text-green-600 text-xs font-medium'; btn.disabled = false; }
+      else { const need = MAX_ACTIVE - n; hint.textContent = `Select ${need} more scenario${need!==1?'s':''} to enable push.`; hint.className = 'text-gray-400 text-xs'; btn.disabled = true; }
     }
 
     function updatePreview(ds) {
       const { prefix } = DS_CONFIG[ds];
       const activeIds  = state[ds].activeIds;
-      const b1 = document.getElementById(`${prefix}PreviewBtn1`);
-      const b2 = document.getElementById(`${prefix}PreviewBtn2`);
       const s1 = SCENARIOS[ds].find(s => s.id === activeIds[0]);
       const s2 = SCENARIOS[ds].find(s => s.id === activeIds[1]);
-
+      const b1 = document.getElementById(`${prefix}PreviewBtn1`);
+      const b2 = document.getElementById(`${prefix}PreviewBtn2`);
       if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
       else    { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
-
       if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
       else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
     }
 
-    // ── TOGGLE ────────────────────────────────────────────────────
     function toggleScenario(ds, id) {
       const activeIds = state[ds].activeIds;
       const idx       = activeIds.indexOf(id);
-      if (idx >= 0) {
-        activeIds.splice(idx, 1);
-      } else {
-        if (activeIds.length >= MAX_ACTIVE) {
-          showToast(`Max ${MAX_ACTIVE} scenarios allowed — deactivate one first.`, 'error');
-          renderGrid(ds);
-          return;
-        }
+      if (idx >= 0) { activeIds.splice(idx, 1); }
+      else {
+        if (activeIds.length >= MAX_ACTIVE) { showToast(`Max ${MAX_ACTIVE} scenarios allowed — deactivate one first.`, 'error'); renderGrid(ds); return; }
         activeIds.push(id);
       }
       renderGrid(ds);
     }
 
-    // ── LOAD FROM SERVER ──────────────────────────────────────────
+    // ── LOAD CONFIG ───────────────────────────────────────────────────────────
     async function loadConfig(ds) {
       showLoading(true);
       try {
@@ -825,9 +646,7 @@
         if (data.success && data.config?.scenarios) {
           const ids = data.config.scenarios[ds] || [];
           state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
-        } else {
-          state[ds].activeIds = getDefaults(ds);
-        }
+        } else { state[ds].activeIds = getDefaults(ds); }
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
         addLog(`[${ds}] Loaded — active: [${state[ds].activeIds.join(', ')}]`, 'success');
@@ -838,79 +657,333 @@
         document.getElementById('apiStatus').className   = 'font-medium text-red-500';
         addLog(`[${ds}] Server unreachable — using local state.`, 'error');
         showToast('Server unreachable. Working offline.', 'error');
-      } finally {
-        showLoading(false);
-        renderGrid(ds);
-      }
+      } finally { showLoading(false); renderGrid(ds); }
     }
 
     function getDefaults(ds) {
-      return {
-        Arrays:     ['ParkingLot', 'VendingMachine'],
-        Stacks:     ['Plates', 'Warehouse'],
-        Queue:      ['CoffeeShop', 'ConveyorBelt'],
-        LinkedList: ['Train', 'Solar'],
-        Graph:      ['CityMap', 'IslandNetwork'],
-        Trees:      ['FamilyTree', 'FruitTree'],
-      }[ds];
+      return { Arrays:['ParkingLot','VendingMachine'], Stacks:['Plates','Warehouse'], Queue:['CoffeeShop','ConveyorBelt'], LinkedList:['Train','Solar'], Graph:['CityMap','IslandNetwork'], Trees:['FamilyTree','FruitTree'] }[ds];
     }
 
-    // ── PUSH TO SERVER ────────────────────────────────────────────
     async function pushConfig(ds) {
       const activeIds = state[ds].activeIds;
-      if (activeIds.length !== MAX_ACTIVE) {
-        showToast(`Select exactly ${MAX_ACTIVE} scenarios first.`, 'error');
-        return;
-      }
+      if (activeIds.length !== MAX_ACTIVE) { showToast(`Select exactly ${MAX_ACTIVE} scenarios first.`, 'error'); return; }
       showLoading(true);
       try {
-        const payload = {
-          scenarios: {
-            Arrays:     [...state.Arrays.activeIds],
-            Stacks:     [...state.Stacks.activeIds],
-            Queue:      [...state.Queue.activeIds],
-            LinkedList: [...state.LinkedList.activeIds],
-            Graph:      [...state.Graph.activeIds],
-            Trees:      [...state.Trees.activeIds],
-          }
-        };
-        const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
+        const payload = { scenarios: { Arrays:[...state.Arrays.activeIds], Stacks:[...state.Stacks.activeIds], Queue:[...state.Queue.activeIds], LinkedList:[...state.LinkedList.activeIds], Graph:[...state.Graph.activeIds], Trees:[...state.Trees.activeIds] } };
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/config`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
         const data = await res.json();
-        if (data.success) {
-          const labels = activeIds.map(id => {
-            const s = SCENARIOS[ds].find(x => x.id === id);
-            return s ? `${s.icon} ${s.name}` : id;
-          }).join(' + ');
-          addLog(`[${ds}] Pushed — [${activeIds.join(', ')}] → live in app.`, 'success');
-          showToast(`${ds} pushed! App shows: ${labels}`, 'success');
-        } else {
-          throw new Error(data.message || 'Server returned failure');
+        if (data.success) { addLog(`[${ds}] Pushed — [${activeIds.join(', ')}] → live in app.`, 'success'); showToast(`${ds} pushed!`, 'success'); }
+        else throw new Error(data.message || 'Server returned failure');
+      } catch (err) { addLog(`[${ds}] Push failed: ${err.message}`, 'error'); showToast(`Push failed: ${err.message}`, 'error'); }
+      finally { showLoading(false); }
+    }
+
+    // ════════════════════════════════════════════════
+    //  USAGE ANALYTICS
+    // ════════════════════════════════════════════════
+
+    async function loadUsageData() {
+      showLoading(true);
+      try {
+        const [usageRes, lbRes, usersRes] = await Promise.all([
+          fetch(`${SERVER_URL}/api/scenarios/usage`),
+          fetch(`${SERVER_URL}/api/scenarios/leaderboard?limit=10`),
+          fetch(`${SERVER_URL}/api/users`)
+        ]);
+        const usageData = await usageRes.json();
+        const lbData    = await lbRes.json();
+        const userData  = await usersRes.json();
+
+        if (usageData.success) {
+          globalUsageData = usageData;
+          allUsersCache   = (userData.users || []);
+          renderSummaryCards(usageData);
+          renderTopicPills(usageData.globalUsage);
+          renderLeaderboard(lbData.leaderboard || []);
+          addLog('Usage analytics loaded.', 'success');
         }
       } catch (err) {
-        addLog(`[${ds}] Push failed: ${err.message}`, 'error');
-        showToast(`Push failed: ${err.message}`, 'error');
+        addLog('Failed to load usage analytics: ' + err.message, 'error');
+        showToast('Could not load usage data.', 'error');
+        // Show placeholder with 0s
+        renderSummaryCards({ totalUsers: 0, globalUsage: {} });
+        renderTopicPills({});
+        renderLeaderboard([]);
       } finally {
         showLoading(false);
       }
     }
 
-    // ── INIT ──────────────────────────────────────────────────────
-    const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
+    function renderSummaryCards(data) {
+      const globalUsage = data.globalUsage || {};
+      let totalPicks = 0, topScenario = null, topPicks = 0, topicsActive = 0, trackedUsers = new Set();
+
+      Object.entries(globalUsage).forEach(([topic, scenarios]) => {
+        let topicHasPicks = false;
+        Object.entries(scenarios).forEach(([id, info]) => {
+          totalPicks += info.totalPicks;
+          if (info.totalPicks > topPicks) { topPicks = info.totalPicks; topScenario = { topic, id, ...info }; }
+          if (info.totalPicks > 0) topicHasPicks = true;
+        });
+        if (topicHasPicks) topicsActive++;
+      });
+
+      document.getElementById('statTotalPicks').textContent    = totalPicks.toLocaleString();
+      document.getElementById('statMostPopular').textContent   = topScenario ? (SCENARIOS[topScenario.topic]?.find(s=>s.id===topScenario.id)?.icon || '') + ' ' + topScenario.name : '—';
+      document.getElementById('statMostPopularSub').textContent = topScenario ? `${topPicks} picks in ${topScenario.topic}` : 'No picks yet';
+      document.getElementById('statTrackedUsers').textContent  = data.totalUsers || 0;
+      document.getElementById('statTopicsActive').textContent  = topicsActive;
+    }
+
+    function renderTopicPills(globalUsage) {
+      const container = document.getElementById('topicPills');
+      const ALL_DS = ['Arrays','Stacks','Queue','LinkedList','Graph','Trees'];
+      container.innerHTML = ALL_DS.map(ds => {
+        const usage = globalUsage[ds] || {};
+        const total = Object.values(usage).reduce((s, x) => s + x.totalPicks, 0);
+        const color = DS_CONFIG[ds].accentColor;
+        return `<button onclick="selectUsageTopic('${ds}')" id="pill-${ds}"
+          class="px-4 py-2 rounded-full text-xs font-semibold border-2 transition pill-btn"
+          style="border-color:#e5e7eb;color:#6b7280">
+          ${ds} <span class="ml-1 opacity-70">${total}</span>
+        </button>`;
+      }).join('');
+      // Select first topic
+      if (ALL_DS.length) selectUsageTopic(ALL_DS[0]);
+    }
+
+    function selectUsageTopic(ds) {
+      selectedUsageTopic = ds;
+      const color = DS_CONFIG[ds].accentColor;
+      document.querySelectorAll('.pill-btn').forEach(p => {
+        p.style.borderColor = '#e5e7eb'; p.style.color = '#6b7280'; p.style.background = '';
+      });
+      const pill = document.getElementById(`pill-${ds}`);
+      if (pill) { pill.style.borderColor = color; pill.style.color = color; pill.style.background = color + '14'; }
+      renderGlobalChart(ds);
+      renderBreakdownList(ds);
+    }
+
+    function renderGlobalChart(ds) {
+      const usage    = globalUsageData?.globalUsage?.[ds] || {};
+      const scenarios = SCENARIOS[ds];
+      const labels   = scenarios.map(s => s.name);
+      const picks    = scenarios.map(s => usage[s.id]?.totalPicks || 0);
+      const color    = DS_CONFIG[ds].accentColor;
+
+      if (usageChart) { usageChart.destroy(); usageChart = null; }
+
+      usageChart = new Chart(document.getElementById('globalUsageChart'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Total Picks',
+            data: picks,
+            backgroundColor: picks.map((_, i) => color + (i === picks.indexOf(Math.max(...picks)) ? 'FF' : '70')),
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#f3f4f6' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderBreakdownList(ds) {
+      const usage    = globalUsageData?.globalUsage?.[ds] || {};
+      const scenarios = SCENARIOS[ds];
+      const container = document.getElementById('globalBreakdownList');
+      const total    = scenarios.reduce((s, sc) => s + (usage[sc.id]?.totalPicks || 0), 0);
+      const color    = DS_CONFIG[ds].accentColor;
+
+      if (total === 0) {
+        container.innerHTML = `<p class="text-center text-gray-400 text-sm py-4">No picks recorded for ${ds} yet.</p>`;
+        return;
+      }
+
+      const sorted = [...scenarios].sort((a, b) => (usage[b.id]?.totalPicks || 0) - (usage[a.id]?.totalPicks || 0));
+
+      container.innerHTML = sorted.map((sc, idx) => {
+        const picks  = usage[sc.id]?.totalPicks || 0;
+        const pct    = total > 0 ? Math.round((picks / total) * 100) : 0;
+        const unique = usage[sc.id]?.uniqueUsers || 0;
+        const rankClass = idx===0?'rank-1':idx===1?'rank-2':'rank-3';
+        return `
+          <div class="flex items-center gap-3">
+            <div class="rank-badge ${rankClass}">${idx+1}</div>
+            <span class="text-xl">${sc.icon}</span>
+            <div class="flex-1">
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-semibold text-gray-700">${sc.name}</span>
+                <span class="text-xs text-gray-500">${picks} picks · ${unique} users</span>
+              </div>
+              <div class="usage-bar-track">
+                <div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div>
+              </div>
+            </div>
+            <span class="text-sm font-bold" style="color:${color};min-width:36px;text-align:right">${pct}%</span>
+          </div>`;
+      }).join('');
+    }
+
+    function renderLeaderboard(leaderboard) {
+      const container = document.getElementById('leaderboardList');
+      if (!leaderboard.length) {
+        container.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">No scenario picks recorded yet. Data appears here once users play in the AR app.</p>';
+        return;
+      }
+      const maxPicks = leaderboard[0]?.totalPicks || 1;
+      container.innerHTML = `
+        <div class="space-y-3">
+          ${leaderboard.map((item, idx) => {
+            const ds  = item.topicName;
+            const sc  = SCENARIOS[ds]?.find(s => s.id === item.scenarioId);
+            const color = DS_CONFIG[ds]?.accentColor || '#6366f1';
+            const pct = Math.round((item.totalPicks / maxPicks) * 100);
+            const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`<span class="text-gray-500 font-bold text-sm">${idx+1}</span>`;
+            return `
+              <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
+                <div class="w-8 text-center text-lg">${medal}</div>
+                <div class="text-xl">${sc?.icon || '🎮'}</div>
+                <div class="flex-1">
+                  <div class="flex items-center justify-between mb-1">
+                    <div>
+                      <span class="text-sm font-semibold text-gray-800">${item.name}</span>
+                      <span class="ml-2 text-xs px-2 py-0.5 rounded-full font-semibold" style="background:${color}20;color:${color}">${ds}</span>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-sm font-bold text-gray-800">${item.totalPicks}</span>
+                      <span class="text-xs text-gray-400 ml-1">picks</span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="usage-bar-track flex-1">
+                      <div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div>
+                    </div>
+                    <span class="text-xs text-gray-400">${item.uniqueUsers} users</span>
+                  </div>
+                </div>
+              </div>`;
+          }).join('')}
+        </div>`;
+    }
+
+    // ── INDIVIDUAL USER SEARCH ────────────────────────────────────────────────
+    function searchUsers(term) {
+      const results = document.getElementById('userSearchResults');
+      if (!term.trim()) { results.classList.add('hidden'); return; }
+      const matches = allUsersCache.filter(u =>
+        (u.username||'').toLowerCase().includes(term.toLowerCase()) ||
+        (u.name||'').toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 6);
+
+      if (!matches.length) { results.innerHTML = '<div class="px-4 py-3 text-sm text-gray-400">No users found</div>'; results.classList.remove('hidden'); return; }
+
+      results.innerHTML = matches.map(u => `
+        <div class="user-search-result px-4 py-2.5 flex items-center gap-3" onclick="loadUserUsage('${u.username}')">
+          <div class="w-7 h-7 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xs">
+            ${(u.name||u.username).substring(0,2).toUpperCase()}
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-800">${u.name||u.username}</p>
+            <p class="text-xs text-gray-400">@${u.username}</p>
+          </div>
+        </div>`).join('');
+      results.classList.remove('hidden');
+    }
+
+    async function loadUserUsage(username) {
+      document.getElementById('userSearchResults').classList.add('hidden');
+      document.getElementById('userSearchInput').value = username;
+      showLoading(true);
+      try {
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/usage/${username}`);
+        const data = await res.json();
+        if (data.success) renderUserUsage(data);
+        else showToast('Could not load user data.', 'error');
+      } catch { showToast('Failed to reach server.', 'error'); }
+      finally { showLoading(false); }
+    }
+
+    function renderUserUsage(data) {
+      document.getElementById('userUsagePlaceholder').classList.add('hidden');
+      document.getElementById('userUsagePanel').classList.remove('hidden');
+
+      const initials = (data.name || data.username).substring(0,2).toUpperCase();
+      document.getElementById('userUsageAvatar').textContent   = initials;
+      document.getElementById('userUsageName').textContent     = data.name || data.username;
+      document.getElementById('userUsageUsername').textContent = '@' + data.username;
+
+      const topics   = document.getElementById('userUsageTopics');
+      const noData   = document.getElementById('userNoData');
+      const usage    = data.scenarioUsage || {};
+      const topicKeys = Object.keys(usage);
+
+      if (!topicKeys.length) {
+        topics.classList.add('hidden');
+        noData.classList.remove('hidden');
+        return;
+      }
+
+      noData.classList.add('hidden');
+      topics.classList.remove('hidden');
+      topics.innerHTML = topicKeys.map(topicName => {
+        const topicUsage = usage[topicName];
+        const color = DS_CONFIG[topicName]?.accentColor || '#6366f1';
+        const scenarios = Object.entries(topicUsage.scenarios || {});
+        if (!scenarios.length) return '';
+        const totalPicks = scenarios.reduce((s,[,x]) => s + x.pickCount, 0);
+        return `
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold uppercase tracking-wide" style="color:${color}">${topicName}</span>
+              <span class="text-xs text-gray-400">${totalPicks} total</span>
+            </div>
+            ${scenarios.sort((a,b)=>b[1].pickCount-a[1].pickCount).map(([id, info]) => {
+              const sc  = SCENARIOS[topicName]?.find(s => s.id === id);
+              const pct = totalPicks > 0 ? Math.round((info.pickCount / totalPicks) * 100) : 0;
+              return `
+                <div class="mb-2">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-xs text-gray-700 font-medium">${sc?.icon||'🎮'} ${info.name}</span>
+                    <span class="text-xs font-bold" style="color:${color}">${info.pickCount}×</span>
+                  </div>
+                  <div class="usage-bar-track">
+                    <div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>`;
+      }).join('');
+    }
+
+    function clearUserSearch() {
+      document.getElementById('userSearchInput').value = '';
+      document.getElementById('userUsagePanel').classList.add('hidden');
+      document.getElementById('userUsagePlaceholder').classList.remove('hidden');
+      document.getElementById('userSearchResults').classList.add('hidden');
+    }
+
+    // ── INIT ──────────────────────────────────────────────────────────────────
+    const ALL_DS = ['Arrays','Stacks','Queue','LinkedList','Graph','Trees'];
 
     window.addEventListener('load', async () => {
+      buildPanels();
+
       const user = checkAuth();
       if (user) {
         document.getElementById('adminUserDisplay').textContent  = user.name || user.username;
         document.getElementById('adminEmailDisplay').textContent = user.email || '';
-        if (user.role === 'instructor') {
-          const link = document.getElementById('instructorsLink');
-          if (link) link.style.display = 'none';
-        }
       }
+
       document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
 
       showLoading(true);
@@ -922,9 +995,7 @@
             const ids = data.config.scenarios[ds] || [];
             state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
           });
-        } else {
-          ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); });
-        }
+        } else { ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); }); }
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
         addLog('All configs loaded from server.', 'success');
