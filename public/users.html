@@ -338,28 +338,49 @@
 
     // ── MODAL FUNCTIONS ───────────────────────────────────────────────────────
     async function openUserModal(username) {
+      console.log('🔍 Opening modal for:', username);
       showLoading(true);
       try {
-        const [userRes, quizRes] = await Promise.all([
-          fetch(`${SERVER_URL}/api/users/${username}`),
-          fetch(`${SERVER_URL}/api/quizzes/results/${username}`)
-        ]);
+        console.log('📡 Fetching user data from:', `${SERVER_URL}/api/users/${username}`);
+        const userRes = await fetch(`${SERVER_URL}/api/users/${username}`);
+        console.log('📥 User response status:', userRes.status);
         const userData = await userRes.json();
+        console.log('✅ User data received:', userData);
+
+        console.log('📡 Fetching quiz results from:', `${SERVER_URL}/api/quizzes/results/${username}`);
+        const quizRes = await fetch(`${SERVER_URL}/api/quizzes/results/${username}`);
+        console.log('📥 Quiz response status:', quizRes.status);
         const quizData = await quizRes.json();
+        console.log('✅ Quiz data received:', quizData);
 
-        if (userData.success) {
-          currentUserModal = userData.user;
-          const initials = (userData.user.name || userData.user.username).substring(0, 2).toUpperCase();
-          document.getElementById('modalUserAvatar').textContent = initials;
-          document.getElementById('modalUserName').textContent = userData.user.name || userData.user.username;
-          document.getElementById('modalUserEmail').textContent = userData.user.email;
-
-          renderQuizPerformance(userData.user, quizData.results || []);
-          renderScenarioUsage(userData.user);
-
-          document.getElementById('userModal').classList.add('show');
+        // Handle both response formats
+        const user = userData.user || userData;
+        
+        if (!user || !user.username) {
+          console.error('❌ Invalid user data:', userData);
+          showToast('User data is invalid', 'error');
+          return;
         }
+
+        currentUserModal = user;
+        
+        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+        document.getElementById('modalUserAvatar').textContent = initials;
+        document.getElementById('modalUserName').textContent = user.name || user.username;
+        document.getElementById('modalUserEmail').textContent = user.email || 'No email';
+
+        console.log('📊 Rendering quiz performance with', (quizData.results || []).length, 'results');
+        renderQuizPerformance(user, quizData.results || []);
+        
+        console.log('🎮 Rendering scenario usage...');
+        renderScenarioUsage(user);
+
+        console.log('✅ Showing modal...');
+        document.getElementById('userModal').classList.add('show');
+        
       } catch (err) {
+        console.error('❌ Modal error:', err);
+        console.error('Error stack:', err.stack);
         showToast('Failed to load user analytics: ' + err.message, 'error');
       } finally {
         showLoading(false);
@@ -380,6 +401,9 @@
 
     // ── RENDER QUIZ PERFORMANCE ───────────────────────────────────────────────
     function renderQuizPerformance(user, quizResults) {
+      console.log('📊 renderQuizPerformance called with user:', user.username);
+      console.log('📊 Quiz results:', quizResults);
+      
       const container = document.getElementById('quizPerformanceList');
       const progress = user.progress || {};
       const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
@@ -387,6 +411,8 @@
       container.innerHTML = ALL_DS.map(ds => {
         const dsProgress = progress[ds] || {};
         const topicQuizzes = quizResults.filter(q => q.topicName === ds) || [];
+        
+        console.log(`  ${ds}: ${topicQuizzes.length} quizzes found`);
         
         let percentage = 0, attempted = 0;
         if (topicQuizzes.length > 0) {
@@ -444,10 +470,14 @@
             </div>
           </div>`;
       }).join('');
+      
+      console.log('✅ Quiz performance rendered');
     }
 
     // ── RENDER SCENARIO USAGE ─────────────────────────────────────────────────
     function renderScenarioUsage(user) {
+      console.log('🎮 renderScenarioUsage called with user:', user.username);
+      
       const container = document.getElementById('scenarioUsageList');
       const progress = user.progress || {};
       const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
@@ -455,6 +485,8 @@
       container.innerHTML = ALL_DS.map(ds => {
         const dsProgress = progress[ds] || {};
         const scenarioUsage = dsProgress.scenarioUsage || {};
+
+        console.log(`  ${ds}: scenarioUsage =`, scenarioUsage);
 
         // Find most used scenario
         let mostUsedScenario = null, maxPicks = 0;
@@ -518,10 +550,13 @@
             </div>
           </div>`;
       }).join('');
+      
+      console.log('✅ Scenario usage rendered');
     }
 
     // ── INIT ──────────────────────────────────────────────────────────────────
     window.addEventListener('load', async () => {
+      console.log('🚀 Page loaded, checking auth...');
       const user = checkAuth();
       if (user) {
         document.getElementById('adminUserDisplay').textContent = user.name || user.username;
