@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analytics - StructuReality Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+  <style>
+    * { font-family: "Poppins", sans-serif; }
+
+    /* ── Color Scheme ────────────────────────────────────────────────── */
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #ec4899;
+      --accent: #06b6d4;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg-light: #f9fafb;
+      --bg-dark: #1f2937;
+      --text-primary: #111827;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    body { background: var(--bg-light); }
+
+    /* ── Sidebar ────────────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 100vh;
+      width: 16rem;
+      background: linear-gradient(135deg, #0f1b3f 0%, #2a1b63 100%);
+      color: white;
+      z-index: 50;
+      box-shadow: 4px 0 12px rgba(0,0,0,0.15);
+    }
+
+    .sidebar-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sidebar-logo {
+      width: 2.5rem;
+      height: 2.5rem;
+      background: white;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: #6366f1;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0;
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: all 0.3s;
+      margin: 0.25rem 0.5rem;
+      border-radius: 0.5rem;
+    }
+
+    .sidebar-nav a:hover {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+
+    .sidebar-nav a.active {
+      background: rgba(99,102,241,0.3);
+      color: white;
+      border-left: 3px solid #6366f1;
+      padding-left: calc(1rem - 3px);
+    }
+
+    /* ── Navbar ────────────────────────────────────────────────────── */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 16rem;
+      right: 0;
+      background: white;
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 40;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .navbar-title h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0;
+    }
+
+    .navbar-title p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0.25rem 0 0 0;
+    }
+
+    .navbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .status-dot {
+      width: 0.5rem;
+      height: 0.5rem;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.connected { background: var(--success); }
+    .status-dot.offline { background: var(--danger); }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* ── Main Content ────────────────────────────────────────────────── */
+    .main-content {
+      margin-left: 16rem;
+      margin-top: 5rem;
+      padding: 2rem;
+    }
+
+    /* ── Tab Navigation ────────────────────────────────────────────── */
+    .tab-container {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 0.75rem 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+      position: relative;
+      bottom: -2px;
+    }
+
+    .tab-btn:hover {
+      color: var(--primary);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    /* ── Tab Content ────────────────────────────────────────────────– */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Metric Cards ────────────────────────────────────────────────– */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .metric-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    .metric-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-value {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .metric-change {
+      font-size: 0.875rem;
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .metric-change.positive { color: var(--success); }
+    .metric-change.negative { color: var(--danger); }
+
+    /* ── Section Headers ────────────────────────────────────────────– */
+    .section-header {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+    }
+
+    .section-header h2 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 0.25rem 0;
+    }
+
+    .section-header p {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    /* ── Cards ────────────────────────────────────────────────────– */
+    .card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── Charts ────────────────────────────────────────────────────– */
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Lists ────────────────────────────────────────────────────– */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item:hover {
+      background: var(--bg-light);
+    }
+
+    .list-item-title {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .list-item-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-top: 0.25rem;
+    }
+
+    .list-item-stat {
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* ── Progress Bar ────────────────────────────────────────────– */
+    .progress-bar-track {
+      height: 8px;
+      background: var(--bg-light);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ── Badges ────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.375rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
+    .badge-info { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+
+    /* ── Filters & Controls ────────────────────────────────────────– */
+    .controls-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .control-label {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .control-input {
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      font-family: inherit;
+      font-size: 0.875rem;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-light);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: white;
+      border-color: var(--primary);
+    }
+
+    /* ── Toast ────────────────────────────────────────────────── */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transform: translateY(120%);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 999;
+      max-width: 400px;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast.success { background: var(--success); color: white; }
+    .toast.error { background: var(--danger); color: white; }
+    .toast.info { background: var(--primary); color: white; }
+
+    /* ── Loading ────────────────────────────────────────────────– */
+    .spinner {
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid var(--bg-light);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Responsive ────────────────────────────────────────────– */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 14rem;
+      }
+
+      .navbar {
+        left: 14rem;
+      }
+
+      .main-content {
+        margin-left: 14rem;
+        padding: 1rem;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tab-container {
+        flex-wrap: wrap;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .navbar {
+        left: 0;
+      }
+
+      .main-content {
+        margin-left: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <i class="fas fa-cube"></i>
+      </div>
+      <div>
+        <h1 style="font-size: 1.25rem; margin: 0;">StructuReality</h1>
+        <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin: 0;">Admin Portal</p>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="index.html"><i class="fas fa-home w-5"></i><span>Dashboard</span></a>
+      <a href="users.html"><i class="fas fa-users w-5"></i><span>Users</span></a>
+      <a href="lessons.html"><i class="fas fa-book w-5"></i><span>Lessons</span></a>
+      <a href="quizzes.html"><i class="fas fa-question-circle w-5"></i><span>Quizzes</span></a>
+      <a href="unified-analytics.html" class="active"><i class="fas fa-chart-line w-5"></i><span>User & Scenario Analytics</span></a>
+      <a href="scenarios.html"><i class="fas fa-vr-cardboard w-5"></i><span>AR Scenarios</span></a>
+    </nav>
+  </aside>
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-title">
+      <h1>Analytics Dashboard</h1>
+      <p>User progress & scenario usage analytics</p>
+    </div>
+    <div class="navbar-actions">
+      <div class="status-badge">
+        <span class="status-dot connected"></span>
+        <span id="apiStatus">Connecting...</span>
+      </div>
+      <button class="btn btn-secondary" onclick="refreshData()">
+        <i class="fas fa-sync-alt"></i>Refresh
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-container">
+      <button class="tab-btn active" onclick="switchTab('users')">
+        <i class="fas fa-users mr-2"></i>User Analytics
+      </button>
+      <button class="tab-btn" onclick="switchTab('scenarios')">
+        <i class="fas fa-vr-cardboard mr-2"></i>Scenario Analytics
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TAB 1: USER ANALYTICS
+    ════════════════════════════════════════════════════════════════ -->
+    <div id="users-tab" class="tab-content active">
+
+      <!-- Metrics Grid -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i class="fas fa-users-alt"></i>
+          </div>
+          <div class="metric-label">Total Users</div>
+          <div class="metric-value" id="metricTotalUsers">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-arrow-up-right"></i>
+            <span>Active this week</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--success);">
+            <i class="fas fa-fire"></i>
+          </div>
+          <div class="metric-label">Avg Streak</div>
+          <div class="metric-value" id="metricAvgStreak">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-trending-up"></i>
+            <span>Days in a row</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i class="fas fa-book-open"></i>
+          </div>
+          <div class="metric-label">Completion Rate</div>
+          <div class="metric-value" id="metricCompletionRate">—%</div>
+          <div class="metric-change positive">
+            <i class="fas fa-check-circle"></i>
+            <span>Topics completed</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="metric-label">Engagement Score</div>
+          <div class="metric-value" id="metricEngagement">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-star"></i>
+            <span>Out of 10</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Status & Progress -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+
+        <!-- User Status -->
+        <div class="card">
+          <div class="section-header">
+            <h2>User Status</h2>
+            <p>Activity distribution</p>
+          </div>
+          <div class="chart-container">
+            <canvas id="userStatusChart"></canvas>
+          </div>
+          <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+            <div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="activeCount">—</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">Active</div>
+            </div>
+            <div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="idleCount">—</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">Idle</div>
+            </div>
+            <div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);" id="inactiveCount">—</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">Inactive</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Distribution -->
+        <div class="card">
+          <div class="section-header">
+            <h2>Progress Distribution</h2>
+            <p>Users by completion percentage</p>
+          </div>
+          <div class="chart-container">
+            <canvas id="progressChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Activity Chart -->
+      <div class="card">
+        <div class="section-header">
+          <h2>Weekly Activity</h2>
+          <p>Lessons completed over the last 7 days</p>
+        </div>
+        <div class="chart-container" style="height: 250px;">
+          <canvas id="activityChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Topic Performance -->
+      <div class="card">
+        <div class="section-header">
+          <h2>Topic Performance</h2>
+          <p>Completion & engagement by topic</p>
+        </div>
+        <div id="topicPerformance" style="space-y: 1rem;">
+          <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+        </div>
+      </div>
+
+      <!-- Streak Distribution -->
+      <div class="card">
+        <div class="section-header">
+          <h2>Streak Distribution</h2>
+          <p>How many users maintain streaks</p>
+        </div>
+        <div class="chart-container" style="height: 250px;">
+          <canvas id="streakChart"></canvas>
+        </div>
+      </div>
+
+    </div><!-- /users-tab -->
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TAB 2: SCENARIO ANALYTICS
+    ════════════════════════════════════════════════════════════════ -->
+    <div id="scenarios-tab" class="tab-content">
+
+      <!-- Scenario Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+            <i class="fas fa-gamepad"></i>
+          </div>
+          <div class="metric-label">Total Picks</div>
+          <div class="metric-value" id="scenarioMetricTotalPicks">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-arrow-up-right"></i>
+            <span>All scenarios</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--success);">
+            <i class="fas fa-crown"></i>
+          </div>
+          <div class="metric-label">Most Popular</div>
+          <div class="metric-value" style="font-size: 1.25rem;" id="scenarioMetricMostPopular">—</div>
+          <div class="metric-change positive" id="scenarioMetricMostPopularSub" style="font-size: 0.75rem;">
+            — picks
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">
+            <i class="fas fa-users-alt"></i>
+          </div>
+          <div class="metric-label">Users Tracked</div>
+          <div class="metric-value" id="scenarioMetricTrackedUsers">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-users-alt"></i>
+            <span>With scenario data</span>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--accent);">
+            <i class="fas fa-layer-group"></i>
+          </div>
+          <div class="metric-label">Topics Active</div>
+          <div class="metric-value" id="scenarioMetricTopicsActive">—</div>
+          <div class="metric-change positive">
+            <i class="fas fa-check"></i>
+            <span>Out of 6 topics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Topic Filter & Charts -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+        <!-- Global Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Global Scenario Usage</h3>
+              <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Pick distribution by topic</p>
+            </div>
+            <button class="btn btn-secondary" onclick="loadUsageData()">
+              <i class="fas fa-sync-alt"></i>
+            </button>
+          </div>
+
+          <!-- Topic Selector -->
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;" id="topicPills"></div>
+
+          <!-- Chart -->
+          <div class="chart-container" style="height: 250px;">
+            <canvas id="globalUsageChart"></canvas>
+          </div>
+
+          <!-- Breakdown List -->
+          <div style="margin-top: 1rem;" id="globalBreakdownList">
+            <p style="text-align: center; color: var(--text-secondary);">Select a topic above</p>
+          </div>
+        </div>
+
+        <!-- User Search & Lookup -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Individual User</h3>
+              <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Scenario preferences</p>
+            </div>
+          </div>
+
+          <!-- User Search -->
+          <div style="margin-bottom: 1.5rem;">
+            <div style="position: relative;">
+              <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+              <input type="text" id="userSearchInput" placeholder="Search username..."
+                class="control-input" style="width: 100%; padding-left: 2.25rem;"
+                oninput="searchUsers(this.value)" />
+            </div>
+            <div id="userSearchResults" style="position: absolute; background: white; border: 1px solid var(--border); border-radius: 0.5rem; margin-top: 0.5rem; width: calc(50% - 3rem); max-height: 200px; overflow-y: auto; display: none; z-index: 10;"></div>
+          </div>
+
+          <!-- User Display -->
+          <div id="userUsagePanel" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; margin-bottom: 1.5rem;">
+              <div style="width: 2.5rem; height: 2.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;" id="userUsageAvatar">?</div>
+              <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--text-primary);" id="userUsageName">—</div>
+                <div style="font-size: 0.875rem; color: var(--text-secondary);" id="userUsageUsername">—</div>
+              </div>
+              <button class="btn btn-secondary" style="padding: 0.5rem; width: auto;" onclick="clearUserSearch()">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <div id="userUsageTopics" style="max-height: 400px; overflow-y: auto;"></div>
+            <p id="userNoData" style="display: none; text-align: center; color: var(--text-secondary); padding: 2rem 0;">No scenario data for this user yet.</p>
+          </div>
+
+          <div id="userUsagePlaceholder" style="text-align: center; padding: 2rem 0;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-search" style="color: var(--text-secondary);"></i></div>
+            <p style="color: var(--text-secondary);">Search for a user to<br>see their scenario history</p>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Top Scenarios Leaderboard</h3>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Most-played scenarios</p>
+          </div>
+          <span class="badge badge-warning">
+            <i class="fas fa-trophy"></i>All-time
+          </span>
+        </div>
+        <div id="leaderboardList" style="display: grid; gap: 1rem;">
+          <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+        </div>
+      </div>
+
+    </div><!-- /scenarios-tab -->
+
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SERVER_URL = 'https://structureality-admin.onrender.com';
+
+    let allUsersCache = [];
+    let globalUsageData = null;
+    let userAnalytics = null;
+    let usageChart = null;
+    let userStatusChart = null;
+    let progressChart = null;
+    let activityChart = null;
+    let streakChart = null;
+    let selectedUsageTopic = null;
+
+    /* ──────────────────────────────────────────────────────────────
+       UTILITY FUNCTIONS
+    ────────────────────────────────────────────────────────────────── */
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `toast ${type} show`;
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tab + '-tab').classList.add('active');
+      event.target.closest('.tab-btn').classList.add('active');
+      
+      if (tab === 'scenarios' && !globalUsageData) {
+        loadUsageData();
+      }
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       USER ANALYTICS
+    ────────────────────────────────────────────────────────────────── */
+
+    async function loadUserAnalytics() {
+      try {
+        const res = await fetch(`${SERVER_URL}/api/analytics`);
+        const data = await res.json();
+        
+        if (data.success) {
+          userAnalytics = data.data;
+          renderUserAnalytics();
+          document.getElementById('apiStatus').textContent = 'Connected';
+          document.querySelector('.status-dot').classList.add('connected');
+          document.querySelector('.status-dot').classList.remove('offline');
+        }
+      } catch (err) {
+        showToast('Failed to load user analytics', 'error');
+        document.getElementById('apiStatus').textContent = 'Offline';
+        document.querySelector('.status-dot').classList.add('offline');
+        document.querySelector('.status-dot').classList.remove('connected');
+      }
+    }
+
+    function renderUserAnalytics() {
+      const m = userAnalytics.metrics;
+      const a = userAnalytics.activity;
+      const prog = userAnalytics.progressDistribution;
+      const streak = userAnalytics.streakDistribution;
+      const status = userAnalytics.userStatus;
+
+      // Metrics
+      document.getElementById('metricTotalUsers').textContent = m.totalUsers;
+      document.getElementById('metricAvgStreak').textContent = m.avgStreak + ' days';
+      document.getElementById('metricCompletionRate').textContent = m.completionRate;
+      document.getElementById('metricEngagement').textContent = m.engagementScore + '/10';
+      document.getElementById('activeCount').textContent = status.active;
+      document.getElementById('idleCount').textContent = status.idle;
+      document.getElementById('inactiveCount').textContent = status.inactive;
+
+      // Charts
+      renderUserStatusChart(status);
+      renderProgressChart(prog);
+      renderActivityChart(a);
+      renderStreakChart(streak);
+      renderTopicPerformance();
+    }
+
+    function renderUserStatusChart(status) {
+      const ctx = document.getElementById('userStatusChart').getContext('2d');
+      if (userStatusChart) userStatusChart.destroy();
+      
+      userStatusChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Idle', 'Inactive'],
+          datasets: [{
+            data: [status.active, status.idle, status.inactive],
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+            borderColor: 'white',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+    }
+
+    function renderProgressChart(prog) {
+      const ctx = document.getElementById('progressChart').getContext('2d');
+      if (progressChart) progressChart.destroy();
+      
+      progressChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['0-20%', '21-40%', '41-60%', '61-80%', '81-100%'],
+          datasets: [{
+            label: 'Users',
+            data: [prog['0-20'], prog['21-40'], prog['41-60'], prog['61-80'], prog['81-100']],
+            backgroundColor: '#6366f1',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderActivityChart(activity) {
+      const ctx = document.getElementById('activityChart').getContext('2d');
+      if (activityChart) activityChart.destroy();
+      
+      activityChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: activity.labels,
+          datasets: [{
+            label: 'Lessons Completed',
+            data: activity.lessonsCompleted,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#6366f1',
+            pointBorderColor: 'white',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderStreakChart(streak) {
+      const ctx = document.getElementById('streakChart').getContext('2d');
+      if (streakChart) streakChart.destroy();
+      
+      streakChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['1-3 days', '4-7 days', '8-14 days', '15-30 days', '30+ days'],
+          datasets: [{
+            label: 'Users',
+            data: [streak['1-3'], streak['4-7'], streak['8-14'], streak['15-30'], streak['30+']],
+            backgroundColor: '#ec4899',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderTopicPerformance() {
+      const perf = userAnalytics.lessonPerformance || [];
+      const container = document.getElementById('topicPerformance');
+      
+      if (!perf.length) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No lesson performance data available</p>';
+        return;
+      }
+
+      container.innerHTML = perf.map(topic => `
+        <div class="list-item">
+          <div style="flex: 1;">
+            <div class="list-item-title">${topic.name}</div>
+            <div class="list-item-desc">${topic.topic}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="list-item-stat">${topic.completions}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">completions</div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       SCENARIO ANALYTICS
+    ────────────────────────────────────────────────────────────────── */
+
+    async function loadUsageData() {
+      try {
+        const [usageRes, lbRes, usersRes] = await Promise.all([
+          fetch(`${SERVER_URL}/api/scenarios/usage`),
+          fetch(`${SERVER_URL}/api/scenarios/leaderboard?limit=10`),
+          fetch(`${SERVER_URL}/api/users`)
+        ]);
+
+        const usageData = await usageRes.json();
+        const lbData = await lbRes.json();
+        const userData = await usersRes.json();
+
+        if (usageData.success) {
+          globalUsageData = usageData;
+          allUsersCache = userData.users || [];
+          renderScenarioMetrics(usageData);
+          renderTopicPills(usageData.globalUsage);
+          renderLeaderboard(lbData.leaderboard || []);
+        }
+      } catch (err) {
+        showToast('Failed to load scenario data', 'error');
+      }
+    }
+
+    function renderScenarioMetrics(data) {
+      const usage = data.globalUsage || {};
+      let totalPicks = 0, topScenario = null, topPicks = 0, topicsActive = 0;
+
+      Object.entries(usage).forEach(([topic, scenarios]) => {
+        let topicHasPicks = false;
+        Object.entries(scenarios).forEach(([id, info]) => {
+          totalPicks += info.totalPicks;
+          if (info.totalPicks > topPicks) {
+            topPicks = info.totalPicks;
+            topScenario = { topic, id, ...info };
+          }
+          if (info.totalPicks > 0) topicHasPicks = true;
+        });
+        if (topicHasPicks) topicsActive++;
+      });
+
+      document.getElementById('scenarioMetricTotalPicks').textContent = totalPicks.toLocaleString();
+      document.getElementById('scenarioMetricMostPopular').textContent = topScenario ? topScenario.name : '—';
+      document.getElementById('scenarioMetricMostPopularSub').textContent = topScenario ? `${topPicks} picks in ${topScenario.topic}` : '—';
+      document.getElementById('scenarioMetricTrackedUsers').textContent = data.totalUsers || 0;
+      document.getElementById('scenarioMetricTopicsActive').textContent = topicsActive;
+    }
+
+    function renderTopicPills(usage) {
+      const container = document.getElementById('topicPills');
+      const topics = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Graph', 'Trees'];
+      
+      container.innerHTML = topics.map(topic => {
+        const total = Object.values(usage[topic] || {}).reduce((s, x) => s + x.totalPicks, 0);
+        return `<button class="btn btn-secondary" onclick="selectUsageTopic('${topic}')" id="pill-${topic}" style="border: 2px solid var(--border);">
+          ${topic} <span style="opacity: 0.6;">${total}</span>
+        </button>`;
+      }).join('');
+      
+      selectUsageTopic(topics[0]);
+    }
+
+    function selectUsageTopic(topic) {
+      selectedUsageTopic = topic;
+      document.querySelectorAll('[id^="pill-"]').forEach(btn => {
+        btn.style.borderColor = 'var(--border)';
+        btn.style.color = 'var(--text-primary)';
+        btn.style.background = '';
+      });
+      
+      const pill = document.getElementById(`pill-${topic}`);
+      if (pill) {
+        pill.style.borderColor = 'var(--primary)';
+        pill.style.color = 'var(--primary)';
+        pill.style.background = 'rgba(99, 102, 241, 0.1)';
+      }
+      
+      renderGlobalChart(topic);
+      renderBreakdownList(topic);
+    }
+
+    function renderGlobalChart(topic) {
+      const usage = globalUsageData?.globalUsage?.[topic] || {};
+      const scenarios = Object.entries(usage).sort((a, b) => b[1].totalPicks - a[1].totalPicks);
+      
+      const ctx = document.getElementById('globalUsageChart').getContext('2d');
+      if (usageChart) usageChart.destroy();
+      
+      usageChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: scenarios.map(([id, info]) => info.name),
+          datasets: [{
+            label: 'Picks',
+            data: scenarios.map(([id, info]) => info.totalPicks),
+            backgroundColor: '#6366f1'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderBreakdownList(topic) {
+      const usage = globalUsageData?.globalUsage?.[topic] || {};
+      const container = document.getElementById('globalBreakdownList');
+      const scenarios = Object.entries(usage).sort((a, b) => b[1].totalPicks - a[1].totalPicks);
+      const total = scenarios.reduce((s, [, info]) => s + info.totalPicks, 0);
+
+      if (!scenarios.length) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No picks recorded yet</p>';
+        return;
+      }
+
+      container.innerHTML = scenarios.map(([id, info], idx) => {
+        const pct = total > 0 ? Math.round((info.totalPicks / total) * 100) : 0;
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        
+        return `
+          <div class="list-item">
+            <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+              ${medal ? `<span style="font-size: 1.25rem;">${medal}</span>` : ''}
+              <div>
+                <div class="list-item-title">${info.name}</div>
+                <div class="list-item-desc">${info.uniqueUsers} users</div>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div class="list-item-stat">${pct}%</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">${info.totalPicks} picks</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderLeaderboard(leaderboard) {
+      const container = document.getElementById('leaderboardList');
+      
+      if (!leaderboard.length) {
+        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No scenario picks recorded yet</p>';
+        return;
+      }
+
+      const maxPicks = leaderboard[0]?.totalPicks || 1;
+
+      container.innerHTML = leaderboard.map((item, idx) => {
+        const pct = Math.round((item.totalPicks / maxPicks) * 100);
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        
+        return `
+          <div style="padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; display: flex; align-items: center; gap: 1rem;">
+            ${medal ? `<span style="font-size: 1.5rem;">${medal}</span>` : `<span style="width: 2rem; text-align: center; font-weight: 700; color: var(--text-secondary);">${idx + 1}</span>`}
+            <div style="flex: 1;">
+              <div style="font-weight: 600; color: var(--text-primary);">${item.name}</div>
+              <div style="font-size: 0.875rem; color: var(--text-secondary);">${item.topicName} • ${item.uniqueUsers} users</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 700; color: var(--primary);">${item.totalPicks}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);">picks</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       USER SEARCH
+    ────────────────────────────────────────────────────────────────── */
+
+    function searchUsers(term) {
+      const results = document.getElementById('userSearchResults');
+      if (!term.trim()) {
+        results.style.display = 'none';
+        return;
+      }
+
+      const matches = allUsersCache.filter(u =>
+        (u.username || '').toLowerCase().includes(term.toLowerCase()) ||
+        (u.name || '').toLowerCase().includes(term.toLowerCase())
+      ).slice(0, 5);
+
+      if (!matches.length) {
+        results.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-secondary);">No users found</div>';
+        results.style.display = 'block';
+        return;
+      }
+
+      results.innerHTML = matches.map(u => `
+        <div style="padding: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; hover:background: var(--bg-light);" onclick="loadUserUsage('${u.username}')">
+          <div style="font-weight: 600; color: var(--text-primary);">${u.name || u.username}</div>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">@${u.username}</div>
+        </div>
+      `).join('');
+      results.style.display = 'block';
+    }
+
+    async function loadUserUsage(username) {
+      document.getElementById('userSearchResults').style.display = 'none';
+      document.getElementById('userSearchInput').value = username;
+
+      try {
+        const res = await fetch(`${SERVER_URL}/api/scenarios/usage/${username}`);
+        const data = await res.json();
+        if (data.success) renderUserUsage(data);
+      } catch (err) {
+        showToast('Failed to load user data', 'error');
+      }
+    }
+
+    function renderUserUsage(data) {
+      document.getElementById('userUsagePlaceholder').style.display = 'none';
+      document.getElementById('userUsagePanel').style.display = 'block';
+
+      const initials = (data.name || data.username).substring(0, 2).toUpperCase();
+      document.getElementById('userUsageAvatar').textContent = initials;
+      document.getElementById('userUsageName').textContent = data.name || data.username;
+      document.getElementById('userUsageUsername').textContent = '@' + data.username;
+
+      const usage = data.scenarioUsage || {};
+      const topics = Object.keys(usage);
+
+      if (!topics.length) {
+        document.getElementById('userUsageTopics').style.display = 'none';
+        document.getElementById('userNoData').style.display = 'block';
+        return;
+      }
+
+      document.getElementById('userNoData').style.display = 'none';
+      document.getElementById('userUsageTopics').style.display = 'block';
+      document.getElementById('userUsageTopics').innerHTML = topics.map(topicName => {
+        const topicUsage = usage[topicName];
+        const scenarios = Object.entries(topicUsage.scenarios || {});
+        if (!scenarios.length) return '';
+
+        const totalPicks = scenarios.reduce((s, [, x]) => s + x.pickCount, 0);
+
+        return `
+          <div style="padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; margin-bottom: 1rem;">
+            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">${topicName}</div>
+            ${scenarios.sort((a, b) => b[1].pickCount - a[1].pickCount).map(([id, info]) => {
+              const pct = totalPicks > 0 ? Math.round((info.pickCount / totalPicks) * 100) : 0;
+              return `
+                <div style="margin-bottom: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                    <span>${info.name}</span>
+                    <span style="font-weight: 600;">${info.pickCount}×</span>
+                  </div>
+                  <div class="progress-bar-track">
+                    <div class="progress-bar-fill" style="width: ${pct}%; background: var(--primary);"></div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function clearUserSearch() {
+      document.getElementById('userSearchInput').value = '';
+      document.getElementById('userUsagePanel').style.display = 'none';
+      document.getElementById('userUsagePlaceholder').style.display = 'block';
+    }
+
+    async function refreshData() {
+      if (document.querySelector('.tab-btn.active').textContent.includes('User')) {
+        await loadUserAnalytics();
+      } else {
+        await loadUsageData();
+      }
+      showToast('Data refreshed', 'success');
+    }
+
+    /* ──────────────────────────────────────────────────────────────
+       INITIALIZATION
+    ────────────────────────────────────────────────────────────────── */
+
+    window.addEventListener('load', async () => {
+      await loadUserAnalytics();
+    });
+  </script>
+</body>
+</html>

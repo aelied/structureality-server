@@ -384,8 +384,6 @@ app.get('/', (req, res) => {
         }
     });
 });
-
-// Serve admin pages explicitly
 app.get('/login.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
@@ -398,8 +396,15 @@ app.get('/users.html', (req, res) => {
 app.get('/lessons.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'lessons.html'));
 });
-app.get('/analytics.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'analytics.html'));
+app.get('/quizzes.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'quizzes.html'));
+});
+app.get('/scenarios.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'scenarios.html'));
+});
+// ✅ ADD THIS NEW ONE:
+app.get('/unified-analytics.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'unified-analytics.html'));
 });
 
 // ==================== PASSWORD RESET ENDPOINTS ====================
