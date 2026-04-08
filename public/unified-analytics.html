@@ -3,39 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Analytics - StructuReality Admin</title>
+  <title>User & Scenario Analytics - StructuReality Admin</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
   <style>
     * { font-family: "Poppins", sans-serif; }
+    body { background: #f9fafb; }
 
-    /* ── Color Scheme ────────────────────────────────────────────────── */
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --secondary: #ec4899;
-      --accent: #06b6d4;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --bg-light: #f9fafb;
-      --bg-dark: #1f2937;
-      --text-primary: #111827;
-      --text-secondary: #6b7280;
-      --border: #e5e7eb;
-    }
-
-    body { background: var(--bg-light); }
-
-    /* ── Sidebar ────────────────────────────────────────────────────── */
+    /* ── SIDEBAR ────────────────────────────────────────────────────── */
     .sidebar {
       position: fixed;
       left: 0;
       top: 0;
       height: 100vh;
-      width: 16rem;
+      width: 256px;
       background: linear-gradient(135deg, #0f1b3f 0%, #2a1b63 100%);
       color: white;
       z-index: 50;
@@ -43,39 +26,54 @@
     }
 
     .sidebar-header {
-      padding: 1.5rem;
+      padding: 24px;
       border-bottom: 1px solid rgba(255,255,255,0.1);
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 12px;
     }
 
     .sidebar-logo {
-      width: 2.5rem;
-      height: 2.5rem;
+      width: 40px;
+      height: 40px;
       background: white;
-      border-radius: 0.5rem;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: 700;
       color: #6366f1;
+      font-size: 20px;
+    }
+
+    .sidebar-header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .sidebar-header p {
+      margin: 4px 0 0 0;
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
     }
 
     .sidebar-nav {
-      padding: 1rem 0;
+      padding: 16px 0;
     }
 
     .sidebar-nav a {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
+      gap: 12px;
+      padding: 12px 16px;
       color: rgba(255,255,255,0.7);
       text-decoration: none;
       transition: all 0.3s;
-      margin: 0.25rem 0.5rem;
-      border-radius: 0.5rem;
+      margin: 4px 8px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 14px;
     }
 
     .sidebar-nav a:hover {
@@ -84,21 +82,19 @@
     }
 
     .sidebar-nav a.active {
-      background: rgba(99,102,241,0.3);
+      background: #6366f1;
       color: white;
-      border-left: 3px solid #6366f1;
-      padding-left: calc(1rem - 3px);
     }
 
-    /* ── Navbar ────────────────────────────────────────────────────── */
+    /* ── NAVBAR ────────────────────────────────────────────────────── */
     .navbar {
       position: fixed;
       top: 0;
-      left: 16rem;
+      left: 256px;
       right: 0;
       background: white;
-      border-bottom: 1px solid var(--border);
-      padding: 1rem 2rem;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 16px 32px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -107,112 +103,108 @@
     }
 
     .navbar-title h1 {
-      font-size: 1.5rem;
+      font-size: 24px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #111827;
       margin: 0;
     }
 
     .navbar-title p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin: 0.25rem 0 0 0;
+      font-size: 14px;
+      color: #6b7280;
+      margin: 4px 0 0 0;
     }
 
     .navbar-actions {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 16px;
     }
 
     .status-badge {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: var(--bg-light);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
     }
 
     .status-dot {
-      width: 0.5rem;
-      height: 0.5rem;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       animation: pulse 2s infinite;
     }
 
-    .status-dot.connected { background: var(--success); }
-    .status-dot.offline { background: var(--danger); }
+    .status-dot.connected { background: #10b981; }
+    .status-dot.offline { background: #ef4444; }
 
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-    /* ── Main Content ────────────────────────────────────────────────── */
+    /* ── MAIN CONTENT ────────────────────────────────────────────────── */
     .main-content {
-      margin-left: 16rem;
-      margin-top: 5rem;
-      padding: 2rem;
+      margin-left: 256px;
+      margin-top: 80px;
+      padding: 32px;
     }
 
-    /* ── Tab Navigation ────────────────────────────────────────────── */
+    /* ── TAB NAVIGATION ────────────────────────────────────────────── */
     .tab-container {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--border);
+      gap: 8px;
+      margin-bottom: 32px;
+      border-bottom: 2px solid #e5e7eb;
     }
 
     .tab-btn {
-      padding: 0.75rem 1.5rem;
+      padding: 12px 24px;
       background: none;
       border: none;
       cursor: pointer;
       font-weight: 600;
-      color: var(--text-secondary);
+      color: #6b7280;
       border-bottom: 3px solid transparent;
       transition: all 0.3s;
       position: relative;
       bottom: -2px;
+      font-size: 14px;
     }
 
-    .tab-btn:hover {
-      color: var(--primary);
-    }
-
+    .tab-btn:hover { color: #6366f1; }
     .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
+      color: #6366f1;
+      border-bottom-color: #6366f1;
     }
 
-    /* ── Tab Content ────────────────────────────────────────────────– */
     .tab-content {
       display: none;
       animation: fadeIn 0.4s ease;
     }
 
-    .tab-content.active {
-      display: block;
-    }
+    .tab-content.active { display: block; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Metric Cards ────────────────────────────────────────────────– */
+    /* ── METRIC CARDS ────────────────────────────────────────────── */
     .metrics-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+      gap: 24px;
+      margin-bottom: 32px;
     }
 
     .metric-card {
       background: white;
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 1.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
       transition: all 0.3s;
     }
 
@@ -222,226 +214,145 @@
     }
 
     .metric-icon {
-      width: 3rem;
-      height: 3rem;
-      border-radius: 0.75rem;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
+      font-size: 24px;
+      margin-bottom: 16px;
     }
 
     .metric-label {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
+      font-size: 12px;
+      color: #6b7280;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 0.5rem;
+      margin-bottom: 8px;
+      font-weight: 600;
     }
 
     .metric-value {
-      font-size: 2.25rem;
+      font-size: 32px;
       font-weight: 700;
-      color: var(--text-primary);
+      color: #111827;
     }
 
-    .metric-change {
-      font-size: 0.875rem;
-      margin-top: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .metric-change.positive { color: var(--success); }
-    .metric-change.negative { color: var(--danger); }
-
-    /* ── Section Headers ────────────────────────────────────────────– */
-    .section-header {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .section-header h2 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin: 0 0 0.25rem 0;
-    }
-
-    .section-header p {
-      color: var(--text-secondary);
-      font-size: 0.875rem;
-      margin: 0;
-    }
-
-    /* ── Cards ────────────────────────────────────────────────────– */
+    /* ── CARDS ────────────────────────────────────────────────── */
     .card {
       background: white;
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
     }
 
     .card-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 1.5rem;
+      margin-bottom: 24px;
     }
 
-    /* ── Charts ────────────────────────────────────────────────────– */
+    .card-header h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+      margin: 0 0 4px 0;
+    }
+
+    .card-header p {
+      font-size: 12px;
+      color: #6b7280;
+      margin: 0;
+    }
+
+    /* ── CHART ────────────────────────────────────────────────────– */
     .chart-container {
       position: relative;
       height: 300px;
-      margin-bottom: 1rem;
+      margin-bottom: 16px;
     }
 
-    /* ── Lists ────────────────────────────────────────────────────– */
-    .list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.2s;
-    }
-
-    .list-item:last-child {
-      border-bottom: none;
-    }
-
-    .list-item:hover {
-      background: var(--bg-light);
-    }
-
-    .list-item-title {
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .list-item-desc {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin-top: 0.25rem;
-    }
-
-    .list-item-stat {
-      font-weight: 700;
-      color: var(--primary);
-    }
-
-    /* ── Progress Bar ────────────────────────────────────────────– */
-    .progress-bar-track {
-      height: 8px;
-      background: var(--bg-light);
-      border-radius: 99px;
-      overflow: hidden;
-      margin-top: 0.5rem;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* ── Badges ────────────────────────────────────────────────── */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.375rem 0.75rem;
-      border-radius: 0.5rem;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .badge-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-    .badge-warning { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-    .badge-danger { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
-    .badge-info { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
-
-    /* ── Filters & Controls ────────────────────────────────────────– */
-    .controls-row {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .control-label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .control-input {
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      font-family: inherit;
-      font-size: 0.875rem;
-    }
-
+    /* ── BUTTONS ────────────────────────────────────────────────── */
     .btn {
-      padding: 0.75rem 1.5rem;
+      padding: 12px 24px;
       border: none;
-      border-radius: 0.5rem;
+      border-radius: 8px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 8px;
+      font-size: 14px;
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: #6366f1;
       color: white;
     }
 
     .btn-primary:hover {
-      background: var(--primary-dark);
+      background: #4f46e5;
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
     }
 
     .btn-secondary {
-      background: var(--bg-light);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
+      background: #f9fafb;
+      color: #111827;
+      border: 1px solid #e5e7eb;
     }
 
     .btn-secondary:hover {
       background: white;
-      border-color: var(--primary);
+      border-color: #6366f1;
     }
 
-    /* ── Toast ────────────────────────────────────────────────── */
+    /* ── BADGES ────────────────────────────────────────────────– */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+    /* ── LIST ITEMS ────────────────────────────────────────────– */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      border-bottom: 1px solid #e5e7eb;
+      transition: background 0.2s;
+    }
+
+    .list-item:last-child { border-bottom: none; }
+    .list-item:hover { background: #f9fafb; }
+
+    /* ── TOAST ────────────────────────────────────────────────── */
     .toast {
       position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      padding: 1rem 1.5rem;
-      border-radius: 0.5rem;
+      bottom: 32px;
+      right: 32px;
+      padding: 16px 24px;
+      border-radius: 8px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 12px;
       transform: translateY(120%);
       opacity: 0;
       transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
       z-index: 999;
       max-width: 400px;
+      color: white;
     }
 
     .toast.show {
@@ -449,65 +360,23 @@
       opacity: 1;
     }
 
-    .toast.success { background: var(--success); color: white; }
-    .toast.error { background: var(--danger); color: white; }
-    .toast.info { background: var(--primary); color: white; }
+    .toast.success { background: #10b981; }
+    .toast.error { background: #ef4444; }
+    .toast.info { background: #6366f1; }
 
-    /* ── Loading ────────────────────────────────────────────────– */
-    .spinner {
-      width: 1.5rem;
-      height: 1.5rem;
-      border: 3px solid var(--bg-light);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+    /* ── PROGRESS BAR ────────────────────────────────────────────– */
+    .progress-bar-track {
+      height: 8px;
+      background: #f9fafb;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 8px;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ── Responsive ────────────────────────────────────────────– */
-    @media (max-width: 768px) {
-      .sidebar {
-        width: 14rem;
-      }
-
-      .navbar {
-        left: 14rem;
-      }
-
-      .main-content {
-        margin-left: 14rem;
-        padding: 1rem;
-      }
-
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .tab-container {
-        flex-wrap: wrap;
-      }
-    }
-
-    @media (max-width: 640px) {
-      .sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s;
-      }
-
-      .sidebar.show {
-        transform: translateX(0);
-      }
-
-      .navbar {
-        left: 0;
-      }
-
-      .main-content {
-        margin-left: 0;
-      }
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     }
   </style>
 </head>
@@ -520,17 +389,17 @@
         <i class="fas fa-cube"></i>
       </div>
       <div>
-        <h1 style="font-size: 1.25rem; margin: 0;">StructuReality</h1>
-        <p style="font-size: 0.75rem; color: rgba(255,255,255,0.6); margin: 0;">Admin Portal</p>
+        <h1>StructuReality</h1>
+        <p>Admin Portal</p>
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a href="index.html"><i class="fas fa-home w-5"></i><span>Dashboard</span></a>
-      <a href="users.html"><i class="fas fa-users w-5"></i><span>Users</span></a>
-      <a href="lessons.html"><i class="fas fa-book w-5"></i><span>Lessons</span></a>
-      <a href="quizzes.html"><i class="fas fa-question-circle w-5"></i><span>Quizzes</span></a>
-      <a href="unified-analytics.html" class="active"><i class="fas fa-chart-line w-5"></i><span>User & Scenario Analytics</span></a>
-      <a href="scenarios.html"><i class="fas fa-vr-cardboard w-5"></i><span>AR Scenarios</span></a>
+      <a href="index.html"><i class="fas fa-home"></i><span>Dashboard</span></a>
+      <a href="users.html"><i class="fas fa-users"></i><span>Users</span></a>
+      <a href="lessons.html"><i class="fas fa-book"></i><span>Lessons</span></a>
+      <a href="quizzes.html"><i class="fas fa-question-circle"></i><span>Quizzes</span></a>
+      <a href="unified-analytics.html" class="active"><i class="fas fa-chart-line"></i><span>User & Scenario Analytics</span></a>
+      <a href="scenarios.html"><i class="fas fa-vr-cardboard"></i><span>AR Scenarios</span></a>
     </nav>
   </aside>
 
@@ -538,7 +407,7 @@
   <nav class="navbar">
     <div class="navbar-title">
       <h1>Analytics Dashboard</h1>
-      <p>User progress & scenario usage analytics</p>
+      <p>User progress & scenario usage</p>
     </div>
     <div class="navbar-actions">
       <div class="status-badge">
@@ -572,100 +441,72 @@
       <!-- Metrics Grid -->
       <div class="metrics-grid">
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
             <i class="fas fa-users-alt"></i>
           </div>
           <div class="metric-label">Total Users</div>
           <div class="metric-value" id="metricTotalUsers">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-arrow-up-right"></i>
-            <span>Active this week</span>
-          </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--success);">
+          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: #10b981;">
             <i class="fas fa-fire"></i>
           </div>
           <div class="metric-label">Avg Streak</div>
           <div class="metric-value" id="metricAvgStreak">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-trending-up"></i>
-            <span>Days in a row</span>
-          </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
             <i class="fas fa-book-open"></i>
           </div>
           <div class="metric-label">Completion Rate</div>
           <div class="metric-value" id="metricCompletionRate">—%</div>
-          <div class="metric-change positive">
-            <i class="fas fa-check-circle"></i>
-            <span>Topics completed</span>
-          </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">
-            <i class="fas fa-clock"></i>
+          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">
+            <i class="fas fa-star"></i>
           </div>
           <div class="metric-label">Engagement Score</div>
           <div class="metric-value" id="metricEngagement">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-star"></i>
-            <span>Out of 10</span>
-          </div>
         </div>
       </div>
 
-      <!-- User Status & Progress -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
-
-        <!-- User Status -->
+      <!-- User Status & Progress Charts -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
         <div class="card">
-          <div class="section-header">
-            <h2>User Status</h2>
-            <p>Activity distribution</p>
+          <div class="card-header">
+            <div>
+              <h2>User Status</h2>
+              <p>Activity distribution</p>
+            </div>
           </div>
           <div class="chart-container">
             <canvas id="userStatusChart"></canvas>
           </div>
-          <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
-            <div>
-              <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="activeCount">—</div>
-              <div style="font-size: 0.875rem; color: var(--text-secondary);">Active</div>
-            </div>
-            <div>
-              <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="idleCount">—</div>
-              <div style="font-size: 0.875rem; color: var(--text-secondary);">Idle</div>
-            </div>
-            <div>
-              <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);" id="inactiveCount">—</div>
-              <div style="font-size: 0.875rem; color: var(--text-secondary);">Inactive</div>
-            </div>
-          </div>
         </div>
 
-        <!-- Progress Distribution -->
         <div class="card">
-          <div class="section-header">
-            <h2>Progress Distribution</h2>
-            <p>Users by completion percentage</p>
+          <div class="card-header">
+            <div>
+              <h2>Progress Distribution</h2>
+              <p>Users by completion level</p>
+            </div>
           </div>
           <div class="chart-container">
             <canvas id="progressChart"></canvas>
           </div>
         </div>
-
       </div>
 
       <!-- Activity Chart -->
       <div class="card">
-        <div class="section-header">
-          <h2>Weekly Activity</h2>
-          <p>Lessons completed over the last 7 days</p>
+        <div class="card-header">
+          <div>
+            <h2>Weekly Activity</h2>
+            <p>Lessons completed over 7 days</p>
+          </div>
         </div>
         <div class="chart-container" style="height: 250px;">
           <canvas id="activityChart"></canvas>
@@ -674,20 +515,24 @@
 
       <!-- Topic Performance -->
       <div class="card">
-        <div class="section-header">
-          <h2>Topic Performance</h2>
-          <p>Completion & engagement by topic</p>
+        <div class="card-header">
+          <div>
+            <h2>Topic Performance</h2>
+            <p>Completion & engagement by topic</p>
+          </div>
         </div>
-        <div id="topicPerformance" style="space-y: 1rem;">
-          <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+        <div id="topicPerformance">
+          <p style="text-align: center; color: #6b7280;">Loading...</p>
         </div>
       </div>
 
       <!-- Streak Distribution -->
       <div class="card">
-        <div class="section-header">
-          <h2>Streak Distribution</h2>
-          <p>How many users maintain streaks</p>
+        <div class="card-header">
+          <div>
+            <h2>Streak Distribution</h2>
+            <p>How many users maintain streaks</p>
+          </div>
         </div>
         <div class="chart-container" style="height: 250px;">
           <canvas id="streakChart"></canvas>
@@ -704,139 +549,112 @@
       <!-- Scenario Metrics -->
       <div class="metrics-grid">
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">
+          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
             <i class="fas fa-gamepad"></i>
           </div>
           <div class="metric-label">Total Picks</div>
           <div class="metric-value" id="scenarioMetricTotalPicks">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-arrow-up-right"></i>
-            <span>All scenarios</span>
-          </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: var(--success);">
+          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: #10b981;">
             <i class="fas fa-crown"></i>
           </div>
           <div class="metric-label">Most Popular</div>
-          <div class="metric-value" style="font-size: 1.25rem;" id="scenarioMetricMostPopular">—</div>
-          <div class="metric-change positive" id="scenarioMetricMostPopularSub" style="font-size: 0.75rem;">
-            — picks
-          </div>
+          <div class="metric-value" style="font-size: 20px;" id="scenarioMetricMostPopular">—</div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">
+          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">
             <i class="fas fa-users-alt"></i>
           </div>
           <div class="metric-label">Users Tracked</div>
           <div class="metric-value" id="scenarioMetricTrackedUsers">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-users-alt"></i>
-            <span>With scenario data</span>
-          </div>
         </div>
 
         <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(6, 182, 212, 0.1); color: var(--accent);">
+          <div class="metric-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
             <i class="fas fa-layer-group"></i>
           </div>
           <div class="metric-label">Topics Active</div>
           <div class="metric-value" id="scenarioMetricTopicsActive">—</div>
-          <div class="metric-change positive">
-            <i class="fas fa-check"></i>
-            <span>Out of 6 topics</span>
-          </div>
         </div>
       </div>
 
-      <!-- Topic Filter & Charts -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-
-        <!-- Global Breakdown -->
+      <!-- Global & User Lookup -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
         <div class="card">
           <div class="card-header">
             <div>
-              <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Global Scenario Usage</h3>
-              <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Pick distribution by topic</p>
+              <h2>Global Scenario Usage</h2>
+              <p>Pick distribution by topic</p>
             </div>
             <button class="btn btn-secondary" onclick="loadUsageData()">
               <i class="fas fa-sync-alt"></i>
             </button>
           </div>
 
-          <!-- Topic Selector -->
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;" id="topicPills"></div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;" id="topicPills"></div>
 
-          <!-- Chart -->
           <div class="chart-container" style="height: 250px;">
             <canvas id="globalUsageChart"></canvas>
           </div>
 
-          <!-- Breakdown List -->
-          <div style="margin-top: 1rem;" id="globalBreakdownList">
-            <p style="text-align: center; color: var(--text-secondary);">Select a topic above</p>
+          <div style="margin-top: 16px;" id="globalBreakdownList">
+            <p style="text-align: center; color: #6b7280;">Select a topic above</p>
           </div>
         </div>
 
-        <!-- User Search & Lookup -->
         <div class="card">
           <div class="card-header">
             <div>
-              <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Individual User</h3>
-              <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Scenario preferences</p>
+              <h2>Individual User</h2>
+              <p>Scenario preferences</p>
             </div>
           </div>
 
-          <!-- User Search -->
-          <div style="margin-bottom: 1.5rem;">
-            <div style="position: relative;">
-              <i class="fas fa-search" style="position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
-              <input type="text" id="userSearchInput" placeholder="Search username..."
-                class="control-input" style="width: 100%; padding-left: 2.25rem;"
-                oninput="searchUsers(this.value)" />
-            </div>
-            <div id="userSearchResults" style="position: absolute; background: white; border: 1px solid var(--border); border-radius: 0.5rem; margin-top: 0.5rem; width: calc(50% - 3rem); max-height: 200px; overflow-y: auto; display: none; z-index: 10;"></div>
+          <div style="margin-bottom: 24px; position: relative;">
+            <input type="text" id="userSearchInput" placeholder="Search username..."
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              oninput="searchUsers(this.value)" />
+            <div id="userSearchResults" style="position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 8px; width: 100%; max-height: 200px; overflow-y: auto; display: none; z-index: 10;"></div>
           </div>
 
-          <!-- User Display -->
           <div id="userUsagePanel" style="display: none;">
-            <div style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; margin-bottom: 1.5rem;">
-              <div style="width: 2.5rem; height: 2.5rem; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;" id="userUsageAvatar">?</div>
+            <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 24px;">
+              <div style="width: 40px; height: 40px; background: #6366f1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;" id="userUsageAvatar">?</div>
               <div style="flex: 1;">
-                <div style="font-weight: 600; color: var(--text-primary);" id="userUsageName">—</div>
-                <div style="font-size: 0.875rem; color: var(--text-secondary);" id="userUsageUsername">—</div>
+                <div style="font-weight: 600; color: #111827;" id="userUsageName">—</div>
+                <div style="font-size: 14px; color: #6b7280;" id="userUsageUsername">—</div>
               </div>
-              <button class="btn btn-secondary" style="padding: 0.5rem; width: auto;" onclick="clearUserSearch()">
+              <button class="btn btn-secondary" style="padding: 8px; width: auto;" onclick="clearUserSearch()">
                 <i class="fas fa-times"></i>
               </button>
             </div>
             <div id="userUsageTopics" style="max-height: 400px; overflow-y: auto;"></div>
-            <p id="userNoData" style="display: none; text-align: center; color: var(--text-secondary); padding: 2rem 0;">No scenario data for this user yet.</p>
+            <p id="userNoData" style="display: none; text-align: center; color: #6b7280; padding: 32px 0;">No scenario data for this user yet.</p>
           </div>
 
-          <div id="userUsagePlaceholder" style="text-align: center; padding: 2rem 0;">
-            <div style="font-size: 2rem; margin-bottom: 1rem;"><i class="fas fa-search" style="color: var(--text-secondary);"></i></div>
-            <p style="color: var(--text-secondary);">Search for a user to<br>see their scenario history</p>
+          <div id="userUsagePlaceholder" style="text-align: center; padding: 32px 0;">
+            <div style="font-size: 32px; margin-bottom: 16px;"><i class="fas fa-search" style="color: #6b7280;"></i></div>
+            <p style="color: #6b7280;">Search for a user to<br>see their scenario history</p>
           </div>
         </div>
-
       </div>
 
       <!-- Leaderboard -->
       <div class="card">
         <div class="card-header">
           <div>
-            <h3 style="margin: 0; color: var(--text-primary); font-weight: 700;">Top Scenarios Leaderboard</h3>
-            <p style="margin: 0.5rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">Most-played scenarios</p>
+            <h2>Top Scenarios Leaderboard</h2>
+            <p>Most-played scenarios across all users</p>
           </div>
           <span class="badge badge-warning">
             <i class="fas fa-trophy"></i>All-time
           </span>
         </div>
-        <div id="leaderboardList" style="display: grid; gap: 1rem;">
-          <p style="text-align: center; color: var(--text-secondary);">Loading...</p>
+        <div id="leaderboardList" style="display: grid; gap: 12px;">
+          <p style="text-align: center; color: #6b7280;">Loading...</p>
         </div>
       </div>
 
@@ -849,6 +667,8 @@
 
   <script>
     const SERVER_URL = 'https://structureality-admin.onrender.com';
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedUsername = urlParams.get('username');
 
     let allUsersCache = [];
     let globalUsageData = null;
@@ -859,10 +679,6 @@
     let activityChart = null;
     let streakChart = null;
     let selectedUsageTopic = null;
-
-    /* ──────────────────────────────────────────────────────────────
-       UTILITY FUNCTIONS
-    ────────────────────────────────────────────────────────────────── */
 
     function showToast(msg, type = 'info') {
       const toast = document.getElementById('toast');
@@ -883,10 +699,6 @@
       }
     }
 
-    /* ──────────────────────────────────────────────────────────────
-       USER ANALYTICS
-    ────────────────────────────────────────────────────────────────── */
-
     async function loadUserAnalytics() {
       try {
         const res = await fetch(`${SERVER_URL}/api/analytics`);
@@ -896,14 +708,12 @@
           userAnalytics = data.data;
           renderUserAnalytics();
           document.getElementById('apiStatus').textContent = 'Connected';
-          document.querySelector('.status-dot').classList.add('connected');
-          document.querySelector('.status-dot').classList.remove('offline');
+          document.querySelector('.status-dot').className = 'status-dot connected';
         }
       } catch (err) {
         showToast('Failed to load user analytics', 'error');
         document.getElementById('apiStatus').textContent = 'Offline';
-        document.querySelector('.status-dot').classList.add('offline');
-        document.querySelector('.status-dot').classList.remove('connected');
+        document.querySelector('.status-dot').className = 'status-dot offline';
       }
     }
 
@@ -914,16 +724,11 @@
       const streak = userAnalytics.streakDistribution;
       const status = userAnalytics.userStatus;
 
-      // Metrics
       document.getElementById('metricTotalUsers').textContent = m.totalUsers;
       document.getElementById('metricAvgStreak').textContent = m.avgStreak + ' days';
       document.getElementById('metricCompletionRate').textContent = m.completionRate;
       document.getElementById('metricEngagement').textContent = m.engagementScore + '/10';
-      document.getElementById('activeCount').textContent = status.active;
-      document.getElementById('idleCount').textContent = status.idle;
-      document.getElementById('inactiveCount').textContent = status.inactive;
 
-      // Charts
       renderUserStatusChart(status);
       renderProgressChart(prog);
       renderActivityChart(a);
@@ -1036,27 +841,23 @@
       const container = document.getElementById('topicPerformance');
       
       if (!perf.length) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No lesson performance data available</p>';
+        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No data available</p>';
         return;
       }
 
       container.innerHTML = perf.map(topic => `
         <div class="list-item">
-          <div style="flex: 1;">
-            <div class="list-item-title">${topic.name}</div>
-            <div class="list-item-desc">${topic.topic}</div>
+          <div>
+            <div style="font-weight: 600; color: #111827;">${topic.name}</div>
+            <div style="font-size: 12px; color: #6b7280;">${topic.topic}</div>
           </div>
           <div style="text-align: right;">
-            <div class="list-item-stat">${topic.completions}</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">completions</div>
+            <div style="font-weight: 700; color: #6366f1;">${topic.completions}</div>
+            <div style="font-size: 12px; color: #6b7280;">completions</div>
           </div>
         </div>
       `).join('');
     }
-
-    /* ──────────────────────────────────────────────────────────────
-       SCENARIO ANALYTICS
-    ────────────────────────────────────────────────────────────────── */
 
     async function loadUsageData() {
       try {
@@ -1101,7 +902,6 @@
 
       document.getElementById('scenarioMetricTotalPicks').textContent = totalPicks.toLocaleString();
       document.getElementById('scenarioMetricMostPopular').textContent = topScenario ? topScenario.name : '—';
-      document.getElementById('scenarioMetricMostPopularSub').textContent = topScenario ? `${topPicks} picks in ${topScenario.topic}` : '—';
       document.getElementById('scenarioMetricTrackedUsers').textContent = data.totalUsers || 0;
       document.getElementById('scenarioMetricTopicsActive').textContent = topicsActive;
     }
@@ -1112,7 +912,7 @@
       
       container.innerHTML = topics.map(topic => {
         const total = Object.values(usage[topic] || {}).reduce((s, x) => s + x.totalPicks, 0);
-        return `<button class="btn btn-secondary" onclick="selectUsageTopic('${topic}')" id="pill-${topic}" style="border: 2px solid var(--border);">
+        return `<button class="btn btn-secondary" onclick="selectUsageTopic('${topic}')" id="pill-${topic}">
           ${topic} <span style="opacity: 0.6;">${total}</span>
         </button>`;
       }).join('');
@@ -1123,15 +923,15 @@
     function selectUsageTopic(topic) {
       selectedUsageTopic = topic;
       document.querySelectorAll('[id^="pill-"]').forEach(btn => {
-        btn.style.borderColor = 'var(--border)';
-        btn.style.color = 'var(--text-primary)';
-        btn.style.background = '';
+        btn.style.borderColor = '#e5e7eb';
+        btn.style.color = '#111827';
+        btn.style.background = '#f9fafb';
       });
       
       const pill = document.getElementById(`pill-${topic}`);
       if (pill) {
-        pill.style.borderColor = 'var(--primary)';
-        pill.style.color = 'var(--primary)';
+        pill.style.borderColor = '#6366f1';
+        pill.style.color = '#6366f1';
         pill.style.background = 'rgba(99, 102, 241, 0.1)';
       }
       
@@ -1153,7 +953,8 @@
           datasets: [{
             label: 'Picks',
             data: scenarios.map(([id, info]) => info.totalPicks),
-            backgroundColor: '#6366f1'
+            backgroundColor: '#6366f1',
+            borderRadius: 6
           }]
         },
         options: {
@@ -1172,26 +973,25 @@
       const total = scenarios.reduce((s, [, info]) => s + info.totalPicks, 0);
 
       if (!scenarios.length) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No picks recorded yet</p>';
+        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No picks recorded yet</p>';
         return;
       }
 
       container.innerHTML = scenarios.map(([id, info], idx) => {
         const pct = total > 0 ? Math.round((info.totalPicks / total) * 100) : 0;
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '';
         
         return `
           <div class="list-item">
-            <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
-              ${medal ? `<span style="font-size: 1.25rem;">${medal}</span>` : ''}
+            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
+              ${medal ? `<span style="font-size: 20px;">${medal}</span>` : ''}
               <div>
-                <div class="list-item-title">${info.name}</div>
-                <div class="list-item-desc">${info.uniqueUsers} users</div>
+                <div style="font-weight: 600; color: #111827;">${info.name}</div>
+                <div style="font-size: 12px; color: #6b7280;">${info.uniqueUsers} users</div>
               </div>
             </div>
             <div style="text-align: right;">
-              <div class="list-item-stat">${pct}%</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">${info.totalPicks} picks</div>
+              <div style="font-weight: 700; color: #6366f1;">${pct}%</div>
             </div>
           </div>
         `;
@@ -1202,7 +1002,7 @@
       const container = document.getElementById('leaderboardList');
       
       if (!leaderboard.length) {
-        container.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">No scenario picks recorded yet</p>';
+        container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 32px;">No data yet</p>';
         return;
       }
 
@@ -1213,24 +1013,20 @@
         const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
         
         return `
-          <div style="padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; display: flex; align-items: center; gap: 1rem;">
-            ${medal ? `<span style="font-size: 1.5rem;">${medal}</span>` : `<span style="width: 2rem; text-align: center; font-weight: 700; color: var(--text-secondary);">${idx + 1}</span>`}
+          <div style="padding: 16px; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+            ${medal ? `<span style="font-size: 20px;">${medal}</span>` : `<span style="width: 32px; text-align: center; font-weight: 700; color: #6b7280;">${idx + 1}</span>`}
             <div style="flex: 1;">
-              <div style="font-weight: 600; color: var(--text-primary);">${item.name}</div>
-              <div style="font-size: 0.875rem; color: var(--text-secondary);">${item.topicName} • ${item.uniqueUsers} users</div>
+              <div style="font-weight: 600; color: #111827;">${item.name}</div>
+              <div style="font-size: 12px; color: #6b7280;">${item.topicName} • ${item.uniqueUsers} users</div>
             </div>
             <div style="text-align: right;">
-              <div style="font-weight: 700; color: var(--primary);">${item.totalPicks}</div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);">picks</div>
+              <div style="font-weight: 700; color: #6366f1;">${item.totalPicks}</div>
+              <div style="font-size: 12px; color: #6b7280;">picks</div>
             </div>
           </div>
         `;
       }).join('');
     }
-
-    /* ──────────────────────────────────────────────────────────────
-       USER SEARCH
-    ────────────────────────────────────────────────────────────────── */
 
     function searchUsers(term) {
       const results = document.getElementById('userSearchResults');
@@ -1245,15 +1041,15 @@
       ).slice(0, 5);
 
       if (!matches.length) {
-        results.innerHTML = '<div style="padding: 1rem; text-align: center; color: var(--text-secondary);">No users found</div>';
+        results.innerHTML = '<div style="padding: 16px; text-align: center; color: #6b7280;">No users found</div>';
         results.style.display = 'block';
         return;
       }
 
       results.innerHTML = matches.map(u => `
-        <div style="padding: 1rem; border-bottom: 1px solid var(--border); cursor: pointer; hover:background: var(--bg-light);" onclick="loadUserUsage('${u.username}')">
-          <div style="font-weight: 600; color: var(--text-primary);">${u.name || u.username}</div>
-          <div style="font-size: 0.875rem; color: var(--text-secondary);">@${u.username}</div>
+        <div style="padding: 16px; border-bottom: 1px solid #e5e7eb; cursor: pointer;" onclick="loadUserUsage('${u.username}')">
+          <div style="font-weight: 600; color: #111827;">${u.name || u.username}</div>
+          <div style="font-size: 12px; color: #6b7280;">@${u.username}</div>
         </div>
       `).join('');
       results.style.display = 'block';
@@ -1300,18 +1096,18 @@
         const totalPicks = scenarios.reduce((s, [, x]) => s + x.pickCount, 0);
 
         return `
-          <div style="padding: 1rem; background: var(--bg-light); border-radius: 0.75rem; margin-bottom: 1rem;">
-            <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">${topicName}</div>
+          <div style="padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 12px;">
+            <div style="font-weight: 700; color: #111827; margin-bottom: 12px;">${topicName}</div>
             ${scenarios.sort((a, b) => b[1].pickCount - a[1].pickCount).map(([id, info]) => {
               const pct = totalPicks > 0 ? Math.round((info.pickCount / totalPicks) * 100) : 0;
               return `
-                <div style="margin-bottom: 0.75rem;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                <div style="margin-bottom: 12px;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
                     <span>${info.name}</span>
                     <span style="font-weight: 600;">${info.pickCount}×</span>
                   </div>
                   <div class="progress-bar-track">
-                    <div class="progress-bar-fill" style="width: ${pct}%; background: var(--primary);"></div>
+                    <div class="progress-bar-fill" style="width: ${pct}%; background: #6366f1;"></div>
                   </div>
                 </div>
               `;
@@ -1336,12 +1132,15 @@
       showToast('Data refreshed', 'success');
     }
 
-    /* ──────────────────────────────────────────────────────────────
-       INITIALIZATION
-    ────────────────────────────────────────────────────────────────── */
-
     window.addEventListener('load', async () => {
       await loadUserAnalytics();
+      
+      if (selectedUsername) {
+        setTimeout(() => {
+          document.querySelector('[onclick="switchTab(\'scenarios\')"]').click();
+          loadUserUsage(selectedUsername);
+        }, 500);
+      }
     });
   </script>
 </body>
