@@ -1139,21 +1139,33 @@
             const previewContent = document.getElementById(previewContentId);
             previewContent.innerHTML = '';
 
-            const chunks = splitContentForPreview(content);
+            // Split on CUSTOMBOX and IMAGE tokens
+            const chunks = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
 
             chunks.forEach(chunk => {
-                chunk = chunk.trim();
-                if (!chunk) return;
+                if (!chunk.trim()) return;
 
                 // ── CUSTOM BOX ──
                 const customBoxMatch = chunk.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
                 if (customBoxMatch) {
-                    const [, border, bg, text, title, content] = customBoxMatch;
+                    const [, border, bg, text, title, boxContent] = customBoxMatch;
                     const div = document.createElement('div');
                     div.className = 'custom-box-preview';
-                    div.style.borderLeftColor = border;
                     div.style.backgroundColor = bg;
-                    div.innerHTML = `<strong style="color: ${text};">${title}</strong><br><br><span style="color: ${text};">${escapeHtml(content.trim())}</span>`;
+                    div.style.borderLeftColor = border;
+                    
+                    const titleEl = document.createElement('strong');
+                    titleEl.style.color = text;
+                    titleEl.textContent = title;
+                    div.appendChild(titleEl);
+                    
+                    div.innerHTML += '<br><br>';
+                    
+                    const contentEl = document.createElement('span');
+                    contentEl.style.color = text;
+                    contentEl.textContent = boxContent.trim();
+                    div.appendChild(contentEl);
+                    
                     previewContent.appendChild(div);
                     return;
                 }
@@ -1190,19 +1202,6 @@
                 div.textContent = chunk;
                 previewContent.appendChild(div);
             });
-        }
-
-        function splitContentForPreview(content) {
-            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
-            const result = [];
-            parts.forEach(part => {
-                if (/^\[CUSTOMBOX/i.test(part) || /^\[IMAGE/i.test(part)) {
-                    result.push(part.trim());
-                } else {
-                    part.split('\n\n').forEach(p => { if (p.trim()) result.push(p); });
-                }
-            });
-            return result;
         }
 
         function escapeHtml(str) {
@@ -1472,4 +1471,5 @@
         });
     </script>
 </body>
+
 </html>
