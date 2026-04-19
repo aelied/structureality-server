@@ -59,70 +59,43 @@
             overflow-y: auto;
         }
 
-        .info-box-preview {
+        /* ── Custom Box Preview ── */
+        .custom-box-preview {
             padding: 16px;
             border-radius: 12px;
             margin: 10px 0;
             border-left: 4px solid;
         }
 
-        .info-box-info {
-            background-color: #E0F7FA;
-            border-color: #006064;
-            color: #006064;
+        .color-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 8px;
         }
 
-        .info-box-tip {
-            background-color: #FFF9C4;
-            border-color: #F57F17;
-            color: #F57F17;
-        }
-
-        .info-box-warning {
-            background-color: #FFEBEE;
-            border-color: #B71C1C;
-            color: #B71C1C;
-        }
-
-        .info-box-note {
-            background-color: #F3E5F5;
-            border-color: #4A148C;
-            color: #4A148C;
-        }
-
-        .info-box-important {
-            background-color: #E8F5E9;
-            border-color: #1B5E20;
-            color: #1B5E20;
-        }
-
-        .insert-box-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 2px solid;
+        .color-option {
             cursor: pointer;
-            font-weight: 500;
+            border-radius: 8px;
+            padding: 12px;
+            border: 3px solid transparent;
             transition: all 0.2s;
-            font-size: 0.875rem;
+            text-align: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
         }
 
-        .insert-box-btn:hover {
+        .color-option:hover {
             transform: scale(1.05);
         }
 
-        .content-builder-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.5rem;
+        .color-option.selected {
+            border-color: white;
+            box-shadow: 0 0 0 2px #333;
         }
 
-        @media (max-width: 768px) {
-            .content-builder-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-
-        /* ── Image Upload Styles ── */
+        /* ── Image Management ── */
         .image-upload-zone {
             border: 2px dashed #c7d2fe;
             border-radius: 12px;
@@ -139,20 +112,11 @@
             background: #eef0ff;
         }
 
-        .image-preview-thumb {
-            width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            margin-top: 10px;
-        }
-
         .image-gallery {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 10px;
+            gap: 12px;
+            margin-top: 12px;
         }
 
         .image-gallery-item {
@@ -162,6 +126,7 @@
             border: 2px solid transparent;
             cursor: pointer;
             transition: border-color 0.2s;
+            background: #f3f4f6;
         }
 
         .image-gallery-item:hover {
@@ -170,41 +135,74 @@
 
         .image-gallery-item img {
             width: 100%;
-            height: 80px;
+            height: 100px;
             object-fit: cover;
         }
 
-        .image-gallery-item .remove-img-btn {
+        .image-gallery-item .img-toolbar {
             position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(239,68,68,0.9);
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 11px;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 4px;
             display: flex;
-            align-items: center;
             justify-content: center;
-            cursor: pointer;
+            gap: 4px;
         }
 
-        .image-gallery-item .insert-img-btn {
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(99,102,241,0.92);
+        .img-toolbar button {
+            background: #6366f1;
             color: white;
-            border-radius: 6px;
-            padding: 2px 8px;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
             font-size: 10px;
-            white-space: nowrap;
             cursor: pointer;
+            transition: background 0.2s;
         }
 
-        /* Preview image rendering */
+        .img-toolbar button:hover {
+            background: #4f46e5;
+        }
+
+        .img-toolbar button.danger {
+            background: #ef4444;
+        }
+
+        .img-toolbar button.danger:hover {
+            background: #dc2626;
+        }
+
+        /* ── Image editor modal ── */
+        .image-editor-container {
+            background: #f9fafb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 12px;
+        }
+
+        .image-preview-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            background: white;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+
+        .image-preview-box img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        .size-slider {
+            width: 100%;
+            margin: 8px 0;
+        }
+
         .preview-image-block {
             text-align: center;
             margin: 12px 0;
@@ -224,11 +222,6 @@
             margin-top: 4px;
         }
 
-        /* Image modal */
-        #imageModal {
-            z-index: 1100;
-        }
-
         .spinner {
             width: 22px; height: 22px;
             border: 3px solid #e0e0e0;
@@ -240,6 +233,21 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        .content-builder-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-builder-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .color-picker-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 
@@ -297,7 +305,8 @@
             <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
                 <i class="fas fa-chart-line w-5"></i>
                 <span class="font-medium">User & Scenario Analytics</span>
-              </a>        </nav>
+            </a>
+        </nav>
     </aside>
 
     <!-- Navbar -->
@@ -305,7 +314,7 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons & topics with special info boxes
+                <p class="text-sm text-gray-500">Manage lessons with custom boxes & flexible images
                     <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span>
                 </p>
             </div>
@@ -433,12 +442,12 @@
     </main>
 
     <!-- ══════════════════════════════════════════════════════
-         IMAGE MANAGER MODAL  (shared between Add & Edit)
+         IMAGE MANAGER MODAL
     ══════════════════════════════════════════════════════ -->
     <div id="imageModal" class="modal">
-        <div class="modal-content" style="max-width:560px;">
+        <div class="modal-content" style="max-width:600px;">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">📷 Image Manager</h3>
+                <h3 class="text-xl font-bold text-gray-800">🖼️ Image Manager</h3>
                 <button onclick="closeImageModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
@@ -456,14 +465,9 @@
                 <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
             </div>
 
-            <!-- Upload progress -->
-            <div id="uploadProgress" class="hidden mt-3 text-center text-sm text-indigo-600">
-                <span class="spinner"></span> Processing image…
-            </div>
-
             <!-- OR: image URL -->
             <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-1">Or enter an image URL:</p>
+                <p class="text-sm font-medium text-gray-700 mb-2">Or enter an image URL:</p>
                 <div class="flex gap-2">
                     <input type="url" id="imageUrlInput" placeholder="https://example.com/image.png"
                         class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
@@ -474,39 +478,113 @@
                 </div>
             </div>
 
-            <!-- Caption input -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-1">Caption (optional):</p>
-                <input type="text" id="imageCaptionInput" placeholder="e.g. Array memory layout diagram"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-            </div>
-
-            <!-- Alignment -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-2">Alignment:</p>
-                <div class="flex gap-3">
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="left" class="accent-indigo-600"> Left
-                    </label>
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="center" checked class="accent-indigo-600"> Center
-                    </label>
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="right" class="accent-indigo-600"> Right
-                    </label>
-                </div>
-            </div>
-
-            <!-- Staged image gallery -->
+            <!-- Image Gallery (Staged Images) -->
             <div id="stagedImagesSection" class="hidden mt-4">
-                <p class="text-sm font-semibold text-gray-700 mb-2">Staged Images — click "Insert" to add to content:</p>
+                <p class="text-sm font-semibold text-gray-700 mb-2">📸 Your Images — click to edit or insert:</p>
                 <div class="image-gallery" id="stagedImagesGallery"></div>
+            </div>
+
+            <!-- Image Editor -->
+            <div id="imageEditorSection" class="hidden mt-4 image-editor-container">
+                <h4 class="font-semibold text-gray-800 mb-3">✏️ Image Editor</h4>
+                <div class="image-preview-box">
+                    <img id="editorImagePreview" src="" alt="preview" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Caption (optional):</label>
+                    <input type="text" id="editorImageCaption" placeholder="e.g., Array memory layout diagram"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Image Height: <span id="heightDisplay">200</span>px
+                    </label>
+                    <input type="range" id="editorHeightSlider" min="80" max="400" value="200" class="size-slider"
+                        oninput="updateImageHeight()" />
+                    <p class="text-xs text-gray-500 mt-1">Adjust how tall the image appears in the lesson</p>
+                </div>
+                <div class="mt-3">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Alignment:</label>
+                    <div class="flex gap-3">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm">
+                            <input type="radio" name="imgAlign" value="left" class="accent-indigo-600"> Left
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-sm">
+                            <input type="radio" name="imgAlign" value="center" checked class="accent-indigo-600"> Center
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer text-sm">
+                            <input type="radio" name="imgAlign" value="right" class="accent-indigo-600"> Right
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-2 mt-4">
+                    <button onclick="insertCurrentImage()"
+                        class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">
+                        ✓ Insert into Lesson
+                    </button>
+                    <button onclick="cancelImageEdit()"
+                        class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">
+                        Cancel
+                    </button>
+                </div>
             </div>
 
             <div class="flex justify-end mt-6">
                 <button onclick="closeImageModal()"
                     class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm">
                     Done
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         CUSTOM BOX BUILDER MODAL
+    ══════════════════════════════════════════════════════ -->
+    <div id="customBoxModal" class="modal">
+        <div class="modal-content" style="max-width:500px;">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">🎨 Create Custom Box</h3>
+                <button onclick="closeCustomBoxModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Box Title *</label>
+                <input type="text" id="boxTitle" placeholder="e.g., Important Note, Key Concept, Pro Tip"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Background Color</label>
+                <div class="color-picker-grid" id="colorGrid"></div>
+            </div>
+
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Box Content *</label>
+                <textarea id="boxContent" placeholder="Write the content for this box..."
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    rows="4"></textarea>
+            </div>
+
+            <!-- Live Preview -->
+            <div class="mb-4">
+                <p class="text-sm font-medium text-gray-700 mb-2">📋 Preview:</p>
+                <div id="boxPreview" class="custom-box-preview" style="border-left-color: #006064; background-color: #E0F7FA;">
+                    <strong style="color: #006064;">Your Title Here</strong><br><br>
+                    <span style="color: #006064;">Box content preview...</span>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3">
+                <button onclick="closeCustomBoxModal()"
+                    class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    Cancel
+                </button>
+                <button onclick="insertCustomBox()"
+                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    ✓ Insert Box
                 </button>
             </div>
         </div>
@@ -568,34 +646,21 @@
 
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
                         <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
-                        <!-- Row 1: text + info boxes -->
-                        <div class="content-builder-grid mb-2">
+                        <div class="flex flex-col gap-2">
                             <button type="button" onclick="addContentBlock('TEXT')"
                                 class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
-                                📝 Text
+                                📝 Add Text Paragraph
                             </button>
-                            <button type="button" onclick="addContentBlock('INFO')"
-                                class="insert-box-btn info-box-info">ℹ️ Info</button>
-                            <button type="button" onclick="addContentBlock('TIP')"
-                                class="insert-box-btn info-box-tip">💡 Tip</button>
-                            <button type="button" onclick="addContentBlock('WARNING')"
-                                class="insert-box-btn info-box-warning">⚠️ Warning</button>
-                            <button type="button" onclick="addContentBlock('NOTE')"
-                                class="insert-box-btn info-box-note">📝 Note</button>
-                            <button type="button" onclick="addContentBlock('IMPORTANT')"
-                                class="insert-box-btn info-box-important">⭐ Important</button>
-                        </div>
-                        <!-- Row 2: image button -->
-                        <div>
+                            <button type="button" onclick="openCustomBoxModal('add')"
+                                class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
+                                🎨 Create Custom Box
+                            </button>
                             <button type="button" onclick="openImageModal('add')"
-                                class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                🖼️ Insert Image
+                                class="px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
+                                🖼️ Add Image
                             </button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">💡 Use the buttons above to add sections. Images are embedded directly.</p>
                     </div>
-
-                    <div id="contentBlocksContainer" class="space-y-3 mb-4"></div>
 
                     <textarea id="lessonContent" placeholder="Write your lesson content here..."
                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
@@ -606,7 +671,6 @@
                             class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
                             <i class="fas fa-eye mr-2"></i>Preview
                         </button>
-                        <span class="text-xs text-gray-400 self-center">Images are shown as [IMAGE] tags in the textarea but render fully in Preview.</span>
                     </div>
                 </div>
 
@@ -691,23 +755,15 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
 
                     <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                        <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Content:</p>
-                        <div class="content-builder-grid mb-2">
-                            <button type="button" onclick="insertInfoBox('INFO', true)"
-                                class="insert-box-btn info-box-info">ℹ️ Info</button>
-                            <button type="button" onclick="insertInfoBox('TIP', true)"
-                                class="insert-box-btn info-box-tip">💡 Tip</button>
-                            <button type="button" onclick="insertInfoBox('WARNING', true)"
-                                class="insert-box-btn info-box-warning">⚠️ Warning</button>
-                            <button type="button" onclick="insertInfoBox('NOTE', true)"
-                                class="insert-box-btn info-box-note">📝 Note</button>
-                            <button type="button" onclick="insertInfoBox('IMPORTANT', true)"
-                                class="insert-box-btn info-box-important">⭐ Important</button>
-                        </div>
-                        <div>
+                        <p class="text-sm font-medium text-gray-700 mb-3">Add Elements:</p>
+                        <div class="flex flex-col gap-2">
+                            <button type="button" onclick="openCustomBoxModal('edit')"
+                                class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
+                                🎨 Create Custom Box
+                            </button>
                             <button type="button" onclick="openImageModal('edit')"
-                                class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                🖼️ Insert Image
+                                class="px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
+                                🖼️ Add Image
                             </button>
                         </div>
                     </div>
@@ -759,14 +815,25 @@
 
         let allLessons = [];
         let currentUser = null;
-
-        // ── Which textarea the image modal should insert into ('add' | 'edit') ──
         let imageModalTarget = 'add';
-
-        // ── Per-session staged images: [{src, caption, align}] ──
-        // These live only in memory; the actual Base64 or URL is written directly
-        // into the textarea via [IMAGE] tokens so the content is self-contained.
         let stagedImages = [];
+
+        // Track current image being edited in the image editor
+        let currentEditingImageIdx = -1;
+
+        // Color palette for custom boxes
+        const colorPalette = [
+            { bg: '#E0F7FA', border: '#006064', text: '#006064', name: 'Cyan' },
+            { bg: '#FFF9C4', border: '#F57F17', text: '#F57F17', name: 'Yellow' },
+            { bg: '#FFEBEE', border: '#B71C1C', text: '#B71C1C', name: 'Red' },
+            { bg: '#F3E5F5', border: '#4A148C', text: '#4A148C', name: 'Purple' },
+            { bg: '#E8F5E9', border: '#1B5E20', text: '#1B5E20', name: 'Green' },
+            { bg: '#FCE4EC', border: '#880E4F', text: '#880E4F', name: 'Pink' },
+            { bg: '#E3F2FD', border: '#0D47A1', text: '#0D47A1', name: 'Blue' },
+            { bg: '#FFF3E0', border: '#E65100', text: '#E65100', name: 'Orange' }
+        ];
+
+        let selectedColor = colorPalette[0]; // Default to cyan
 
         // ════════════════════════════════════════════════════════
         //  AUTH
@@ -810,17 +877,91 @@
         }
 
         // ════════════════════════════════════════════════════════
+        //  CUSTOM BOX MODAL
+        // ════════════════════════════════════════════════════════
+
+        function initColorPicker() {
+            const grid = document.getElementById('colorGrid');
+            grid.innerHTML = '';
+            colorPalette.forEach((color, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'color-option' + (color === selectedColor ? ' selected' : '');
+                btn.style.backgroundColor = color.bg;
+                btn.style.borderColor = color.border;
+                btn.textContent = color.name;
+                btn.onclick = (e) => {
+                    e.preventDefault();
+                    document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    selectedColor = color;
+                    updateBoxPreview();
+                };
+                grid.appendChild(btn);
+            });
+        }
+
+        function openCustomBoxModal(target) {
+            imageModalTarget = target;
+            selectedColor = colorPalette[0];
+            document.getElementById('boxTitle').value = '';
+            document.getElementById('boxContent').value = '';
+            initColorPicker();
+            updateBoxPreview();
+            document.getElementById('customBoxModal').classList.add('active');
+        }
+
+        function closeCustomBoxModal() {
+            document.getElementById('customBoxModal').classList.remove('active');
+        }
+
+        function updateBoxPreview() {
+            const title = document.getElementById('boxTitle').value || 'Your Title Here';
+            const content = document.getElementById('boxContent').value || 'Box content preview...';
+            const preview = document.getElementById('boxPreview');
+            preview.style.backgroundColor = selectedColor.bg;
+            preview.style.borderLeftColor = selectedColor.border;
+            preview.innerHTML = `<strong style="color: ${selectedColor.text};">${title}</strong><br><br><span style="color: ${selectedColor.text};">${content}</span>`;
+        }
+
+        // Listen to title/content changes for live preview
+        document.addEventListener('input', (e) => {
+            if (e.target.id === 'boxTitle' || e.target.id === 'boxContent') {
+                updateBoxPreview();
+            }
+        });
+
+        function insertCustomBox() {
+            const title = document.getElementById('boxTitle').value.trim();
+            const content = document.getElementById('boxContent').value.trim();
+
+            if (!title || !content) {
+                alert('Please fill in both title and content.');
+                return;
+            }
+
+            const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
+            const textarea = document.getElementById(textareaId);
+
+            // Format: [CUSTOMBOX color="hex" bg="hex" title="..." content="..."]
+            const token = `\n\n[CUSTOMBOX border="${selectedColor.border}" bg="${selectedColor.bg}" text="${selectedColor.text}" title="${title}"]\n${content}\n[/CUSTOMBOX]\n\n`;
+            const pos = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
+
+            closeCustomBoxModal();
+        }
+
+        // ════════════════════════════════════════════════════════
         //  IMAGE MODAL
         // ════════════════════════════════════════════════════════
 
         function openImageModal(target) {
-            imageModalTarget = target;  // 'add' or 'edit'
+            imageModalTarget = target;
             stagedImages = [];
+            currentEditingImageIdx = -1;
             renderStagedGallery();
             document.getElementById('imageUrlInput').value = '';
-            document.getElementById('imageCaptionInput').value = '';
-            document.querySelector('input[name="imgAlign"][value="center"]').checked = true;
-            document.getElementById('uploadProgress').classList.add('hidden');
+            document.getElementById('imageEditorSection').classList.add('hidden');
             document.getElementById('imageModal').classList.add('active');
         }
 
@@ -828,7 +969,6 @@
             document.getElementById('imageModal').classList.remove('active');
         }
 
-        // Drag-and-drop
         function handleDragOver(e) {
             e.preventDefault();
             document.getElementById('imageUploadZone').classList.add('drag-over');
@@ -846,7 +986,6 @@
         function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) processImageFile(file);
-            // reset so the same file can be re-selected
             event.target.value = '';
         }
 
@@ -856,18 +995,11 @@
                 return;
             }
 
-            const progress = document.getElementById('uploadProgress');
-            progress.classList.remove('hidden');
-
             const reader = new FileReader();
             reader.onload = function(e) {
-                progress.classList.add('hidden');
-                const caption  = document.getElementById('imageCaptionInput').value.trim();
-                const align    = document.querySelector('input[name="imgAlign"]:checked').value;
-                stageImage(e.target.result, caption, align);
+                stageImage(e.target.result);
             };
             reader.onerror = function() {
-                progress.classList.add('hidden');
                 alert('❌ Failed to read image file.');
             };
             reader.readAsDataURL(file);
@@ -877,15 +1009,12 @@
             const url = document.getElementById('imageUrlInput').value.trim();
             if (!url) { alert('Please enter an image URL.'); return; }
             if (!/^https?:\/\/.+/i.test(url)) { alert('Please enter a valid http/https URL.'); return; }
-            const caption = document.getElementById('imageCaptionInput').value.trim();
-            const align   = document.querySelector('input[name="imgAlign"]:checked').value;
-            stageImage(url, caption, align);
+            stageImage(url);
             document.getElementById('imageUrlInput').value = '';
         }
 
-        /** Add an image to the staged list and refresh the gallery. */
-        function stageImage(src, caption, align) {
-            stagedImages.push({ src, caption: caption || '', align: align || 'center' });
+        function stageImage(src) {
+            stagedImages.push({ src, caption: '', height: 200, align: 'center' });
             renderStagedGallery();
         }
 
@@ -904,12 +1033,55 @@
                 const item = document.createElement('div');
                 item.className = 'image-gallery-item';
                 item.innerHTML = `
-                    <img src="${img.src}" alt="${img.caption || 'image'}" />
-                    <div class="remove-img-btn" onclick="removeStagedImage(${idx})" title="Remove">✕</div>
-                    <div class="insert-img-btn" onclick="insertStagedImage(${idx})">Insert ↓</div>
+                    <img src="${img.src}" alt="staged" />
+                    <div class="img-toolbar">
+                        <button type="button" onclick="editStagedImage(${idx})" title="Edit">
+                            ✏️ Edit
+                        </button>
+                        <button type="button" class="danger" onclick="removeStagedImage(${idx})" title="Remove">
+                            🗑️ Remove
+                        </button>
+                    </div>
                 `;
                 gallery.appendChild(item);
             });
+        }
+
+        function editStagedImage(idx) {
+            currentEditingImageIdx = idx;
+            const img = stagedImages[idx];
+            document.getElementById('editorImagePreview').src = img.src;
+            document.getElementById('editorImageCaption').value = img.caption;
+            document.getElementById('editorHeightSlider').value = img.height;
+            document.getElementById('heightDisplay').textContent = img.height;
+            document.querySelector(`input[name="imgAlign"][value="${img.align}"]`).checked = true;
+            document.getElementById('imageEditorSection').classList.remove('hidden');
+        }
+
+        function updateImageHeight() {
+            const height = document.getElementById('editorHeightSlider').value;
+            document.getElementById('heightDisplay').textContent = height;
+            const preview = document.getElementById('editorImagePreview');
+            preview.style.maxHeight = height + 'px';
+        }
+
+        function insertCurrentImage() {
+            if (currentEditingImageIdx < 0) return;
+
+            const img = stagedImages[currentEditingImageIdx];
+            img.caption = document.getElementById('editorImageCaption').value.trim();
+            img.height = parseInt(document.getElementById('editorHeightSlider').value);
+            img.align = document.querySelector('input[name="imgAlign"]:checked').value;
+
+            const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
+            const textarea = document.getElementById(textareaId);
+
+            const token = `\n\n[IMAGE src="${img.src}" caption="${img.caption}" height="${img.height}" align="${img.align}"]\n\n`;
+            const pos = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
+
+            cancelImageEdit();
+            closeImageModal();
         }
 
         function removeStagedImage(idx) {
@@ -917,27 +1089,9 @@
             renderStagedGallery();
         }
 
-        /**
-         * Inserts an [IMAGE] token into the appropriate textarea.
-         * Format stored in content:
-         *   [IMAGE src="<url-or-base64>" caption="..." align="center"]
-         *
-         * The token is self-contained so the full image data travels with
-         * the lesson content to the database and back.
-         */
-        function insertStagedImage(idx) {
-            const img = stagedImages[idx];
-            const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
-            const textarea   = document.getElementById(textareaId);
-
-            const token = `\n\n[IMAGE src="${img.src}" caption="${img.caption}" align="${img.align}"]\n\n`;
-            const pos   = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
-            textarea.focus();
-            textarea.setSelectionRange(pos + token.length, pos + token.length);
-
-            // Close modal after inserting
-            closeImageModal();
+        function cancelImageEdit() {
+            currentEditingImageIdx = -1;
+            document.getElementById('imageEditorSection').classList.add('hidden');
         }
 
         // ════════════════════════════════════════════════════════
@@ -945,21 +1099,13 @@
         // ════════════════════════════════════════════════════════
 
         function addContentBlock(type) {
-            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
-            const textarea = document.getElementById('lessonContent');
-            const pos = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
-            textarea.focus();
-        }
-
-        function insertInfoBox(type, isEdit = false) {
-            const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
-            const textarea   = document.getElementById(textareaId);
-            const pos        = textarea.selectionStart;
-            const template   = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
-            textarea.value   = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
-            textarea.focus();
-            textarea.setSelectionRange(pos + template.length, pos + template.length);
+            if (type === 'TEXT') {
+                const template = '\n\nWrite your paragraph here.\n\n';
+                const textarea = document.getElementById('lessonContent');
+                const pos = textarea.selectionStart;
+                textarea.value = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
+                textarea.focus();
+            }
         }
 
         // ════════════════════════════════════════════════════════
@@ -967,10 +1113,10 @@
         // ════════════════════════════════════════════════════════
 
         function togglePreview(isEdit = false) {
-            const previewDivId  = isEdit ? 'editContentPreview'  : 'contentPreview';
-            const contentId     = isEdit ? 'editLessonContent'    : 'lessonContent';
-            const previewDiv    = document.getElementById(previewDivId);
-            const content       = document.getElementById(contentId).value;
+            const previewDivId = isEdit ? 'editContentPreview' : 'contentPreview';
+            const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
+            const previewDiv = document.getElementById(previewDivId);
+            const content = document.getElementById(contentId).value;
 
             if (previewDiv.style.display === 'none') {
                 previewDiv.style.display = 'block';
@@ -980,33 +1126,34 @@
             }
         }
 
-        /**
-         * Renders content string into a preview div.
-         * Handles:
-         *   - [INFO], [TIP], [WARNING], [NOTE], [IMPORTANT] boxes
-         *   - [IMAGE src="..." caption="..." align="..."] tokens
-         *   - Plain text paragraphs
-         */
         function renderPreview(content, isEdit = false) {
             const previewContentId = isEdit ? 'editPreviewContent' : 'previewContent';
-            const previewContent   = document.getElementById(previewContentId);
+            const previewContent = document.getElementById(previewContentId);
             previewContent.innerHTML = '';
 
-            // Split on double newlines, keeping IMAGE tokens as their own chunk
-            // by temporarily splitting them out
             const chunks = splitContentForPreview(content);
 
             chunks.forEach(chunk => {
                 chunk = chunk.trim();
                 if (!chunk) return;
 
-                // ── IMAGE token ───────────────────────────────
-                const imgMatch = chunk.match(/^\[IMAGE\s+src="([^"]*)"(?:\s+caption="([^"]*)")?(?:\s+align="([^"]*)")?\]$/i);
-                if (imgMatch) {
-                    const src     = imgMatch[1];
-                    const caption = imgMatch[2] || '';
-                    const align   = imgMatch[3] || 'center';
+                // ── CUSTOM BOX ──
+                const customBoxMatch = chunk.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                if (customBoxMatch) {
+                    const [, border, bg, text, title, content] = customBoxMatch;
+                    const div = document.createElement('div');
+                    div.className = 'custom-box-preview';
+                    div.style.borderLeftColor = border;
+                    div.style.backgroundColor = bg;
+                    div.innerHTML = `<strong style="color: ${text};">${title}</strong><br><br><span style="color: ${text};">${escapeHtml(content.trim())}</span>`;
+                    previewContent.appendChild(div);
+                    return;
+                }
 
+                // ── IMAGE ──
+                const imgMatch = chunk.match(/^\[IMAGE\s+src="([^"]*)"\s+caption="([^"]*)"\s+height="(\d+)"\s+align="([^"]+)"\]$/i);
+                if (imgMatch) {
+                    const [, src, caption, height, align] = imgMatch;
                     const div = document.createElement('div');
                     div.className = 'preview-image-block';
                     div.style.textAlign = align;
@@ -1014,6 +1161,7 @@
                     const img = document.createElement('img');
                     img.src = src;
                     img.alt = caption || 'lesson image';
+                    img.style.maxHeight = height + 'px';
                     img.onerror = () => { img.style.display = 'none'; div.innerHTML += '<p class="text-red-400 text-sm">⚠️ Image failed to load</p>'; };
                     div.appendChild(img);
 
@@ -1028,25 +1176,7 @@
                     return;
                 }
 
-                // ── Info boxes ────────────────────────────────
-                const boxMap = {
-                    '[INFO]':      { cls: 'info-box-info',      label: 'ℹ️ Info' },
-                    '[TIP]':       { cls: 'info-box-tip',       label: '💡 Tip' },
-                    '[WARNING]':   { cls: 'info-box-warning',   label: '⚠️ Warning' },
-                    '[NOTE]':      { cls: 'info-box-note',      label: '📝 Note' },
-                    '[IMPORTANT]': { cls: 'info-box-important', label: '⭐ Important' },
-                };
-                for (const [tag, info] of Object.entries(boxMap)) {
-                    if (chunk.toUpperCase().startsWith(tag)) {
-                        const div = document.createElement('div');
-                        div.className = `info-box-preview ${info.cls}`;
-                        div.innerHTML = `<strong>${info.label}</strong><br><br>` + escapeHtml(chunk.substring(tag.length).trim());
-                        previewContent.appendChild(div);
-                        return;
-                    }
-                }
-
-                // ── Plain text ────────────────────────────────
+                // ── Plain text ──
                 const div = document.createElement('div');
                 div.className = 'p-4 bg-white rounded-lg mb-3 border border-gray-200 whitespace-pre-wrap text-gray-800 text-sm';
                 div.textContent = chunk;
@@ -1054,18 +1184,13 @@
             });
         }
 
-        /**
-         * Split content so that [IMAGE ...] tokens are isolated as their own segments.
-         */
         function splitContentForPreview(content) {
-            // Split on [IMAGE ...] tokens while keeping them
-            const parts = content.split(/(\[IMAGE[^\]]+\])/gi);
+            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
             const result = [];
             parts.forEach(part => {
-                if (/^\[IMAGE/i.test(part)) {
+                if (/^\[CUSTOMBOX/i.test(part) || /^\[IMAGE/i.test(part)) {
                     result.push(part.trim());
                 } else {
-                    // Further split on double newlines
                     part.split('\n\n').forEach(p => { if (p.trim()) result.push(p); });
                 }
             });
@@ -1106,12 +1231,12 @@
                 else if (t === 'LinkedLists' || t === 'Linked Lists') counts.LinkedLists++;
                 else                                    counts.others++;
             });
-            document.getElementById('totalLessons').textContent    = counts.total;
-            document.getElementById('arraysCount').textContent     = counts.Arrays;
-            document.getElementById('queueCount').textContent      = counts.Queue;
-            document.getElementById('stacksCount').textContent     = counts.Stacks;
-            document.getElementById('linkedlistsCount').textContent= counts.LinkedLists;
-            document.getElementById('othersCount').textContent     = counts.others;
+            document.getElementById('totalLessons').textContent = counts.total;
+            document.getElementById('arraysCount').textContent = counts.Arrays;
+            document.getElementById('queueCount').textContent = counts.Queue;
+            document.getElementById('stacksCount').textContent = counts.Stacks;
+            document.getElementById('linkedlistsCount').textContent = counts.LinkedLists;
+            document.getElementById('othersCount').textContent = counts.others;
         }
 
         function displayLessons(lessons) {
@@ -1136,13 +1261,12 @@
             lessons.forEach(lesson => {
                 const color = topicColors[lesson.topicName] || { gradient: 'from-gray-400 to-gray-500', icon: 'fa-book', badge: 'gray' };
 
-                // Strip [IMAGE ...] tokens from preview text
-                const cleanContent = (lesson.content || '').replace(/\[IMAGE[^\]]+\]/gi, '[image]');
+                const cleanContent = (lesson.content || '').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\]/gi, '[element]');
                 const contentPreview = cleanContent.substring(0, 80) + (cleanContent.length > 80 ? '…' : '');
 
-                const hasSpecialBoxes = lesson.content && /\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]/i.test(lesson.content);
-                const hasImages       = lesson.content && /\[IMAGE/i.test(lesson.content);
-                const imageCount      = hasImages ? (lesson.content.match(/\[IMAGE/gi) || []).length : 0;
+                const hasCustomBoxes = lesson.content && /\[CUSTOMBOX/i.test(lesson.content);
+                const hasImages = lesson.content && /\[IMAGE/i.test(lesson.content);
+                const imageCount = hasImages ? (lesson.content.match(/\[IMAGE/gi) || []).length : 0;
 
                 const diffBadge = lesson.difficultyLevel === 'intermediate'
                     ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">🟡 Intermediate</span>'
@@ -1160,7 +1284,7 @@
                             </span>
                             <div class="flex gap-1 flex-wrap">
                                 ${diffBadge}
-                                ${hasSpecialBoxes ? '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">✨ Enhanced</span>' : ''}
+                                ${hasCustomBoxes ? '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">🎨 Custom Box</span>' : ''}
                                 ${hasImages ? `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">🖼️ ${imageCount} img</span>` : ''}
                             </div>
                         </div>
@@ -1189,12 +1313,12 @@
         }
 
         function filterLessons() {
-            const searchTerm  = document.getElementById('searchLessons').value.toLowerCase();
+            const searchTerm = document.getElementById('searchLessons').value.toLowerCase();
             const topicFilter = document.getElementById('topicFilter').value;
             const filtered = allLessons.filter(lesson => {
                 const matchesSearch = lesson.title.toLowerCase().includes(searchTerm) ||
                                       lesson.description.toLowerCase().includes(searchTerm);
-                const matchesTopic  = topicFilter === 'all' || lesson.topicName === topicFilter;
+                const matchesTopic = topicFilter === 'all' || lesson.topicName === topicFilter;
                 return matchesSearch && matchesTopic;
             });
             displayLessons(filtered);
@@ -1217,11 +1341,11 @@
         async function addLesson(event) {
             event.preventDefault();
             const lessonData = {
-                topicName:       document.getElementById('lessonTopic').value,
-                title:           document.getElementById('lessonTitle').value,
-                description:     document.getElementById('lessonDescription').value,
-                content:         document.getElementById('lessonContent').value,
-                order:           parseInt(document.getElementById('lessonOrder').value),
+                topicName: document.getElementById('lessonTopic').value,
+                title: document.getElementById('lessonTitle').value,
+                description: document.getElementById('lessonDescription').value,
+                content: document.getElementById('lessonContent').value,
+                order: parseInt(document.getElementById('lessonOrder').value),
                 difficultyLevel: document.getElementById('lessonDifficultyLevel').value
             };
             try {
@@ -1250,13 +1374,13 @@
         function editLesson(lessonId) {
             const lesson = allLessons.find(l => l._id === lessonId);
             if (!lesson) return;
-            document.getElementById('editLessonId').value              = lesson._id;
-            document.getElementById('editLessonTopic').value          = lesson.topicName;
-            document.getElementById('editLessonTitle').value          = lesson.title;
-            document.getElementById('editLessonDescription').value    = lesson.description;
-            document.getElementById('editLessonContent').value        = lesson.content || '';
-            document.getElementById('editLessonOrder').value          = lesson.order;
-            document.getElementById('editLessonDifficultyLevel').value= lesson.difficultyLevel || 'beginner';
+            document.getElementById('editLessonId').value = lesson._id;
+            document.getElementById('editLessonTopic').value = lesson.topicName;
+            document.getElementById('editLessonTitle').value = lesson.title;
+            document.getElementById('editLessonDescription').value = lesson.description;
+            document.getElementById('editLessonContent').value = lesson.content || '';
+            document.getElementById('editLessonOrder').value = lesson.order;
+            document.getElementById('editLessonDifficultyLevel').value = lesson.difficultyLevel || 'beginner';
             document.getElementById('editLessonModal').classList.add('active');
         }
 
@@ -1268,13 +1392,13 @@
 
         async function updateLesson(event) {
             event.preventDefault();
-            const lessonId   = document.getElementById('editLessonId').value;
+            const lessonId = document.getElementById('editLessonId').value;
             const lessonData = {
-                topicName:       document.getElementById('editLessonTopic').value,
-                title:           document.getElementById('editLessonTitle').value,
-                description:     document.getElementById('editLessonDescription').value,
-                content:         document.getElementById('editLessonContent').value,
-                order:           parseInt(document.getElementById('editLessonOrder').value),
+                topicName: document.getElementById('editLessonTopic').value,
+                title: document.getElementById('editLessonTitle').value,
+                description: document.getElementById('editLessonDescription').value,
+                content: document.getElementById('editLessonContent').value,
+                order: parseInt(document.getElementById('editLessonOrder').value),
                 difficultyLevel: document.getElementById('editLessonDifficultyLevel').value
             };
             try {
@@ -1305,8 +1429,8 @@
             if (!lesson) return;
             const hasImages = lesson.content && /\[IMAGE/i.test(lesson.content);
             const imageNote = hasImages ? '\n\n🖼️ This lesson contains embedded images.' : '';
-            const hasBoxes  = lesson.content && /\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]/i.test(lesson.content);
-            const boxNote   = hasBoxes ? '\n✨ This lesson contains special info boxes!' : '';
+            const hasBoxes = lesson.content && /\[CUSTOMBOX/i.test(lesson.content);
+            const boxNote = hasBoxes ? '\n🎨 This lesson contains custom boxes!' : '';
             alert(`Lesson: ${lesson.title}\n\nTopic: ${lesson.topicName}\nDifficulty: ${lesson.difficultyLevel || 'beginner'}\n\nDescription: ${lesson.description}${imageNote}${boxNote}`);
         }
 
@@ -1314,7 +1438,7 @@
             if (!confirm('Are you sure you want to delete this lesson?')) return;
             try {
                 const response = await fetch(`${API_URL}/lessons/${lessonId}`, { method: 'DELETE' });
-                const data     = await response.json();
+                const data = await response.json();
                 if (data.success) {
                     alert('✅ Lesson deleted successfully');
                     loadLessons();
