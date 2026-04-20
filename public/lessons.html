@@ -117,7 +117,8 @@
         }
 
         .mobile-card {
-            margin-bottom: 12px;
+            margin-bottom: 20px;
+            margin-top: 0;
             padding: 12px;
             border-radius: 8px;
             background: white;
@@ -401,6 +402,12 @@
             border-top: none;
             padding-top: 0;
             margin-top: 0;
+        }
+
+        /* Spacer element for blank lines */
+        .spacing-block {
+            height: 0;
+            margin-bottom: 8px;
         }
     </style>
 </head>
@@ -774,12 +781,16 @@
                             </div>
                         </div>
 
-                        <textarea id="lessonContent" placeholder="Write your lesson content here..."
+                        <textarea id="lessonContent" placeholder="Write your lesson content here...
+
+Add spacing by pressing Enter twice between paragraphs to create visible gaps.
+
+Like this paragraph has space above it!"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
                             rows="12" oninput="updatePreview()"></textarea>
 
                         <div class="flex gap-2 mt-2">
-                            <span class="text-xs text-gray-400 self-center">✓ Preview updates live on the right</span>
+                            <span class="text-xs text-gray-400 self-center">✓ Preview updates live on the right • Press Enter 2x for paragraph spacing</span>
                         </div>
                     </div>
 
@@ -1289,64 +1300,64 @@
         function renderMobilePreview(content, previewElement) {
             previewElement.innerHTML = '';
 
-            // Split by special tags while preserving them
-            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
+            // Split content by blank lines first to identify separate paragraphs
+            const paragraphs = content.split(/\n\s*\n+/);
 
-            parts.forEach((part, index) => {
-                if (!part) return;
+            paragraphs.forEach((paragraph) => {
+                const trimmedPara = paragraph.trim();
+                if (!trimmedPara) return;
 
-                // Handle CUSTOMBOX
-                const customBoxMatch = part.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
-                if (customBoxMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
-                    div.style.backgroundColor = customBoxMatch[2];
-                    div.style.color = customBoxMatch[3];
-                    div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
-                    previewElement.appendChild(div);
-                    return;
-                }
+                // Process each paragraph for special tags
+                const parts = trimmedPara.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
 
-                // Handle IMAGE
-                const imageMatch = part.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]/i);
-                if (imageMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    const img = document.createElement('img');
-                    img.src = imageMatch[1];
-                    img.className = 'mobile-image';
-                    img.style.height = (imageMatch[4] || '180') + 'px';
-                    div.appendChild(img);
+                parts.forEach((part) => {
+                    if (!part) return;
 
-                    if (imageMatch[2]) {
-                        const cap = document.createElement('p');
-                        cap.style.fontSize = '12px';
-                        cap.style.color = '#999';
-                        cap.style.margin = '4px 0 0 0';
-                        cap.textContent = imageMatch[2];
-                        div.appendChild(cap);
+                    // Handle CUSTOMBOX
+                    const customBoxMatch = part.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                    if (customBoxMatch) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card';
+                        div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
+                        div.style.backgroundColor = customBoxMatch[2];
+                        div.style.color = customBoxMatch[3];
+                        div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
+                        previewElement.appendChild(div);
+                        return;
                     }
-                    previewElement.appendChild(div);
-                    return;
-                }
 
-                // Handle plain text with paragraph breaks
-                if (part.trim()) {
-                    // Split text by double newlines to create separate paragraph cards
-                    const paragraphs = part.split(/\n\s*\n+/);
-                    
-                    paragraphs.forEach(para => {
-                        const trimmedPara = para.trim();
-                        if (trimmedPara) {
-                            const div = document.createElement('div');
-                            div.className = 'mobile-card mobile-card-content';
-                            // Preserve single line breaks within paragraphs as <br>
-                            div.innerHTML = trimmedPara.split('\n').join('<br>');
-                            previewElement.appendChild(div);
+                    // Handle IMAGE
+                    const imageMatch = part.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]/i);
+                    if (imageMatch) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card';
+                        const img = document.createElement('img');
+                        img.src = imageMatch[1];
+                        img.className = 'mobile-image';
+                        img.style.height = (imageMatch[4] || '180') + 'px';
+                        div.appendChild(img);
+
+                        if (imageMatch[2]) {
+                            const cap = document.createElement('p');
+                            cap.style.fontSize = '12px';
+                            cap.style.color = '#999';
+                            cap.style.margin = '4px 0 0 0';
+                            cap.textContent = imageMatch[2];
+                            div.appendChild(cap);
                         }
-                    });
-                }
+                        previewElement.appendChild(div);
+                        return;
+                    }
+
+                    // Handle plain text
+                    if (part.trim()) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card mobile-card-content';
+                        // Preserve single line breaks within paragraphs as <br>
+                        div.innerHTML = part.trim().split('\n').join('<br>');
+                        previewElement.appendChild(div);
+                    }
+                });
             });
         }
 
