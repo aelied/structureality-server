@@ -1,105 +1,414 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Lessons - StructuReality Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet" />
     <style>
-        * { font-family: "Poppins", sans-serif; }
+        * {
+            font-family: "Poppins", sans-serif;
+        }
 
-        .stat-card-hover { transition: all 0.3s ease; }
-        .stat-card-hover:hover { transform: translateY(-4px); }
-        .lesson-card { transition: all 0.3s ease; }
-        .lesson-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .stat-card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-hover:hover {
+            transform: translateY(-4px);
+        }
+
+        .lesson-card {
+            transition: all 0.3s ease;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
 
         .modal {
-            display: none; position: fixed; z-index: 1000;
-            left: 0; top: 0; width: 100%; height: 100%;
-            overflow: auto; background-color: rgba(0,0,0,0.5);
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.5);
         }
-        .modal.active { display: flex; align-items: center; justify-content: center; }
-        #customBoxModal { z-index: 1100; }
-        #imageModal     { z-index: 1200; }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
 
         .modal-content {
-            background-color: white; padding: 30px; border-radius: 15px;
-            max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 1400px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 20px;
         }
 
-        /* ── Custom Box Preview ── */
-        .color-picker-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-top: 8px; }
-        .color-option {
-            cursor: pointer; border-radius: 8px; padding: 12px; border: 3px solid transparent;
-            transition: all 0.2s; text-align: center; font-size: 0.75rem; font-weight: 600;
+        .modal-content.full-width {
+            grid-template-columns: 1fr;
         }
-        .color-option:hover { transform: scale(1.05); }
-        .color-option.selected { border-color: white; box-shadow: 0 0 0 2px #333; }
 
-        /* ── Image Management (from v1) ── */
+        @media (max-width: 1024px) {
+            .modal-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .mobile-preview {
+            background: #f5f5f5;
+            border: 12px solid #1a1a1a;
+            border-radius: 40px;
+            width: 380px;
+            height: 800px;
+            padding: 0;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+        }
+
+        .mobile-preview-header {
+            background: #1a1a1a;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            font-size: 12px;
+            border-bottom: 1px solid #333;
+        }
+
+        .mobile-preview-content {
+            flex: 1;
+            overflow-y: auto;
+            background: white;
+            padding: 12px;
+        }
+
+        .mobile-preview-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .mobile-preview-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .mobile-preview-content::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 2px;
+        }
+
+        .mobile-card {
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            background: white;
+            border: 1px solid #e0e0e0;
+        }
+
+        .mobile-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .mobile-card-content {
+            font-size: 14px;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .mobile-image {
+            width: 100%;
+            max-height: 180px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin: 8px 0;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-box-preview {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 8px 0;
+            border-left: 4px solid;
+            font-size: 13px;
+        }
+
+        .info-box-info {
+            background-color: #E0F7FA;
+            border-color: #006064;
+            color: #006064;
+        }
+
+        .info-box-tip {
+            background-color: #FFF9C4;
+            border-color: #F57F17;
+            color: #F57F17;
+        }
+
+        .info-box-warning {
+            background-color: #FFEBEE;
+            border-color: #B71C1C;
+            color: #B71C1C;
+        }
+
+        .info-box-note {
+            background-color: #F3E5F5;
+            border-color: #4A148C;
+            color: #4A148C;
+        }
+
+        .info-box-important {
+            background-color: #E8F5E9;
+            border-color: #1B5E20;
+            color: #1B5E20;
+        }
+
+        .custom-box-config {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            background: #fafafa;
+        }
+
+        .custom-box-config-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .custom-box-config-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .color-picker-group input[type="color"] {
+            width: 40px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .color-picker-group input[type="text"] {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: monospace;
+        }
+
+        .insert-box-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            font-size: 0.875rem;
+        }
+
+        .insert-box-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .content-builder-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-builder-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* ── Image Upload Styles ── */
         .image-upload-zone {
-            border: 2px dashed #c7d2fe; border-radius: 12px; padding: 24px;
-            text-align: center; cursor: pointer; transition: all 0.25s; background: #f5f7ff;
+            border: 2px dashed #c7d2fe;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            background: #f5f7ff;
         }
-        .image-upload-zone:hover, .image-upload-zone.drag-over { border-color: #6366f1; background: #eef0ff; }
 
-        .image-gallery { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 10px; }
+        .image-upload-zone:hover,
+        .image-upload-zone.drag-over {
+            border-color: #6366f1;
+            background: #eef0ff;
+        }
+
+        .image-preview-thumb {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin-top: 10px;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
         .image-gallery-item {
-            position: relative; border-radius: 8px; overflow: hidden;
-            border: 2px solid transparent; cursor: pointer; transition: border-color 0.2s;
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: border-color 0.2s;
         }
-        .image-gallery-item:hover { border-color: #6366f1; }
-        .image-gallery-item img { width: 100%; height: 80px; object-fit: cover; }
+
+        .image-gallery-item:hover {
+            border-color: #6366f1;
+        }
+
+        .image-gallery-item img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+        }
+
         .image-gallery-item .remove-img-btn {
-            position: absolute; top: 4px; right: 4px;
-            background: rgba(239,68,68,0.9); color: white; border-radius: 50%;
-            width: 22px; height: 22px; font-size: 11px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(239,68,68,0.9);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
         }
+
         .image-gallery-item .insert-img-btn {
-            position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
-            background: rgba(99,102,241,0.92); color: white; border-radius: 6px;
-            padding: 2px 8px; font-size: 10px; white-space: nowrap; cursor: pointer;
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(99,102,241,0.92);
+            color: white;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 10px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        /* Preview image rendering */
+        .preview-image-block {
+            text-align: center;
+            margin: 12px 0;
+        }
+
+        .preview-image-block img {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-image-block .img-caption {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+
+        /* Image modal */
+        #imageModal {
+            z-index: 1100;
         }
 
         .spinner {
-            width: 22px; height: 22px; border: 3px solid #e0e0e0;
-            border-top-color: #6366f1; border-radius: 50%;
-            animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle;
+            width: 22px; height: 22px;
+            border: 3px solid #e0e0e0;
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
         }
+
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .image-height-slider { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
-        .image-height-slider input[type="range"] { flex: 1; }
-        .image-height-slider span { min-width: 50px; text-align: right; font-size: 12px; font-weight: 600; }
-
-        /* ── Preview rendering ── */
-        .preview-custom-box {
-            padding: 16px; border-radius: 12px; margin: 12px 0;
-            border-left: 5px solid; font-size: 0.875rem; line-height: 1.6;
-        }
-        .preview-custom-box .pcb-title { font-weight: 700; font-size: 1rem; margin-bottom: 8px; display: block; }
-        .preview-custom-box .pcb-body  { white-space: pre-wrap; }
-
-        .preview-text-block {
-            padding: 14px 16px; background: white; border-radius: 10px;
-            border: 1px solid #e5e7eb; margin: 10px 0;
-            font-size: 0.875rem; color: #263238; line-height: 1.7; white-space: pre-wrap;
+        /* Image height slider */
+        .image-height-slider {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 8px 0;
         }
 
-        .preview-image-block { margin: 12px 0; }
-        .preview-image-block img { max-width: 100%; object-fit: contain; border-radius: 10px; border: 1px solid #e5e7eb; }
-        .preview-image-block .img-caption { font-size: 0.8rem; color: #6b7280; margin-top: 4px; }
+        .image-height-slider input[type="range"] {
+            flex: 1;
+        }
 
-        @media (max-width: 768px) { .color-picker-grid { grid-template-columns: repeat(2,1fr); } }
+        .image-height-slider span {
+            min-width: 50px;
+            text-align: right;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-section {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .form-section:first-child {
+            border-top: none;
+            padding-top: 0;
+            margin-top: 0;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <!-- Sidebar -->
-    <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+    <aside
+        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
         <div class="p-6 border-b border-indigo-700">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
@@ -111,29 +420,46 @@
                 </div>
             </div>
         </div>
+
         <nav class="mt-6 px-4">
-            <a href="index.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span>
+            <a href="index.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-home w-5"></i>
+                <span class="font-medium">Dashboard</span>
             </a>
-            <a href="users.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-users w-5"></i><span class="font-medium">Users</span>
+
+            <a href="users.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-users w-5"></i>
+                <span class="font-medium">Users</span>
             </a>
-            <a href="lessons.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-book w-5"></i><span class="font-medium">Lessons</span>
+
+            <a href="lessons.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
+                <i class="fas fa-book w-5"></i>
+                <span class="font-medium">Lessons</span>
             </a>
-            <a href="quizzes.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span>
+
+            <a href="quizzes.html"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-question-circle w-5"></i>
+                <span class="font-medium">Quizzes</span>
             </a>
-            <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span>
+
+            <a href="analytics.html" id="analyticsLink"
+                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="font-medium">Analytics</span>
             </a>
+
             <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span>
+                <i class="fas fa-vr-cardboard w-5"></i>
+                <span class="font-medium">AR Scenarios</span>
             </a>
             <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i><span class="font-medium">User & Scenario Analytics</span>
-            </a>
-        </nav>
+                <i class="fas fa-chart-line w-5"></i>
+                <span class="font-medium">User & Scenario Analytics</span>
+              </a>        </nav>
     </aside>
 
     <!-- Navbar -->
@@ -141,12 +467,15 @@
         <div class="px-8 py-4 flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons with custom boxes &amp; flexible images
+                <p class="text-sm text-gray-500">Manage lessons with live mobile preview & custom boxes
                     <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span>
                 </p>
             </div>
+
             <div class="flex items-center space-x-4">
-                <button class="p-2 hover:bg-gray-100 rounded-lg transition"><i class="fas fa-bell text-gray-600"></i></button>
+                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
+                    <i class="fas fa-bell text-gray-600"></i>
+                </button>
                 <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
                     <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
                         <i class="fas fa-user text-indigo-700 text-sm"></i>
@@ -165,7 +494,7 @@
 
     <!-- Main Content -->
     <main class="ml-64 p-8 mt-20">
-        <!-- Stats -->
+        <!-- Stats Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
                 <div class="flex items-center justify-between mb-4">
@@ -218,7 +547,7 @@
                         <i class="fas fa-project-diagram text-yellow-600 text-xl"></i>
                     </div>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Trees &amp; Graphs</h3>
+                <h3 class="text-gray-500 text-sm font-medium mb-1">Trees & Graphs</h3>
                 <p class="text-3xl font-bold text-gray-800" id="othersCount">-</p>
             </div>
         </div>
@@ -230,7 +559,8 @@
                     <div class="flex-1">
                         <div class="relative">
                             <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchLessons" placeholder="Search lessons..." onkeyup="filterLessons()"
+                            <input type="text" id="searchLessons" placeholder="Search lessons..."
+                                onkeyup="filterLessons()"
                                 class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
                         </div>
                     </div>
@@ -246,10 +576,12 @@
                     </select>
                 </div>
                 <div class="flex items-center space-x-3 ml-6">
-                    <button onclick="loadLessons()" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                    <button onclick="loadLessons()"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
                         <i class="fas fa-sync mr-2"></i>Refresh
                     </button>
-                    <button onclick="openAddLessonModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                    <button onclick="openAddLessonModal()"
+                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                         <i class="fas fa-plus mr-2"></i>New Lesson
                     </button>
                 </div>
@@ -263,10 +595,10 @@
     </main>
 
     <!-- ══════════════════════════════════════════════════════
-         IMAGE MANAGER MODAL  (v1 design)
+         IMAGE MANAGER MODAL
     ══════════════════════════════════════════════════════ -->
     <div id="imageModal" class="modal">
-        <div class="modal-content" style="max-width:600px;">
+        <div class="modal-content full-width" style="max-width:600px;">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-gray-800">📷 Image Manager</h3>
                 <button onclick="closeImageModal()" class="text-gray-500 hover:text-gray-700">
@@ -277,9 +609,11 @@
             <!-- Upload Zone -->
             <div class="image-upload-zone" id="imageUploadZone"
                 onclick="document.getElementById('imageFileInput').click()"
-                ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+                ondragover="handleDragOver(event)"
+                ondragleave="handleDragLeave(event)"
+                ondrop="handleDrop(event)">
                 <i class="fas fa-cloud-upload-alt text-indigo-400 text-3xl mb-2"></i>
-                <p class="text-sm font-medium text-indigo-600">Click or drag &amp; drop an image</p>
+                <p class="text-sm font-medium text-indigo-600">Click or drag & drop an image</p>
                 <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF, WebP — max 2 MB per image</p>
                 <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
             </div>
@@ -306,11 +640,10 @@
             <div class="mt-4">
                 <p class="text-sm font-medium text-gray-700 mb-2">Image Height (Mobile App):</p>
                 <div class="image-height-slider">
-                    <input type="range" id="imageHeightSlider" min="80" max="400" value="180"
-                        oninput="document.getElementById('imageHeightValue').textContent = this.value + 'px'; currentImageHeight = parseInt(this.value);" />
+                    <input type="range" id="imageHeightSlider" min="80" max="400" value="180" />
                     <span id="imageHeightValue">180px</span>
                 </div>
-                <p class="text-xs text-gray-500 mt-1">Height in mobile preview (80–400px)</p>
+                <p class="text-xs text-gray-500 mt-1">Height in mobile preview (80-400px)</p>
             </div>
 
             <!-- Caption input -->
@@ -342,7 +675,7 @@
                 <div class="image-gallery" id="stagedImagesGallery"></div>
             </div>
 
-            <div class="flex justify-end mt-6">
+            <div class="flex justify-end mt-6 gap-2">
                 <button onclick="closeImageModal()"
                     class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm">
                     Done
@@ -352,146 +685,204 @@
     </div>
 
     <!-- ══════════════════════════════════════════════════════
-         CUSTOM BOX BUILDER MODAL
-    ══════════════════════════════════════════════════════ -->
-    <div id="customBoxModal" class="modal">
-        <div class="modal-content" style="max-width:520px;">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">🎨 Create Custom Box</h3>
-                <button onclick="closeCustomBoxModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Box Title *</label>
-                <input type="text" id="boxTitle" placeholder="e.g., Important Note, Key Concept, Pro Tip"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-3">Background Color</label>
-                <div class="color-picker-grid" id="colorGrid"></div>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Box Content *</label>
-                <textarea id="boxContent" placeholder="Write the content for this box..."
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    rows="4"></textarea>
-            </div>
-
-            <!-- Live Preview -->
-            <div class="mb-4">
-                <p class="text-sm font-medium text-gray-700 mb-2">📱 App Preview:</p>
-                <div id="boxPreview" class="preview-custom-box" style="border-left-color:#006064; background-color:#E0F7FA;">
-                    <span class="pcb-title" style="color:#006064;">Your Title Here</span>
-                    <span class="pcb-body"  style="color:#006064;">Box content preview...</span>
-                </div>
-            </div>
-
-            <div class="flex justify-end space-x-3">
-                <button onclick="closeCustomBoxModal()"
-                    class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
-                <button onclick="insertCustomBox()"
-                    class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">✓ Insert Box</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════
          ADD LESSON MODAL
     ══════════════════════════════════════════════════════ -->
     <div id="addLessonModal" class="modal">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6 col-span-2">
                 <h2 class="text-2xl font-bold text-gray-800">Add New Lesson</h2>
                 <button onclick="closeAddLessonModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <form id="addLessonForm" onsubmit="addLesson(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                    <select id="lessonTopic" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="">Select Topic</option>
-                        <option value="Arrays">Arrays</option>
-                        <option value="Queues">Queues</option>
-                        <option value="Stacks">Stacks</option>
-                        <option value="LinkedLists">Linked Lists</option>
-                        <option value="Trees">Trees</option>
-                        <option value="Graphs">Graphs</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
-                    <select id="lessonDifficultyLevel" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="beginner">🟢 Beginner - Simpler explanations for new learners</option>
-                        <option value="intermediate">🟡 Intermediate - More advanced content</option>
-                    </select>
-                    <p class="text-xs text-gray-500 mt-1">💡 This determines which users will see this lesson based on their selected level</p>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
-                    <input type="text" id="lessonTitle" required placeholder="e.g., Introduction to Queues"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea id="lessonDescription" required placeholder="Brief description of the lesson"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        rows="3"></textarea>
-                </div>
 
-                <!-- Content Builder -->
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
-                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                        <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
-                        <div class="flex flex-col gap-2">
-                            <button type="button" onclick="addContentBlock('TEXT')"
-                                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
-                                📝 Add Text Paragraph
-                            </button>
-                            <button type="button" onclick="openCustomBoxModal('add')"
-                                class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
-                                🎨 Create Custom Box
-                            </button>
-                            <button type="button" onclick="openImageModal('add')"
-                                class="px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                🖼️ Add Image
-                            </button>
+            <!-- Left side: form -->
+            <div>
+                <form id="addLessonForm" onsubmit="addLesson(event)">
+                    <div class="form-section">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Basic Info</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                            <select id="lessonTopic" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="">Select Topic</option>
+                                <option value="Arrays">Arrays</option>
+                                <option value="Queues">Queues</option>
+                                <option value="Stacks">Stacks</option>
+                                <option value="LinkedLists">Linked Lists</option>
+                                <option value="Trees">Trees</option>
+                                <option value="Graphs">Graphs</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
+                            <select id="lessonDifficultyLevel" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="beginner">🟢 Beginner</option>
+                                <option value="intermediate">🟡 Intermediate</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
+                            <input type="text" id="lessonTitle" required placeholder="e.g., Introduction to Queues"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                            <textarea id="lessonDescription" required placeholder="Brief description of the lesson"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                rows="3"></textarea>
                         </div>
                     </div>
-                    <textarea id="lessonContent" placeholder="Write your lesson content here..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                        rows="12"></textarea>
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" onclick="togglePreview(false)"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
-                            <i class="fas fa-eye mr-2"></i>Preview
+
+                    <!-- Content Builder -->
+                    <div class="form-section">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Content Builder</h3>
+
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
+                            <div class="content-builder-grid mb-2">
+                                <button type="button" onclick="addContentBlock('TEXT')"
+                                    class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+                                    📝 Text
+                                </button>
+                                <button type="button" onclick="addContentBlock('INFO')"
+                                    class="insert-box-btn info-box-info">ℹ️ Info</button>
+                                <button type="button" onclick="addContentBlock('TIP')"
+                                    class="insert-box-btn info-box-tip">💡 Tip</button>
+                                <button type="button" onclick="addContentBlock('WARNING')"
+                                    class="insert-box-btn info-box-warning">⚠️ Warning</button>
+                                <button type="button" onclick="addContentBlock('NOTE')"
+                                    class="insert-box-btn info-box-note">📝 Note</button>
+                                <button type="button" onclick="addContentBlock('IMPORTANT')"
+                                    class="insert-box-btn info-box-important">⭐ Important</button>
+                            </div>
+                            <div class="mb-2">
+                                <button type="button" onclick="openCustomBoxBuilder('add')"
+                                    class="w-full px-3 py-2 bg-purple-50 text-purple-700 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-100 transition text-sm font-medium">
+                                    🎨 Create Custom Box
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" onclick="openImageModal('add')"
+                                    class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
+                                    🖼️ Insert Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <textarea id="lessonContent" placeholder="Write your lesson content here..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
+                            rows="12" oninput="updatePreview()"></textarea>
+
+                        <div class="flex gap-2 mt-2">
+                            <span class="text-xs text-gray-400 self-center">✓ Preview updates live on the right</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                        <input type="number" id="lessonOrder" value="1" min="1"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeAddLessonModal()"
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                            Cancel
                         </button>
+                        <button type="submit"
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                            Add Lesson
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right side: mobile preview -->
+            <div class="mobile-preview">
+                <div class="mobile-preview-header">iPhone 12 • Lesson Preview</div>
+                <div class="mobile-preview-content" id="mobilePreviewContent">
+                    <p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         CUSTOM BOX BUILDER MODAL
+    ══════════════════════════════════════════════════════ -->
+    <div id="customBoxModal" class="modal">
+        <div class="modal-content full-width" style="max-width:600px;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Create Custom Box</h2>
+                <button onclick="closeCustomBoxModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <form onsubmit="insertCustomBox(event)">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Box Title *</label>
+                    <input type="text" id="customBoxTitle" required placeholder="e.g., Key Concept, Remember!"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Box Content *</label>
+                    <textarea id="customBoxContent" required placeholder="Content goes here..."
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                        rows="6"></textarea>
+                </div>
+
+                <div class="custom-box-config">
+                    <p class="text-sm font-semibold text-gray-700 mb-4">Styling</p>
+
+                    <div class="custom-box-config-row">
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 block mb-2">Border Color</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="customBoxBorderColor" value="#006064" />
+                                <input type="text" id="customBoxBorderColorHex" value="#006064" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 block mb-2">Background Color</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="customBoxBgColor" value="#E0F7FA" />
+                                <input type="text" id="customBoxBgColorHex" value="#E0F7FA" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="custom-box-config-row">
+                        <div>
+                            <label class="text-xs font-medium text-gray-600 block mb-2">Text Color</label>
+                            <div class="color-picker-group">
+                                <input type="color" id="customBoxTextColor" value="#006064" />
+                                <input type="text" id="customBoxTextColorHex" value="#006064" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Preview Area -->
-                <div id="contentPreview" style="display:none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">📱 App Preview:</h3>
-                    <div id="previewContent"></div>
+                <div id="customBoxPreview" class="mt-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
+                    <p class="text-xs text-gray-500 mb-2">Preview:</p>
+                    <div id="customBoxPreviewContent"></div>
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                    <input type="number" id="lessonOrder" value="1" min="1"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeAddLessonModal()"
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
+                <div class="flex justify-end space-x-3 mt-6">
+                    <button type="button" onclick="closeCustomBoxModal()"
+                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
                     <button type="submit"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Add Lesson</button>
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Insert Custom Box
+                    </button>
                 </div>
             </form>
         </div>
@@ -502,90 +893,118 @@
     ══════════════════════════════════════════════════════ -->
     <div id="editLessonModal" class="modal">
         <div class="modal-content">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex justify-between items-center mb-6 col-span-2">
                 <h2 class="text-2xl font-bold text-gray-800">Edit Lesson</h2>
                 <button onclick="closeEditLessonModal()" class="text-gray-500 hover:text-gray-700">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </div>
-            <form id="editLessonForm" onsubmit="updateLesson(event)">
-                <input type="hidden" id="editLessonId">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                    <select id="editLessonTopic" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="">Select Topic</option>
-                        <option value="Arrays">Arrays</option>
-                        <option value="Queues">Queues</option>
-                        <option value="Stacks">Stacks</option>
-                        <option value="LinkedLists">Linked Lists</option>
-                        <option value="Trees">Trees</option>
-                        <option value="Graphs">Graphs</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
-                    <select id="editLessonDifficultyLevel" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <option value="beginner">🟢 Beginner</option>
-                        <option value="intermediate">🟡 Intermediate</option>
-                    </select>
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
-                    <input type="text" id="editLessonTitle" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                    <textarea id="editLessonDescription" required
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        rows="3"></textarea>
-                </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Content Builder</label>
-                    <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                        <p class="text-sm font-medium text-gray-700 mb-3">Add Elements:</p>
-                        <div class="flex flex-col gap-2">
-                            <button type="button" onclick="openCustomBoxModal('edit')"
-                                class="px-3 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
-                                🎨 Create Custom Box
-                            </button>
-                            <button type="button" onclick="openImageModal('edit')"
-                                class="px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                🖼️ Add Image
-                            </button>
+            <!-- Left side: form -->
+            <div>
+                <form id="editLessonForm" onsubmit="updateLesson(event)">
+                    <input type="hidden" id="editLessonId">
+
+                    <div class="form-section">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Basic Info</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
+                            <select id="editLessonTopic" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="">Select Topic</option>
+                                <option value="Arrays">Arrays</option>
+                                <option value="Queues">Queues</option>
+                                <option value="Stacks">Stacks</option>
+                                <option value="LinkedLists">Linked Lists</option>
+                                <option value="Trees">Trees</option>
+                                <option value="Graphs">Graphs</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
+                            <select id="editLessonDifficultyLevel" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                                <option value="beginner">🟢 Beginner</option>
+                                <option value="intermediate">🟡 Intermediate</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
+                            <input type="text" id="editLessonTitle" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                            <textarea id="editLessonDescription" required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                rows="3"></textarea>
                         </div>
                     </div>
-                    <textarea id="editLessonContent"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                        rows="12"></textarea>
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" onclick="togglePreview(true)"
-                            class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm">
-                            <i class="fas fa-eye mr-2"></i>Preview
+
+                    <div class="form-section">
+                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Content</h3>
+                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Content:</p>
+                            <div class="content-builder-grid mb-2">
+                                <button type="button" onclick="insertInfoBox('INFO', true)"
+                                    class="insert-box-btn info-box-info">ℹ️ Info</button>
+                                <button type="button" onclick="insertInfoBox('TIP', true)"
+                                    class="insert-box-btn info-box-tip">💡 Tip</button>
+                                <button type="button" onclick="insertInfoBox('WARNING', true)"
+                                    class="insert-box-btn info-box-warning">⚠️ Warning</button>
+                                <button type="button" onclick="insertInfoBox('NOTE', true)"
+                                    class="insert-box-btn info-box-note">📝 Note</button>
+                                <button type="button" onclick="insertInfoBox('IMPORTANT', true)"
+                                    class="insert-box-btn info-box-important">⭐ Important</button>
+                            </div>
+                            <div class="mb-2">
+                                <button type="button" onclick="openCustomBoxBuilder('edit')"
+                                    class="w-full px-3 py-2 bg-purple-50 text-purple-700 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-100 transition text-sm font-medium">
+                                    🎨 Create Custom Box
+                                </button>
+                            </div>
+                            <div>
+                                <button type="button" onclick="openImageModal('edit')"
+                                    class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
+                                    🖼️ Insert Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <textarea id="editLessonContent"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
+                            rows="12" oninput="updatePreview(true)"></textarea>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                        <input type="number" id="editLessonOrder" value="1" min="1"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeEditLessonModal()"
+                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                            Update Lesson
                         </button>
                     </div>
-                </div>
+                </form>
+            </div>
 
-                <div id="editContentPreview" style="display:none;" class="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">📱 App Preview:</h3>
-                    <div id="editPreviewContent"></div>
+            <!-- Right side: mobile preview -->
+            <div class="mobile-preview">
+                <div class="mobile-preview-header">iPhone 12 • Lesson Preview</div>
+                <div class="mobile-preview-content" id="editMobilePreviewContent">
+                    <p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>
                 </div>
-
-                <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                    <input type="number" id="editLessonOrder" value="1" min="1"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-                <div class="flex justify-end space-x-3">
-                    <button type="button" onclick="closeEditLessonModal()"
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">Cancel</button>
-                    <button type="submit"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">Update Lesson</button>
-                </div>
-            </form>
+            </div>
         </div>
     </div>
 
@@ -601,39 +1020,60 @@
         let currentUser = null;
         let imageModalTarget = 'add';
         let stagedImages = [];
+        let customBoxTarget = 'add';
         let currentImageHeight = 180;
 
-        const colorPalette = [
-            { bg: '#E0F7FA', border: '#006064', text: '#006064', name: 'Cyan'   },
-            { bg: '#FFF9C4', border: '#F57F17', text: '#F57F17', name: 'Yellow' },
-            { bg: '#FFEBEE', border: '#B71C1C', text: '#B71C1C', name: 'Red'    },
-            { bg: '#F3E5F5', border: '#4A148C', text: '#4A148C', name: 'Purple' },
-            { bg: '#E8F5E9', border: '#1B5E20', text: '#1B5E20', name: 'Green'  },
-            { bg: '#FCE4EC', border: '#880E4F', text: '#880E4F', name: 'Pink'   },
-            { bg: '#E3F2FD', border: '#0D47A1', text: '#0D47A1', name: 'Blue'   },
-            { bg: '#FFF3E0', border: '#E65100', text: '#E65100', name: 'Orange' }
-        ];
-        let selectedColor = colorPalette[0];
+        // Color sync helper
+        function syncColorPickers(colorInputId, hexInputId) {
+            const colorInput = document.getElementById(colorInputId);
+            const hexInput = document.getElementById(hexInputId);
+            if (!colorInput || !hexInput) return;
+            
+            colorInput.addEventListener('input', () => {
+                hexInput.value = colorInput.value.toUpperCase();
+                updateCustomBoxPreview();
+            });
+            hexInput.addEventListener('change', () => {
+                if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
+                    colorInput.value = hexInput.value;
+                    updateCustomBoxPreview();
+                }
+            });
+        }
 
         // ════════════════════════════════════════════════════════
         //  AUTH
         // ════════════════════════════════════════════════════════
-        function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
-
-        function checkAuth() {
-            const raw = localStorage.getItem('adminUser');
-            if (!raw || raw === 'undefined') { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
-            try {
-                const user = JSON.parse(raw);
-                if (!user.role) user.role = 'admin';
-                return user;
-            } catch(e) { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
+        function logout() {
+            localStorage.removeItem('adminUser');
+            window.location.href = 'login.html';
         }
 
-        function updateNavigationForRole(u) {
+        function checkAuth() {
+            const adminUser = localStorage.getItem('adminUser');
+            if (!adminUser || adminUser === 'undefined') {
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+            try {
+                const user = JSON.parse(adminUser);
+                if (!user.role) user.role = 'admin';
+                return user;
+            } catch (e) {
+                localStorage.removeItem('adminUser');
+                window.location.href = 'login.html';
+                return null;
+            }
+        }
+
+        function isInstructor(user) { return user && user.role === 'instructor'; }
+        function isAdmin(user)      { return user && (user.role === 'admin' || !user.role); }
+
+        function updateNavigationForRole(user) {
             const ri = document.getElementById('roleIndicator');
             if (!ri) return;
-            if (u && u.role === 'instructor') {
+            if (isInstructor(user)) {
                 ri.textContent = '👨‍🏫 Instructor View';
                 ri.className = 'ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold';
             } else {
@@ -643,79 +1083,15 @@
         }
 
         // ════════════════════════════════════════════════════════
-        //  CUSTOM BOX MODAL
+        //  IMAGE MODAL
         // ════════════════════════════════════════════════════════
-        function initColorPicker() {
-            const grid = document.getElementById('colorGrid');
-            grid.innerHTML = '';
-            colorPalette.forEach(color => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'color-option' + (color === selectedColor ? ' selected' : '');
-                btn.style.backgroundColor = color.bg;
-                btn.style.border = '3px solid ' + color.border;
-                btn.style.color  = color.border;
-                btn.textContent  = color.name;
-                btn.onclick = e => {
-                    e.preventDefault();
-                    document.querySelectorAll('.color-option').forEach(b => b.classList.remove('selected'));
-                    btn.classList.add('selected');
-                    selectedColor = color;
-                    updateBoxPreview();
-                };
-                grid.appendChild(btn);
-            });
-        }
 
-        function openCustomBoxModal(target) {
-            imageModalTarget = target;
-            selectedColor = colorPalette[0];
-            document.getElementById('boxTitle').value   = '';
-            document.getElementById('boxContent').value = '';
-            initColorPicker();
-            updateBoxPreview();
-            document.getElementById('customBoxModal').classList.add('active');
-        }
-
-        function closeCustomBoxModal() { document.getElementById('customBoxModal').classList.remove('active'); }
-
-        function updateBoxPreview() {
-            const title   = document.getElementById('boxTitle').value   || 'Your Title Here';
-            const content = document.getElementById('boxContent').value || 'Box content preview...';
-            const preview = document.getElementById('boxPreview');
-            preview.style.backgroundColor = selectedColor.bg;
-            preview.style.borderLeftColor  = selectedColor.border;
-            preview.innerHTML =
-                `<span class="pcb-title" style="color:${selectedColor.text};">${escapeHtml(title)}</span>` +
-                `<span class="pcb-body"  style="color:${selectedColor.text};">${escapeHtml(content)}</span>`;
-        }
-
-        document.addEventListener('input', e => {
-            if (e.target.id === 'boxTitle' || e.target.id === 'boxContent') updateBoxPreview();
-        });
-
-        function insertCustomBox() {
-            const title   = document.getElementById('boxTitle').value.trim();
-            const content = document.getElementById('boxContent').value.trim();
-            if (!title || !content) { alert('Please fill in both title and content.'); return; }
-
-            const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
-            const textarea   = document.getElementById(textareaId);
-            const token = `\n\n[CUSTOMBOX border="${selectedColor.border}" bg="${selectedColor.bg}" text="${selectedColor.text}" title="${title}"]\n${content}\n[/CUSTOMBOX]\n\n`;
-            const pos = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
-            closeCustomBoxModal();
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  IMAGE MODAL  (v1 — drag/drop, height slider, staged gallery, direct insert)
-        // ════════════════════════════════════════════════════════
         function openImageModal(target) {
             imageModalTarget = target;
             stagedImages = [];
             currentImageHeight = 180;
             renderStagedGallery();
-            document.getElementById('imageUrlInput').value    = '';
+            document.getElementById('imageUrlInput').value = '';
             document.getElementById('imageCaptionInput').value = '';
             document.getElementById('imageHeightSlider').value = 180;
             document.getElementById('imageHeightValue').textContent = '180px';
@@ -724,10 +1100,22 @@
             document.getElementById('imageModal').classList.add('active');
         }
 
-        function closeImageModal() { document.getElementById('imageModal').classList.remove('active'); }
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('active');
+        }
 
-        function handleDragOver(e) { e.preventDefault(); document.getElementById('imageUploadZone').classList.add('drag-over'); }
-        function handleDragLeave()  { document.getElementById('imageUploadZone').classList.remove('drag-over'); }
+        document.getElementById('imageHeightSlider')?.addEventListener('input', (e) => {
+            currentImageHeight = parseInt(e.target.value);
+            document.getElementById('imageHeightValue').textContent = currentImageHeight + 'px';
+        });
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            document.getElementById('imageUploadZone').classList.add('drag-over');
+        }
+        function handleDragLeave(e) {
+            document.getElementById('imageUploadZone').classList.remove('drag-over');
+        }
         function handleDrop(e) {
             e.preventDefault();
             document.getElementById('imageUploadZone').classList.remove('drag-over');
@@ -746,16 +1134,21 @@
                 alert('⚠️ Image is larger than 2 MB. Please compress it first.');
                 return;
             }
+
             const progress = document.getElementById('uploadProgress');
             progress.classList.remove('hidden');
+
             const reader = new FileReader();
-            reader.onload = e => {
+            reader.onload = function(e) {
                 progress.classList.add('hidden');
-                const caption = document.getElementById('imageCaptionInput').value.trim();
-                const align   = document.querySelector('input[name="imgAlign"]:checked').value;
+                const caption  = document.getElementById('imageCaptionInput').value.trim();
+                const align    = document.querySelector('input[name="imgAlign"]:checked').value;
                 stageImage(e.target.result, caption, align);
             };
-            reader.onerror = () => { progress.classList.add('hidden'); alert('❌ Failed to read image file.'); };
+            reader.onerror = function() {
+                progress.classList.add('hidden');
+                alert('❌ Failed to read image file.');
+            };
             reader.readAsDataURL(file);
         }
 
@@ -777,8 +1170,13 @@
         function renderStagedGallery() {
             const section = document.getElementById('stagedImagesSection');
             const gallery = document.getElementById('stagedImagesGallery');
-            if (stagedImages.length === 0) { section.classList.add('hidden'); return; }
+
+            if (stagedImages.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
             section.classList.remove('hidden');
+
             gallery.innerHTML = '';
             stagedImages.forEach((img, idx) => {
                 const item = document.createElement('div');
@@ -786,139 +1184,200 @@
                 item.innerHTML = `
                     <img src="${img.src}" alt="${img.caption || 'image'}" />
                     <div class="remove-img-btn" onclick="removeStagedImage(${idx})" title="Remove">✕</div>
-                    <div class="insert-img-btn" onclick="insertStagedImage(${idx})">Insert ↓</div>`;
+                    <div class="insert-img-btn" onclick="insertStagedImage(${idx})">Insert ↓</div>
+                `;
                 gallery.appendChild(item);
             });
         }
 
-        function removeStagedImage(idx) { stagedImages.splice(idx, 1); renderStagedGallery(); }
+        function removeStagedImage(idx) {
+            stagedImages.splice(idx, 1);
+            renderStagedGallery();
+        }
 
         function insertStagedImage(idx) {
-            const img        = stagedImages[idx];
+            const img = stagedImages[idx];
             const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
             const textarea   = document.getElementById(textareaId);
-            const token      = `\n\n[IMAGE src="${img.src}" caption="${img.caption}" height="${img.height}" align="${img.align}"]\n\n`;
-            const pos        = textarea.selectionStart;
-            textarea.value   = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
+
+            const token = `\n\n[IMAGE src="${img.src}" caption="${img.caption}" align="${img.align}" height="${img.height}"]\n\n`;
+            const pos   = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
             textarea.focus();
             textarea.setSelectionRange(pos + token.length, pos + token.length);
+
+            updatePreview(imageModalTarget === 'edit');
             closeImageModal();
+        }
+
+        // ════════════════════════════════════════════════════════
+        //  CUSTOM BOX MODAL
+        // ════════════════════════════════════════════════════════
+
+        function openCustomBoxBuilder(target) {
+            customBoxTarget = target;
+            document.getElementById('customBoxTitle').value = '';
+            document.getElementById('customBoxContent').value = '';
+            document.getElementById('customBoxBorderColor').value = '#006064';
+            document.getElementById('customBoxBorderColorHex').value = '#006064';
+            document.getElementById('customBoxBgColor').value = '#E0F7FA';
+            document.getElementById('customBoxBgColorHex').value = '#E0F7FA';
+            document.getElementById('customBoxTextColor').value = '#006064';
+            document.getElementById('customBoxTextColorHex').value = '#006064';
+            
+            syncColorPickers('customBoxBorderColor', 'customBoxBorderColorHex');
+            syncColorPickers('customBoxBgColor', 'customBoxBgColorHex');
+            syncColorPickers('customBoxTextColor', 'customBoxTextColorHex');
+            
+            updateCustomBoxPreview();
+            document.getElementById('customBoxModal').classList.add('active');
+        }
+
+        function closeCustomBoxModal() {
+            document.getElementById('customBoxModal').classList.remove('active');
+        }
+
+        function updateCustomBoxPreview() {
+            const title = document.getElementById('customBoxTitle').value || 'Box Title';
+            const content = document.getElementById('customBoxContent').value || 'Box content';
+            const borderColor = document.getElementById('customBoxBorderColor').value;
+            const bgColor = document.getElementById('customBoxBgColor').value;
+            const textColor = document.getElementById('customBoxTextColor').value;
+
+            const preview = document.getElementById('customBoxPreviewContent');
+            preview.innerHTML = `
+                <div style="padding: 12px; border-radius: 8px; border-left: 4px solid ${borderColor}; background-color: ${bgColor}; color: ${textColor};">
+                    <strong>${title}</strong><br><br>
+                    ${content}
+                </div>
+            `;
+        }
+
+        function insertCustomBox(event) {
+            event.preventDefault();
+            const title = document.getElementById('customBoxTitle').value;
+            const content = document.getElementById('customBoxContent').value;
+            const borderColor = document.getElementById('customBoxBorderColorHex').value;
+            const bgColor = document.getElementById('customBoxBgColorHex').value;
+            const textColor = document.getElementById('customBoxTextColorHex').value;
+
+            const textareaId = customBoxTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
+            const textarea = document.getElementById(textareaId);
+
+            const token = `\n\n[CUSTOMBOX border="${borderColor}" bg="${bgColor}" text="${textColor}" title="${title}"]${content}[/CUSTOMBOX]\n\n`;
+            const pos = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
+            textarea.focus();
+
+            updatePreview(customBoxTarget === 'edit');
+            closeCustomBoxModal();
+        }
+
+        // ════════════════════════════════════════════════════════
+        //  PREVIEW & RENDERING
+        // ════════════════════════════════════════════════════════
+
+        function updatePreview(isEdit = false) {
+            const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
+            const previewId = isEdit ? 'editMobilePreviewContent' : 'mobilePreviewContent';
+            const content = document.getElementById(contentId).value;
+            const preview = document.getElementById(previewId);
+
+            renderMobilePreview(content, preview);
+        }
+
+        function renderMobilePreview(content, previewElement) {
+            previewElement.innerHTML = '';
+
+            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
+
+            parts.forEach(part => {
+                if (!part.trim()) return;
+
+                // Handle CUSTOMBOX
+                const customBoxMatch = part.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                if (customBoxMatch) {
+                    const div = document.createElement('div');
+                    div.className = 'mobile-card';
+                    div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
+                    div.style.backgroundColor = customBoxMatch[2];
+                    div.style.color = customBoxMatch[3];
+                    div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
+                    previewElement.appendChild(div);
+                    return;
+                }
+
+                // Handle IMAGE
+                const imageMatch = part.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]/i);
+                if (imageMatch) {
+                    const div = document.createElement('div');
+                    div.className = 'mobile-card';
+                    const img = document.createElement('img');
+                    img.src = imageMatch[1];
+                    img.className = 'mobile-image';
+                    img.style.height = (imageMatch[4] || '180') + 'px';
+                    div.appendChild(img);
+
+                    if (imageMatch[2]) {
+                        const cap = document.createElement('p');
+                        cap.style.fontSize = '12px';
+                        cap.style.color = '#999';
+                        cap.style.margin = '4px 0 0 0';
+                        cap.textContent = imageMatch[2];
+                        div.appendChild(cap);
+                    }
+                    previewElement.appendChild(div);
+                    return;
+                }
+
+                // Handle plain text
+                if (part.trim()) {
+                    const div = document.createElement('div');
+                    div.className = 'mobile-card';
+                    div.className += ' mobile-card-content';
+                    div.textContent = part.trim();
+                    previewElement.appendChild(div);
+                }
+            });
         }
 
         // ════════════════════════════════════════════════════════
         //  CONTENT BUILDER
         // ════════════════════════════════════════════════════════
+
         function addContentBlock(type) {
-            if (type === 'TEXT') {
-                const template = '\n\nWrite your paragraph here.\n\n';
-                const textarea = document.getElementById('lessonContent');
-                const pos = textarea.selectionStart;
-                textarea.value = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
-                textarea.focus();
-            }
+            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
+            const textarea = document.getElementById('lessonContent');
+            const pos = textarea.selectionStart;
+            textarea.value = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
+            textarea.focus();
+            updatePreview();
         }
 
-        // ════════════════════════════════════════════════════════
-        //  PREVIEW
-        // ════════════════════════════════════════════════════════
-        function togglePreview(isEdit) {
-            const previewDivId = isEdit ? 'editContentPreview' : 'contentPreview';
-            const contentId    = isEdit ? 'editLessonContent'  : 'lessonContent';
-            const previewDiv   = document.getElementById(previewDivId);
-            const content      = document.getElementById(contentId).value;
-            if (previewDiv.style.display === 'none') {
-                previewDiv.style.display = 'block';
-                renderPreview(content, isEdit);
-            } else {
-                previewDiv.style.display = 'none';
-            }
-        }
-
-        function renderPreview(content, isEdit) {
-            const containerId = isEdit ? 'editPreviewContent' : 'previewContent';
-            const container   = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            const TOKEN_RE = /(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi;
-            const parts    = content.split(TOKEN_RE);
-
-            parts.forEach(part => {
-                if (!part || !part.trim()) return;
-                const trimmed = part.trim();
-
-                // CUSTOMBOX
-                const cbMatch = trimmed.match(
-                    /^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i
-                );
-                if (cbMatch) {
-                    const [, border, bg, text, title, body] = cbMatch;
-                    const box = document.createElement('div');
-                    box.className = 'preview-custom-box';
-                    box.style.backgroundColor = bg;
-                    box.style.borderLeftColor  = border;
-                    box.innerHTML =
-                        `<span class="pcb-title" style="color:${text};">${escapeHtml(title)}</span>` +
-                        `<span class="pcb-body"  style="color:${text};">${escapeHtml(body.trim())}</span>`;
-                    container.appendChild(box);
-                    return;
-                }
-
-                // IMAGE
-                const imgMatch = trimmed.match(
-                    /^\[IMAGE\s+src="([^"]*)"\s+caption="([^"]*)"\s+height="(\d+)"\s+align="([^"]+)"\]$/i
-                );
-                if (imgMatch) {
-                    const [, src, caption, height, align] = imgMatch;
-                    const wrap = document.createElement('div');
-                    wrap.className  = 'preview-image-block';
-                    wrap.style.textAlign = align;
-                    const imgEl = document.createElement('img');
-                    imgEl.src = src; imgEl.alt = caption || 'lesson image';
-                    imgEl.style.maxHeight = height + 'px';
-                    imgEl.onerror = () => {
-                        imgEl.style.display = 'none';
-                        wrap.insertAdjacentHTML('beforeend', '<p style="color:#ef4444;font-size:0.75rem;">⚠️ Image failed to load</p>');
-                    };
-                    wrap.appendChild(imgEl);
-                    if (caption) {
-                        const cap = document.createElement('p');
-                        cap.className = 'img-caption'; cap.textContent = caption;
-                        wrap.appendChild(cap);
-                    }
-                    container.appendChild(wrap);
-                    return;
-                }
-
-                // Plain text
-                trimmed.split(/\n\n+/).forEach(para => {
-                    if (!para.trim()) return;
-                    const div = document.createElement('div');
-                    div.className  = 'preview-text-block';
-                    div.textContent = para.trim();
-                    container.appendChild(div);
-                });
-            });
-
-            if (!container.children.length) {
-                container.innerHTML = '<p class="text-gray-400 text-sm italic">Nothing to preview yet.</p>';
-            }
-        }
-
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-                .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        function insertInfoBox(type, isEdit = false) {
+            const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
+            const textarea   = document.getElementById(textareaId);
+            const pos        = textarea.selectionStart;
+            const template   = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
+            textarea.value   = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
+            textarea.focus();
+            updatePreview(isEdit);
         }
 
         // ════════════════════════════════════════════════════════
         //  LOAD / DISPLAY LESSONS
         // ════════════════════════════════════════════════════════
+
         async function loadLessons() {
             try {
                 const response = await fetch(`${API_URL}/lessons`);
                 const data = await response.json();
-                if (data.success) { allLessons = data.lessons || []; updateStats(); displayLessons(allLessons); }
-            } catch(error) {
+                if (data.success) {
+                    allLessons = data.lessons || [];
+                    updateStats();
+                    displayLessons(allLessons);
+                }
+            } catch (error) {
                 console.error('❌ Fetch Error:', error);
                 document.getElementById('lessonsGrid').innerHTML =
                     '<p class="text-center text-red-500 col-span-3 p-8">Failed to load lessons</p>';
@@ -926,47 +1385,52 @@
         }
 
         function updateStats() {
-            const c = { total: allLessons.length, Arrays: 0, Queue: 0, Stacks: 0, LinkedLists: 0, others: 0 };
-            allLessons.forEach(l => {
-                const t = l.topicName;
-                if      (t === 'Arrays')                              c.Arrays++;
-                else if (t === 'Queue' || t === 'Queues')            c.Queue++;
-                else if (t === 'Stacks')                              c.Stacks++;
-                else if (t === 'LinkedLists' || t === 'Linked Lists') c.LinkedLists++;
-                else                                                  c.others++;
+            const counts = { total: allLessons.length, Arrays: 0, Queue: 0, Stacks: 0, LinkedLists: 0, others: 0 };
+            allLessons.forEach(lesson => {
+                const t = lesson.topicName;
+                if (t === 'Arrays')                     counts.Arrays++;
+                else if (t === 'Queue' || t === 'Queues') counts.Queue++;
+                else if (t === 'Stacks')                counts.Stacks++;
+                else if (t === 'LinkedLists' || t === 'Linked Lists') counts.LinkedLists++;
+                else                                    counts.others++;
             });
-            document.getElementById('totalLessons').textContent     = c.total;
-            document.getElementById('arraysCount').textContent      = c.Arrays;
-            document.getElementById('queueCount').textContent       = c.Queue;
-            document.getElementById('stacksCount').textContent      = c.Stacks;
-            document.getElementById('linkedlistsCount').textContent = c.LinkedLists;
-            document.getElementById('othersCount').textContent      = c.others;
+            document.getElementById('totalLessons').textContent    = counts.total;
+            document.getElementById('arraysCount').textContent     = counts.Arrays;
+            document.getElementById('queueCount').textContent      = counts.Queue;
+            document.getElementById('stacksCount').textContent     = counts.Stacks;
+            document.getElementById('linkedlistsCount').textContent= counts.LinkedLists;
+            document.getElementById('othersCount').textContent     = counts.others;
         }
 
         function displayLessons(lessons) {
             const container = document.getElementById('lessonsGrid');
-            if (!lessons.length) {
+            if (lessons.length === 0) {
                 container.innerHTML = '<p class="text-center text-gray-500 col-span-3 p-8">No lessons found. Add your first lesson!</p>';
                 return;
             }
+
             const topicColors = {
-                'Arrays':       { gradient: 'from-indigo-500 to-indigo-600', icon: 'fa-layer-group',     badge: 'indigo'  },
-                'Queue':        { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',          badge: 'blue'    },
-                'Queues':       { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',          badge: 'blue'    },
-                'Stacks':       { gradient: 'from-green-500 to-green-600',   icon: 'fa-layer-group',     badge: 'green'   },
-                'LinkedLists':  { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',            badge: 'purple'  },
-                'Linked Lists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',            badge: 'purple'  },
-                'Trees':        { gradient: 'from-yellow-500 to-yellow-600', icon: 'fa-project-diagram', badge: 'yellow'  },
-                'Graphs':       { gradient: 'from-red-500 to-red-600',       icon: 'fa-sitemap',         badge: 'red'     }
+                'Arrays':       { gradient: 'from-indigo-500 to-indigo-600', icon: 'fa-layer-group', badge: 'indigo' },
+                'Queue':        { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',      badge: 'blue'   },
+                'Queues':       { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',      badge: 'blue'   },
+                'Stacks':       { gradient: 'from-green-500 to-green-600',   icon: 'fa-layer-group', badge: 'green'  },
+                'LinkedLists':  { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',        badge: 'purple' },
+                'Linked Lists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',        badge: 'purple' },
+                'Trees':        { gradient: 'from-yellow-500 to-yellow-600', icon: 'fa-project-diagram', badge: 'yellow'},
+                'Graphs':       { gradient: 'from-red-500 to-red-600',       icon: 'fa-sitemap',     badge: 'red'    }
             };
+
             let html = '';
             lessons.forEach(lesson => {
                 const color = topicColors[lesson.topicName] || { gradient: 'from-gray-400 to-gray-500', icon: 'fa-book', badge: 'gray' };
-                const clean   = (lesson.content || '').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\]/gi, '[element]');
-                const preview = clean.substring(0, 80) + (clean.length > 80 ? '…' : '');
-                const hasBoxes  = lesson.content && /\[CUSTOMBOX/i.test(lesson.content);
-                const hasImages = lesson.content && /\[IMAGE/i.test(lesson.content);
-                const imgCount  = hasImages ? (lesson.content.match(/\[IMAGE/gi) || []).length : 0;
+
+                const cleanContent = (lesson.content || '').replace(/\[IMAGE[^\]]+\]/gi, '[image]').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]/gi, '[box]');
+                const contentPreview = cleanContent.substring(0, 80) + (cleanContent.length > 80 ? '…' : '');
+
+                const hasCustomBoxes = lesson.content && /\[CUSTOMBOX/i.test(lesson.content);
+                const hasImages       = lesson.content && /\[IMAGE/i.test(lesson.content);
+                const imageCount      = hasImages ? (lesson.content.match(/\[IMAGE/gi) || []).length : 0;
+
                 const diffBadge = lesson.difficultyLevel === 'intermediate'
                     ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">🟡 Intermediate</span>'
                     : '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">🟢 Beginner</span>';
@@ -978,140 +1442,164 @@
                     </div>
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-3 flex-wrap gap-1">
-                            <span class="px-3 py-1 bg-${color.badge}-100 text-${color.badge}-700 rounded-full text-xs font-semibold">${lesson.topicName}</span>
+                            <span class="px-3 py-1 bg-${color.badge}-100 text-${color.badge}-700 rounded-full text-xs font-semibold">
+                                ${lesson.topicName}
+                            </span>
                             <div class="flex gap-1 flex-wrap">
                                 ${diffBadge}
-                                ${hasBoxes  ? '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">🎨 Custom Box</span>' : ''}
-                                ${hasImages ? `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">🖼️ ${imgCount} img</span>` : ''}
+                                ${hasCustomBoxes ? '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">🎨 Custom</span>' : ''}
+                                ${hasImages ? `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">🖼️ ${imageCount} img</span>` : ''}
                             </div>
                         </div>
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">${lesson.title}</h3>
                         <p class="text-sm text-gray-600 mb-2">${lesson.description}</p>
-                        <p class="text-xs text-gray-400 mb-4"><i class="fas fa-file-alt mr-1"></i>${preview || 'No content added yet'}</p>
+                        <p class="text-xs text-gray-400 mb-4"><i class="fas fa-file-alt mr-1"></i>${contentPreview || 'No content added yet'}</p>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
-                                <button onclick="editLesson('${lesson._id}')" class="text-green-600 hover:text-green-700" title="Edit"><i class="fas fa-edit"></i></button>
-                                <button onclick="deleteLesson('${lesson._id}')" class="text-red-600 hover:text-red-700" title="Delete"><i class="fas fa-trash"></i></button>
+                                <button onclick="editLesson('${lesson._id}')" class="text-green-600 hover:text-green-700" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button onclick="deleteLesson('${lesson._id}')" class="text-red-600 hover:text-red-700" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                             <span class="text-xs text-gray-500">Order: ${lesson.order}</span>
                         </div>
                     </div>
                 </div>`;
             });
+
             container.innerHTML = html;
         }
 
         function filterLessons() {
-            const s = document.getElementById('searchLessons').value.toLowerCase();
-            const t = document.getElementById('topicFilter').value;
-            displayLessons(allLessons.filter(l =>
-                (l.title.toLowerCase().includes(s) || l.description.toLowerCase().includes(s)) &&
-                (t === 'all' || l.topicName === t)
-            ));
+            const searchTerm  = document.getElementById('searchLessons').value.toLowerCase();
+            const topicFilter = document.getElementById('topicFilter').value;
+            const filtered = allLessons.filter(lesson => {
+                const matchesSearch = lesson.title.toLowerCase().includes(searchTerm) ||
+                                      lesson.description.toLowerCase().includes(searchTerm);
+                const matchesTopic  = topicFilter === 'all' || lesson.topicName === topicFilter;
+                return matchesSearch && matchesTopic;
+            });
+            displayLessons(filtered);
         }
 
         // ════════════════════════════════════════════════════════
         //  ADD LESSON
         // ════════════════════════════════════════════════════════
-        function openAddLessonModal() { document.getElementById('addLessonModal').classList.add('active'); }
+
+        function openAddLessonModal() {
+            document.getElementById('lessonContent').value = '';
+            document.getElementById('mobilePreviewContent').innerHTML = '<p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>';
+            document.getElementById('addLessonModal').classList.add('active');
+        }
 
         function closeAddLessonModal() {
             document.getElementById('addLessonModal').classList.remove('active');
             document.getElementById('addLessonForm').reset();
-            document.getElementById('contentPreview').style.display = 'none';
         }
 
         async function addLesson(event) {
             event.preventDefault();
-            const content = document.getElementById('lessonContent').value;
             const lessonData = {
                 topicName:       document.getElementById('lessonTopic').value,
                 title:           document.getElementById('lessonTitle').value,
                 description:     document.getElementById('lessonDescription').value,
-                content,
+                content:         document.getElementById('lessonContent').value,
                 order:           parseInt(document.getElementById('lessonOrder').value),
                 difficultyLevel: document.getElementById('lessonDifficultyLevel').value
             };
             try {
-                const res  = await fetch(`${API_URL}/lessons`, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                const response = await fetch(`${API_URL}/lessons`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(lessonData)
                 });
-                const text = await res.text();
-                let data;
-                try { data = JSON.parse(text); } catch(e) {
-                    console.error('Non-JSON response:', text.substring(0, 300));
-                    alert('❌ Server error — check the console for details.');
-                    return;
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Lesson added successfully!');
+                    closeAddLessonModal();
+                    loadLessons();
+                } else {
+                    alert('Failed to add lesson: ' + data.error);
                 }
-                if (data.success) { alert('✅ Lesson added successfully!'); closeAddLessonModal(); loadLessons(); }
-                else alert('Failed to add lesson: ' + data.error);
-            } catch(e) { alert('Error adding lesson: ' + e.message); }
+            } catch (error) {
+                alert('Error adding lesson: ' + error.message);
+            }
         }
 
         // ════════════════════════════════════════════════════════
         //  EDIT LESSON
         // ════════════════════════════════════════════════════════
+
         function editLesson(lessonId) {
             const lesson = allLessons.find(l => l._id === lessonId);
             if (!lesson) return;
             document.getElementById('editLessonId').value              = lesson._id;
-            document.getElementById('editLessonTopic').value           = lesson.topicName;
-            document.getElementById('editLessonTitle').value           = lesson.title;
-            document.getElementById('editLessonDescription').value     = lesson.description;
-            document.getElementById('editLessonContent').value         = lesson.content || '';
-            document.getElementById('editLessonOrder').value           = lesson.order;
-            document.getElementById('editLessonDifficultyLevel').value = lesson.difficultyLevel || 'beginner';
-            document.getElementById('editContentPreview').style.display = 'none';
+            document.getElementById('editLessonTopic').value          = lesson.topicName;
+            document.getElementById('editLessonTitle').value          = lesson.title;
+            document.getElementById('editLessonDescription').value    = lesson.description;
+            document.getElementById('editLessonContent').value        = lesson.content || '';
+            document.getElementById('editLessonOrder').value          = lesson.order;
+            document.getElementById('editLessonDifficultyLevel').value= lesson.difficultyLevel || 'beginner';
+            
+            updatePreview(true);
             document.getElementById('editLessonModal').classList.add('active');
         }
 
         function closeEditLessonModal() {
             document.getElementById('editLessonModal').classList.remove('active');
             document.getElementById('editLessonForm').reset();
-            document.getElementById('editContentPreview').style.display = 'none';
         }
 
         async function updateLesson(event) {
             event.preventDefault();
-            const content  = document.getElementById('editLessonContent').value;
-            const lessonId = document.getElementById('editLessonId').value;
+            const lessonId   = document.getElementById('editLessonId').value;
             const lessonData = {
                 topicName:       document.getElementById('editLessonTopic').value,
                 title:           document.getElementById('editLessonTitle').value,
                 description:     document.getElementById('editLessonDescription').value,
-                content,
+                content:         document.getElementById('editLessonContent').value,
                 order:           parseInt(document.getElementById('editLessonOrder').value),
                 difficultyLevel: document.getElementById('editLessonDifficultyLevel').value
             };
             try {
-                const res  = await fetch(`${API_URL}/lessons/${lessonId}`, {
-                    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(lessonData)
                 });
-                const text = await res.text();
-                let data;
-                try { data = JSON.parse(text); } catch(e) {
-                    console.error('Non-JSON response:', text.substring(0, 300));
-                    alert('❌ Server error — check the console for details.');
-                    return;
+                const data = await response.json();
+                if (data.success) {
+                    alert('✅ Lesson updated successfully!');
+                    closeEditLessonModal();
+                    loadLessons();
+                } else {
+                    alert('Failed to update lesson: ' + data.error);
                 }
-                if (data.success) { alert('✅ Lesson updated successfully!'); closeEditLessonModal(); loadLessons(); }
-                else alert('Failed to update lesson: ' + data.error);
-            } catch(e) { alert('Error updating lesson: ' + e.message); }
+            } catch (error) {
+                alert('Error updating lesson: ' + error.message);
+            }
         }
 
         // ════════════════════════════════════════════════════════
         //  DELETE
         // ════════════════════════════════════════════════════════
+
         async function deleteLesson(lessonId) {
             if (!confirm('Are you sure you want to delete this lesson?')) return;
             try {
-                const res  = await fetch(`${API_URL}/lessons/${lessonId}`, { method: 'DELETE' });
-                const data = await res.json();
-                if (data.success) { alert('✅ Lesson deleted successfully'); loadLessons(); }
-                else alert('Failed to delete: ' + data.error);
-            } catch(e) { alert('Error deleting lesson: ' + e.message); }
+                const response = await fetch(`${API_URL}/lessons/${lessonId}`, { method: 'DELETE' });
+                const data     = await response.json();
+                if (data.success) {
+                    alert('✅ Lesson deleted successfully');
+                    loadLessons();
+                } else {
+                    alert('Failed to delete lesson: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error deleting lesson: ' + error.message);
+            }
         }
 
         // ════════════════════════════════════════════════════════
@@ -1120,7 +1608,7 @@
         window.addEventListener('load', () => {
             currentUser = checkAuth();
             if (currentUser) {
-                document.getElementById('adminUserDisplay').textContent  = currentUser.name || currentUser.username;
+                document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
                 document.getElementById('adminEmailDisplay').textContent = currentUser.email;
                 updateNavigationForRole(currentUser);
                 loadLessons();
