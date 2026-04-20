@@ -1318,8 +1318,9 @@ Like this paragraph has space above it!"
                 console.log(`Part ${idx}:`, trimmed.substring(0, 80));
 
                 // Handle CUSTOMBOX - gets its own card
-                const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]*)"]\s*([\s\S]*?)\s*\[\/CUSTOMBOX\]$/i);
                 if (customBoxMatch) {
+                    console.log(`  → Matched CUSTOMBOX`);
                     const div = document.createElement('div');
                     div.className = 'mobile-card';
                     div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
@@ -1333,6 +1334,7 @@ Like this paragraph has space above it!"
                 // Handle IMAGE - gets its own card
                 const imageMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
                 if (imageMatch) {
+                    console.log(`  → Matched IMAGE`);
                     const div = document.createElement('div');
                     div.className = 'mobile-card';
                     const img = document.createElement('img');
@@ -1355,8 +1357,10 @@ Like this paragraph has space above it!"
 
                 // Handle plain text - split by blank lines for paragraph spacing
                 if (trimmed) {
+                    console.log(`  → Plain text, splitting by blank lines`);
                     // Split text by double newlines to create separate cards with gaps
                     const paragraphs = trimmed.split(/\n\n+/);
+                    console.log(`     Found ${paragraphs.length} paragraphs`);
                     
                     paragraphs.forEach((para) => {
                         if (para.trim()) {
