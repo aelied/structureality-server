@@ -1299,14 +1299,23 @@ Like this paragraph has space above it!"
 
         function renderMobilePreview(content, previewElement) {
             previewElement.innerHTML = '';
+            
+            console.log('=== RENDER PREVIEW ===');
+            console.log('Content length:', content.length);
+            console.log('First 300 chars:', JSON.stringify(content.substring(0, 300)));
 
             // Split by special tags FIRST to preserve complete CUSTOMBOX and IMAGE tags
             const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+            console.log('Parts count:', parts.length);
 
-            parts.forEach((part) => {
-                if (!part || !part.trim()) return;
+            parts.forEach((part, idx) => {
+                if (!part || !part.trim()) {
+                    console.log(`Part ${idx}: EMPTY`);
+                    return;
+                }
 
                 const trimmed = part.trim();
+                console.log(`Part ${idx}:`, trimmed.substring(0, 80));
 
                 // Handle CUSTOMBOX - gets its own card
                 const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
