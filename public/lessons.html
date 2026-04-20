@@ -1274,7 +1274,7 @@
         }
 
         // ════════════════════════════════════════════════════════
-        //  PREVIEW & RENDERING
+        //  PREVIEW & RENDERING (FIXED FOR PARAGRAPH SPACING)
         // ════════════════════════════════════════════════════════
 
         function updatePreview(isEdit = false) {
@@ -1289,10 +1289,11 @@
         function renderMobilePreview(content, previewElement) {
             previewElement.innerHTML = '';
 
+            // Split by special tags while preserving them
             const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/i);
 
-            parts.forEach(part => {
-                if (!part.trim()) return;
+            parts.forEach((part, index) => {
+                if (!part) return;
 
                 // Handle CUSTOMBOX
                 const customBoxMatch = part.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
@@ -1330,13 +1331,21 @@
                     return;
                 }
 
-                // Handle plain text
+                // Handle plain text with paragraph breaks
                 if (part.trim()) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    div.className += ' mobile-card-content';
-                    div.textContent = part.trim();
-                    previewElement.appendChild(div);
+                    // Split text by double newlines to create separate paragraph cards
+                    const paragraphs = part.split(/\n\s*\n+/);
+                    
+                    paragraphs.forEach(para => {
+                        const trimmedPara = para.trim();
+                        if (trimmedPara) {
+                            const div = document.createElement('div');
+                            div.className = 'mobile-card mobile-card-content';
+                            // Preserve single line breaks within paragraphs as <br>
+                            div.innerHTML = trimmedPara.split('\n').join('<br>');
+                            previewElement.appendChild(div);
+                        }
+                    });
                 }
             });
         }
@@ -1616,4 +1625,5 @@
         });
     </script>
 </body>
+
 </html>
