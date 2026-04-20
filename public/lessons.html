@@ -1306,10 +1306,10 @@ Like this paragraph has space above it!"
             parts.forEach((part) => {
                 if (!part || !part.trim()) return;
 
-                const trimmed = part.trim();
-
+                // DO NOT trim yet - we need to preserve blank lines!
+                
                 // Handle CUSTOMBOX - gets its own card
-                const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                const customBoxMatch = part.match(/^\s*\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]\s*$/i);
                 if (customBoxMatch) {
                     const div = document.createElement('div');
                     div.className = 'mobile-card';
@@ -1322,7 +1322,7 @@ Like this paragraph has space above it!"
                 }
 
                 // Handle IMAGE - gets its own card
-                const imageMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]/i);
+                const imageMatch = part.match(/^\s*\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]\s*$/i);
                 if (imageMatch) {
                     const div = document.createElement('div');
                     div.className = 'mobile-card';
@@ -1345,15 +1345,16 @@ Like this paragraph has space above it!"
                 }
 
                 // Handle plain text with paragraph spacing INSIDE ONE CARD
-                if (trimmed) {
+                if (part.trim()) {
                     const div = document.createElement('div');
                     div.className = 'mobile-card mobile-card-content';
                     
                     // Convert double newlines to <br><br> for visible spacing
                     // but keep it all in ONE card
-                    let html = trimmed
+                    let html = part
                         .replace(/\n\n/g, '<br><br>')        // Double newline → visible gap
-                        .replace(/\n/g, '<br>');              // Single newline → line break
+                        .replace(/\n/g, '<br>')               // Single newline → line break
+                        .trim();                              // Only trim after converting newlines
                     
                     div.innerHTML = html;
                     previewElement.appendChild(div);
