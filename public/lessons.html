@@ -1300,66 +1300,68 @@ Like this paragraph has space above it!"
         function renderMobilePreview(content, previewElement) {
             previewElement.innerHTML = '';
 
-            // First, split by double newlines to detect paragraph breaks
-            const paragraphs = content.split(/\n\n+/);
+            // Split by special tags FIRST to preserve complete CUSTOMBOX and IMAGE tags
+            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
 
-            paragraphs.forEach((paragraph) => {
-                if (!paragraph.trim()) return;
+            parts.forEach((part) => {
+                if (!part || !part.trim()) return;
 
-                // Now split each paragraph by special tags
-                const parts = paragraph.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+                const trimmed = part.trim();
 
-                parts.forEach((part) => {
-                    if (!part || !part.trim()) return;
+                // Handle CUSTOMBOX - gets its own card
+                const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                if (customBoxMatch) {
+                    const div = document.createElement('div');
+                    div.className = 'mobile-card';
+                    div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
+                    div.style.backgroundColor = customBoxMatch[2];
+                    div.style.color = customBoxMatch[3];
+                    div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
+                    previewElement.appendChild(div);
+                    return;
+                }
 
-                    // Handle CUSTOMBOX - gets its own card
-                    const customBoxMatch = part.trim().match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
-                    if (customBoxMatch) {
-                        const div = document.createElement('div');
-                        div.className = 'mobile-card';
-                        div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
-                        div.style.backgroundColor = customBoxMatch[2];
-                        div.style.color = customBoxMatch[3];
-                        div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
-                        previewElement.appendChild(div);
-                        return;
+                // Handle IMAGE - gets its own card
+                const imageMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
+                if (imageMatch) {
+                    const div = document.createElement('div');
+                    div.className = 'mobile-card';
+                    const img = document.createElement('img');
+                    img.src = imageMatch[1];
+                    img.className = 'mobile-image';
+                    img.style.height = (imageMatch[4] || '180') + 'px';
+                    div.appendChild(img);
+
+                    if (imageMatch[2]) {
+                        const cap = document.createElement('p');
+                        cap.style.fontSize = '12px';
+                        cap.style.color = '#999';
+                        cap.style.margin = '4px 0 0 0';
+                        cap.textContent = imageMatch[2];
+                        div.appendChild(cap);
                     }
+                    previewElement.appendChild(div);
+                    return;
+                }
 
-                    // Handle IMAGE - gets its own card
-                    const imageMatch = part.trim().match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
-                    if (imageMatch) {
-                        const div = document.createElement('div');
-                        div.className = 'mobile-card';
-                        const img = document.createElement('img');
-                        img.src = imageMatch[1];
-                        img.className = 'mobile-image';
-                        img.style.height = (imageMatch[4] || '180') + 'px';
-                        div.appendChild(img);
-
-                        if (imageMatch[2]) {
-                            const cap = document.createElement('p');
-                            cap.style.fontSize = '12px';
-                            cap.style.color = '#999';
-                            cap.style.margin = '4px 0 0 0';
-                            cap.textContent = imageMatch[2];
-                            div.appendChild(cap);
+                // Handle plain text - split by blank lines for paragraph spacing
+                if (trimmed) {
+                    // Split text by double newlines to create separate cards with gaps
+                    const paragraphs = trimmed.split(/\n\n+/);
+                    
+                    paragraphs.forEach((para) => {
+                        if (para.trim()) {
+                            const div = document.createElement('div');
+                            div.className = 'mobile-card mobile-card-content';
+                            
+                            // Convert single newlines to <br>
+                            let html = para.trim().replace(/\n/g, '<br>');
+                            
+                            div.innerHTML = html;
+                            previewElement.appendChild(div);
                         }
-                        previewElement.appendChild(div);
-                        return;
-                    }
-
-                    // Handle plain text
-                    if (part.trim()) {
-                        const div = document.createElement('div');
-                        div.className = 'mobile-card mobile-card-content';
-                        
-                        // Convert single newlines to <br>
-                        let html = part.trim().replace(/\n/g, '<br>');
-                        
-                        div.innerHTML = html;
-                        previewElement.appendChild(div);
-                    }
-                });
+                    });
+                }
             });
         }
 
