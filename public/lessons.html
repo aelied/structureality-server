@@ -1300,65 +1300,66 @@ Like this paragraph has space above it!"
         function renderMobilePreview(content, previewElement) {
             previewElement.innerHTML = '';
 
-            // Split by special tags first (CUSTOMBOX and IMAGE) - these go in separate cards
-            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+            // First, split by double newlines to detect paragraph breaks
+            const paragraphs = content.split(/\n\n+/);
 
-            parts.forEach((part) => {
-                if (!part || !part.trim()) return;
+            paragraphs.forEach((paragraph) => {
+                if (!paragraph.trim()) return;
 
-                // DO NOT trim yet - we need to preserve blank lines!
-                
-                // Handle CUSTOMBOX - gets its own card
-                const customBoxMatch = part.match(/^\s*\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]\s*$/i);
-                if (customBoxMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
-                    div.style.backgroundColor = customBoxMatch[2];
-                    div.style.color = customBoxMatch[3];
-                    div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
-                    previewElement.appendChild(div);
-                    return;
-                }
+                // Now split each paragraph by special tags
+                const parts = paragraph.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
 
-                // Handle IMAGE - gets its own card
-                const imageMatch = part.match(/^\s*\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]\s*$/i);
-                if (imageMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    const img = document.createElement('img');
-                    img.src = imageMatch[1];
-                    img.className = 'mobile-image';
-                    img.style.height = (imageMatch[4] || '180') + 'px';
-                    div.appendChild(img);
+                parts.forEach((part) => {
+                    if (!part || !part.trim()) return;
 
-                    if (imageMatch[2]) {
-                        const cap = document.createElement('p');
-                        cap.style.fontSize = '12px';
-                        cap.style.color = '#999';
-                        cap.style.margin = '4px 0 0 0';
-                        cap.textContent = imageMatch[2];
-                        div.appendChild(cap);
+                    // Handle CUSTOMBOX - gets its own card
+                    const customBoxMatch = part.trim().match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]+)"]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+                    if (customBoxMatch) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card';
+                        div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
+                        div.style.backgroundColor = customBoxMatch[2];
+                        div.style.color = customBoxMatch[3];
+                        div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
+                        previewElement.appendChild(div);
+                        return;
                     }
-                    previewElement.appendChild(div);
-                    return;
-                }
 
-                // Handle plain text with paragraph spacing INSIDE ONE CARD
-                if (part.trim()) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card mobile-card-content';
-                    
-                    // Convert double newlines to <br><br> for visible spacing
-                    // but keep it all in ONE card
-                    let html = part
-                        .replace(/\n\n/g, '<br><br>')        // Double newline → visible gap
-                        .replace(/\n/g, '<br>')               // Single newline → line break
-                        .trim();                              // Only trim after converting newlines
-                    
-                    div.innerHTML = html;
-                    previewElement.appendChild(div);
-                }
+                    // Handle IMAGE - gets its own card
+                    const imageMatch = part.trim().match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
+                    if (imageMatch) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card';
+                        const img = document.createElement('img');
+                        img.src = imageMatch[1];
+                        img.className = 'mobile-image';
+                        img.style.height = (imageMatch[4] || '180') + 'px';
+                        div.appendChild(img);
+
+                        if (imageMatch[2]) {
+                            const cap = document.createElement('p');
+                            cap.style.fontSize = '12px';
+                            cap.style.color = '#999';
+                            cap.style.margin = '4px 0 0 0';
+                            cap.textContent = imageMatch[2];
+                            div.appendChild(cap);
+                        }
+                        previewElement.appendChild(div);
+                        return;
+                    }
+
+                    // Handle plain text
+                    if (part.trim()) {
+                        const div = document.createElement('div');
+                        div.className = 'mobile-card mobile-card-content';
+                        
+                        // Convert single newlines to <br>
+                        let html = part.trim().replace(/\n/g, '<br>');
+                        
+                        div.innerHTML = html;
+                        previewElement.appendChild(div);
+                    }
+                });
             });
         }
 
