@@ -202,24 +202,12 @@ app.get('/api/quizzes/:topicName/mixed', async (req, res) => {
 
 // 3. WILDCARD ROUTES — after named routes
 // Get all quizzes for a topic (no difficulty filter)
-// Get all quizzes for a topic (no difficulty filter)
 app.get('/api/quizzes/:topicName', async (req, res) => {
     try {
         const quizzes = await quizzesCollection.find({ topicName: req.params.topicName })
             .sort({ order: 1 })
             .toArray();
-        
-        // ✅ If no quizzes found, explicitly return empty
-        if (quizzes.length === 0) {
-            console.log(`⚠️  No quizzes found for topic: ${req.params.topicName}`);
-        }
-        
-        res.json({ 
-            success: true, 
-            topicName: req.params.topicName, 
-            count: quizzes.length, 
-            quizzes: quizzes  // ✅ Will be [] if empty
-        });
+        res.json({ success: true, topicName: req.params.topicName, count: quizzes.length, quizzes });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch quizzes', details: error.message });
     }
