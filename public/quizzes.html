@@ -56,7 +56,8 @@
         <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
             <i class="fas fa-chart-line w-5"></i>
             <span class="font-medium">User & Scenario Analytics</span>
-          </a>    </nav>
+          </a>
+    </nav>
 </aside>
 
 <!-- NAVBAR -->
@@ -255,6 +256,9 @@
         </div>
         <form id="editForm" onsubmit="submitEdit(event)">
             <input type="hidden" id="editId" />
+            <!-- Stores lessonTitle + topicName for new questions added during edit -->
+            <input type="hidden" id="editLessonTitle" />
+            <input type="hidden" id="editTopicName" />
             
             <!-- Questions will be dynamically populated here -->
             <div id="editQuestionsContainer"></div>
@@ -580,6 +584,7 @@ function addEditQuestion() {
             <textarea placeholder="Explain why the answer is correct…" rows="2"
                 class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
         </div>
+        <!-- Empty questionId = new question, will be POSTed -->
         <input type="hidden" class="questionId" value="" />
     </div>`;
     
@@ -753,12 +758,16 @@ function openEditModal(quizId) {
                 <textarea rows="2"
                     class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>${q.explanation || ''}</textarea>
             </div>
+            <!-- Existing question: has a real _id -->
             <input type="hidden" class="questionId" value="${q._id}" />
         </div>`;
         container.insertAdjacentHTML('beforeend', questionHTML);
     });
 
+    // Store lesson context so new questions added here can be POSTed correctly
     document.getElementById('editId').value = quizId;
+    document.getElementById('editLessonTitle').value = clickedQuiz.lessonTitle;
+    document.getElementById('editTopicName').value   = clickedQuiz.topicName || '';
     document.getElementById('editModal').classList.add('active');
 }
 
@@ -766,7 +775,8 @@ function closeEditModal() { document.getElementById('editModal').classList.remov
 
 async function submitEdit(e) {
     e.preventDefault();
-    const quizId = document.getElementById('editId').value;
+    const lessonTitle = document.getElementById('editLessonTitle').value;
+    const topicName   = document.getElementById('editTopicName').value;
     const questionSections = document.querySelectorAll('#editQuestionsContainer .question-section');
 
     if (questionSections.length === 0) {
@@ -774,41 +784,69 @@ async function submitEdit(e) {
         return;
     }
 
-    // Update each question individually
     let successCount = 0;
     
     for (const section of questionSections) {
-        const questionText = section.querySelector('.editQuestion').value.trim();
-        const correctRadio = section.querySelector('.editCorrect:checked');
-        const answerInputs = section.querySelectorAll('.editAnswers input[type="text"]');
-        const explanation = section.querySelector('.editExplanation').value.trim();
-        const questionId = section.querySelector('.questionId').value;
+        const questionText  = section.querySelector('.editQuestion').value.trim();
+        const correctRadio  = section.querySelector('.editCorrect:checked');
+        const answerInputs  = section.querySelectorAll('.editAnswers input[type="text"]');
+        const explanation   = section.querySelector('.editExplanation').value.trim();
+        const questionId    = section.querySelector('.questionId').value.trim(); // empty = new question
 
         if (!questionText) { alert('All questions must have text.'); return; }
         if (!correctRadio) { alert('Please select the correct answer for all questions.'); return; }
-        if (!explanation) { alert('All questions must have an explanation.'); return; }
+        if (!explanation)  { alert('All questions must have an explanation.'); return; }
 
         const answerOptions = Array.from(answerInputs).map(i => i.value.trim());
         if (answerOptions.some(a => !a)) { alert('All answer options must be filled.'); return; }
 
-        const body = {
-            questionText,
-            answerOptions,
-            correctAnswerIndex: parseInt(correctRadio.value),
-            explanation
-        };
-
         try {
-            const res = await fetch(`${API}/quizzes/${questionId}`, { 
-                method: 'PUT', 
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(body) 
-            });
-            const data = await res.json();
+            let res, data;
+
+            if (questionId) {
+                // ── Existing question → PUT ──────────────────────────────
+                res  = await fetch(`${API}/quizzes/${questionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        questionText,
+                        answerOptions,
+                        correctAnswerIndex: parseInt(correctRadio.value),
+                        explanation,
+                    }),
+                });
+            } else {
+                // ── New question added inside edit modal → POST ──────────
+                res  = await fetch(`${API}/quizzes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topicName,
+                        lessonTitle,
+                        questionText,
+                        answerOptions,
+                        correctAnswerIndex: parseInt(correctRadio.value),
+                        explanation,
+                        order: 1,
+                    }),
+                });
+            }
+
+            // Guard: if the server returned HTML (e.g. 404 page) instead of JSON,
+            // res.json() will throw — catch it and show a useful message.
+            const contentType = res.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) {
+                const text = await res.text();
+                console.error('Non-JSON response:', text);
+                alert(`Server error (HTTP ${res.status}). Check the console for details.`);
+                return;
+            }
+
+            data = await res.json();
             if (data.success) {
                 successCount++;
             } else {
-                alert('Error updating question: ' + data.error);
+                alert('Error saving question: ' + (data.error || 'Unknown error'));
                 return;
             }
         } catch (err) {
