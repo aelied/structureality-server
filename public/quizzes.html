@@ -15,14 +15,20 @@
         .quiz-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
         .modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background-color: white; padding: 30px; border-radius: 15px; max-width: 700px; width: 90%; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; }
         .answer-option { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .answer-option input[type="text"] { flex: 1; }
         .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
+        .question-section { background-color: #f9fafb; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #6366f1; }
+        .question-header { display: flex; items-center: justify-between; margin-bottom: 15px; }
         .lesson-row.has-quiz  { border-left: 4px solid #22c55e; }
         .lesson-row.no-quiz   { border-left: 4px solid #f59e0b; }
         .spinner { display: inline-block; width:20px; height:20px; border:3px solid #e0e0e0; border-top-color:#6366f1; border-radius:50%; animation: spin .7s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .questions-list { max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
+        .question-item { padding: 12px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+        .question-item:last-child { border-bottom: none; }
+        .question-item:hover { background-color: #f3f4f6; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -58,7 +64,7 @@
     <div class="px-8 py-4 flex items-center justify-between">
         <div>
             <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
-            <p class="text-sm text-gray-500">One quiz per lesson — coverage mirrors your lesson database</p>
+            <p class="text-sm text-gray-500">Multiple questions per lesson quiz — organize and manage comprehensive assessments</p>
         </div>
         <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
@@ -93,8 +99,8 @@
             <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-3">
                 <i class="fas fa-question-circle text-white text-xl"></i>
             </div>
-            <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Total Quizzes</h3>
-            <p class="text-3xl font-bold" id="statTotalQuizzes">-</p>
+            <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Total Questions</h3>
+            <p class="text-3xl font-bold" id="statTotalQuestions">-</p>
         </div>
         <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
             <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-3">
@@ -159,7 +165,7 @@
     </div>
 </main>
 
-<!-- ADD QUIZ MODAL -->
+<!-- ADD QUIZ MODAL (Multiple questions per quiz) -->
 <div id="addModal" class="modal">
     <div class="modal-content">
         <div class="flex justify-between items-center mb-6">
@@ -188,30 +194,51 @@
                     class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                     <option value="">— select a topic first —</option>
                 </select>
-                <p class="text-xs text-gray-400 mt-1">Each lesson has exactly one quiz.</p>
+                <p class="text-xs text-gray-400 mt-1">Each lesson can have multiple questions in one quiz.</p>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Question *</label>
-                <textarea id="addQuestion" required rows="3" placeholder="Enter the quiz question…"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Answer Options — tick the correct one *</label>
-                <div id="addAnswers">
-                    <div class="answer-option"><input type="radio" name="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                    <div class="answer-option"><input type="radio" name="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                    <div class="answer-option"><input type="radio" name="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                    <div class="answer-option"><input type="radio" name="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+
+            <!-- Questions Container -->
+            <div id="questionsContainer" class="mb-6">
+                <!-- First question starts here -->
+                <div class="question-section" data-question-index="0">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-semibold text-gray-800 text-lg">Question 1</h3>
+                        <button type="button" onclick="removeQuestion(0)" class="text-red-500 hover:text-red-700 hidden" id="removeBtn0">
+                            <i class="fas fa-trash"></i> Remove
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
+                        <textarea placeholder="Enter the quiz question…" rows="2"
+                            class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
+                        <div class="addAnswers">
+                            <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
+                        <textarea placeholder="Explain why the answer is correct…" rows="2"
+                            class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+                    </div>
                 </div>
             </div>
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Explanation *</label>
-                <textarea id="addExplanation" required rows="2" placeholder="Explain why the answer is correct…"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-            </div>
+
+            <button type="button" onclick="addQuestion()" class="w-full mb-6 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border-2 border-dashed border-gray-300">
+                <i class="fas fa-plus mr-2"></i> Add Another Question
+            </button>
+
             <div class="flex justify-end gap-3">
                 <button type="button" onclick="closeAddModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Quiz</button>
+                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Create Quiz</button>
             </div>
         </form>
     </div>
@@ -228,20 +255,14 @@
         </div>
         <form id="editForm" onsubmit="submitEdit(event)">
             <input type="hidden" id="editId" />
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Question *</label>
-                <textarea id="editQuestion" required rows="3"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-            </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Answer Options — tick the correct one *</label>
-                <div id="editAnswers"></div>
-            </div>
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Explanation *</label>
-                <textarea id="editExplanation" required rows="2"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-            </div>
+            
+            <!-- Questions will be dynamically populated here -->
+            <div id="editQuestionsContainer"></div>
+
+            <button type="button" onclick="addEditQuestion()" class="w-full mb-6 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border-2 border-dashed border-gray-300">
+                <i class="fas fa-plus mr-2"></i> Add Another Question
+            </button>
+
             <div class="flex justify-end gap-3">
                 <button type="button" onclick="closeEditModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
                 <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update Quiz</button>
@@ -255,8 +276,8 @@ const API = window.location.hostname === 'localhost'
     ? 'http://localhost:3000/api'
     : 'https://structureality-admin.onrender.com/api';
 
-let lessons = [];  // beginner lessons from DB
-let quizzes = [];  // all quizzes from DB
+let lessons = [];
+let quizzes = [];
 
 // ── Auth ───────────────────────────────────────────────────────
 function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
@@ -288,8 +309,10 @@ async function loadAll() {
 function updateStats() {
     const coveredTitles = new Set(quizzes.map(q => q.lessonTitle).filter(Boolean));
     const covered = lessons.filter(l => coveredTitles.has(l.title)).length;
+    const totalQuestions = quizzes.length;
+    
     document.getElementById('statTotalLessons').textContent = lessons.length;
-    document.getElementById('statTotalQuizzes').textContent = quizzes.length;
+    document.getElementById('statTotalQuestions').textContent = totalQuestions;
     document.getElementById('statCovered').textContent      = covered;
     document.getElementById('statMissing').textContent      = lessons.length - covered;
 }
@@ -300,7 +323,6 @@ function renderAll() {
     const topicF  = document.getElementById('topicFilter').value;
     const coverF  = document.getElementById('coverageFilter').value;
 
-    // Group by topic, sorted by order
     const byTopic = {};
     lessons.forEach(l => {
         if (!byTopic[l.topicName]) byTopic[l.topicName] = [];
@@ -308,10 +330,12 @@ function renderAll() {
     });
     Object.values(byTopic).forEach(arr => arr.sort((a, b) => a.order - b.order));
 
-    // One quiz per lesson: lessonTitle → first matching quiz
     const quizByLesson = {};
     quizzes.forEach(q => {
-        if (q.lessonTitle && !quizByLesson[q.lessonTitle]) quizByLesson[q.lessonTitle] = q;
+        if (q.lessonTitle) {
+            if (!quizByLesson[q.lessonTitle]) quizByLesson[q.lessonTitle] = [];
+            quizByLesson[q.lessonTitle].push(q);
+        }
     });
 
     const palette = {
@@ -332,13 +356,15 @@ function renderAll() {
         const c = palette[topic] || { bg: 'bg-gray-50', border: 'border-gray-200', iconColor: 'text-gray-600', tag: 'bg-gray-100 text-gray-700', icon: 'fa-book' };
 
         const filtered = topicLessons.filter(l => {
-            const quiz    = quizByLesson[l.title];
-            const hasQuiz = !!quiz;
+            const quizzesForLesson = quizByLesson[l.title] || [];
+            const hasQuiz = quizzesForLesson.length > 0;
             if (coverF === 'has'     && !hasQuiz) return false;
             if (coverF === 'missing' &&  hasQuiz) return false;
             if (search) {
                 const inLesson = l.title.toLowerCase().includes(search) || (l.description || '').toLowerCase().includes(search);
-                const inQuiz   = quiz && (quiz.questionText.toLowerCase().includes(search) || (quiz.explanation || '').toLowerCase().includes(search));
+                const inQuiz   = quizzesForLesson.some(q => 
+                    q.questionText.toLowerCase().includes(search) || (q.explanation || '').toLowerCase().includes(search)
+                );
                 if (!inLesson && !inQuiz) return false;
             }
             return true;
@@ -347,7 +373,7 @@ function renderAll() {
         if (!filtered.length) continue;
         anyVisible = true;
 
-        const covered = filtered.filter(l => !!quizByLesson[l.title]).length;
+        const covered = filtered.filter(l => (quizByLesson[l.title] || []).length > 0).length;
         const pct     = filtered.length ? Math.round(covered / filtered.length * 100) : 0;
 
         html += `
@@ -359,7 +385,7 @@ function renderAll() {
                     </div>
                     <div>
                         <span class="px-3 py-1 rounded-full text-xs font-bold ${c.tag}">${topic}</span>
-                        <p class="text-xs text-gray-500 mt-1">${covered} / ${filtered.length} lessons have a quiz</p>
+                        <p class="text-xs text-gray-500 mt-1">${covered} / ${filtered.length} lessons have quizzes</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -377,9 +403,10 @@ function renderAll() {
             <div class="divide-y divide-gray-100">`;
 
         filtered.forEach((lesson, idx) => {
-            const quiz    = quizByLesson[lesson.title];
-            const hasQuiz = !!quiz;
+            const quizzesForLesson = quizByLesson[lesson.title] || [];
+            const hasQuiz = quizzesForLesson.length > 0;
             const escapedTitle = lesson.title.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const questionCount = quizzesForLesson.length;
 
             html += `
             <div class="lesson-row ${hasQuiz ? 'has-quiz' : 'no-quiz'} px-6 py-4 hover:bg-gray-50 transition">
@@ -396,40 +423,44 @@ function renderAll() {
                     </div>
                     <div class="flex items-center gap-2">
                         ${hasQuiz
-                            ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">✓ Quiz set</span>`
+                            ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">✓ ${questionCount} Q${questionCount !== 1 ? 's' : ''}</span>`
                             : `<span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-semibold">⚠ No quiz</span>`
                         }
                         <button onclick="openAddModal('${topic}','${escapedTitle}')"
                             class="px-3 py-1 text-xs ${hasQuiz ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg transition">
-                            ${hasQuiz ? 'Replace' : 'Create Quiz'}
+                            ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
                         </button>
                     </div>
                 </div>
 
                 ${hasQuiz ? `
-                <div class="ml-10 mt-3 bg-gray-50 rounded-lg p-4 border border-gray-200 quiz-card">
-                    <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-800 mb-2">${quiz.questionText}</p>
-                            <div class="grid grid-cols-2 gap-1 mb-2">
-                                ${(quiz.answerOptions || []).map((opt, oi) => `
-                                <div class="flex items-center gap-1 px-2 py-1 rounded text-xs
-                                    ${oi === quiz.correctAnswerIndex ? 'bg-green-50 text-green-700 font-semibold border border-green-200' : 'bg-white text-gray-500 border border-gray-100'}">
-                                    ${String.fromCharCode(65 + oi)}. ${opt}
-                                    ${oi === quiz.correctAnswerIndex ? '<i class="fas fa-check text-green-500 ml-auto text-xs"></i>' : ''}
-                                </div>`).join('')}
+                <div class="ml-10 mt-3 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    ${quizzesForLesson.map((quiz, qIdx) => `
+                    <div class="quiz-card mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-800 mb-2"><strong>Q${qIdx + 1}:</strong> ${quiz.questionText}</p>
+                                <div class="grid grid-cols-2 gap-1 mb-2">
+                                    ${(quiz.answerOptions || []).map((opt, oi) => `
+                                    <div class="flex items-center gap-1 px-2 py-1 rounded text-xs
+                                        ${oi === quiz.correctAnswerIndex ? 'bg-green-50 text-green-700 font-semibold border border-green-200' : 'bg-white text-gray-500 border border-gray-100'}">
+                                        ${String.fromCharCode(65 + oi)}. ${opt}
+                                        ${oi === quiz.correctAnswerIndex ? '<i class="fas fa-check text-green-500 ml-auto text-xs"></i>' : ''}
+                                    </div>`).join('')}
+                                </div>
+                                <p class="text-xs text-gray-400 italic">💡 ${quiz.explanation || ''}</p>
                             </div>
-                            <p class="text-xs text-gray-400 italic">💡 ${quiz.explanation || ''}</p>
-                        </div>
-                        <div class="flex gap-2 shrink-0">
-                            <button onclick="openEditModal('${quiz._id}')" title="Edit" class="text-indigo-500 hover:text-indigo-700">
-                                <i class="fas fa-edit text-sm"></i>
-                            </button>
-                            <button onclick="deleteQuiz('${quiz._id}')" title="Delete" class="text-red-500 hover:text-red-700">
-                                <i class="fas fa-trash text-sm"></i>
-                            </button>
+                            <div class="flex gap-2 shrink-0">
+                                <button onclick="openEditModal('${quiz._id}')" title="Edit" class="text-indigo-500 hover:text-indigo-700">
+                                    <i class="fas fa-edit text-sm"></i>
+                                </button>
+                                <button onclick="deleteQuestion('${quiz._id}')" title="Delete Question" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
+                    `).join('')}
                 </div>` : ''}
             </div>`;
         });
@@ -465,38 +496,195 @@ function populateLessonPicker(selectId, topicSelectId, prefill = '') {
         });
 }
 
+// ── Question Management ────────────────────────────────────────
+let questionCount = 1;
+
+function addQuestion() {
+    const container = document.getElementById('questionsContainer');
+    const newIndex = questionCount;
+    
+    const questionHTML = `
+    <div class="question-section" data-question-index="${newIndex}">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-semibold text-gray-800 text-lg">Question ${newIndex + 1}</h3>
+            <button type="button" onclick="removeQuestion(${newIndex})" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
+            <textarea placeholder="Enter the quiz question…" rows="2"
+                class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
+            <div class="addAnswers">
+                <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
+            <textarea placeholder="Explain why the answer is correct…" rows="2"
+                class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+    </div>`;
+    
+    container.insertAdjacentHTML('beforeend', questionHTML);
+    questionCount++;
+}
+
+function removeQuestion(index) {
+    const section = document.querySelector(`[data-question-index="${index}"]`);
+    if (section) {
+        section.remove();
+    }
+}
+
+function addEditQuestion() {
+    const container = document.getElementById('editQuestionsContainer');
+    const newIndex = container.querySelectorAll('.question-section').length;
+    
+    const questionHTML = `
+    <div class="question-section" data-question-index="${newIndex}">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-semibold text-gray-800 text-lg">Question ${newIndex + 1}</h3>
+            <button type="button" onclick="removeEditQuestion(${newIndex})" class="text-red-500 hover:text-red-700">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
+            <textarea placeholder="Enter the quiz question…" rows="2"
+                class="editQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
+            <div class="editAnswers"></div>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
+            <textarea placeholder="Explain why the answer is correct…" rows="2"
+                class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+    </div>`;
+    
+    container.insertAdjacentHTML('beforeend', questionHTML);
+}
+
+function removeEditQuestion(index) {
+    const section = document.querySelector(`[data-question-index="${index}"]`);
+    if (section) {
+        section.remove();
+    }
+}
+
+// ── API Endpoints Documentation ────────────────────────────────
+// POST /api/quizzes - Now accepts 'questions' array instead of single question
+// PUT /api/quizzes/:quizId/questions - Update all questions for a quiz lesson
+// DELETE /api/quizzes/:quizId - Delete single question (by _id)
+
 // ── Add modal ──────────────────────────────────────────────────
 function openAddModal(prefillTopic = '', prefillLesson = '') {
     document.getElementById('addForm').reset();
+    questionCount = 1;
+    
+    // Reset questions container
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = `
+    <div class="question-section" data-question-index="0">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="font-semibold text-gray-800 text-lg">Question 1</h3>
+            <button type="button" onclick="removeQuestion(0)" class="text-red-500 hover:text-red-700 hidden" id="removeBtn0">
+                <i class="fas fa-trash"></i> Remove
+            </button>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
+            <textarea placeholder="Enter the quiz question…" rows="2"
+                class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
+            <div class="addAnswers">
+                <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
+            <textarea placeholder="Explain why the answer is correct…" rows="2"
+                class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
+        </div>
+    </div>`;
+    
     document.getElementById('addModal').classList.add('active');
     if (prefillTopic) {
         document.getElementById('addTopic').value = prefillTopic;
         populateLessonPicker('addLesson', 'addTopic', prefillLesson);
     }
 }
+
 function closeAddModal() { document.getElementById('addModal').classList.remove('active'); }
 
 async function submitAdd(e) {
     e.preventDefault();
     const lessonTitle  = document.getElementById('addLesson').value;
     if (!lessonTitle) { alert('Please select a lesson.'); return; }
-    const correctRadio = document.querySelector('input[name="addCorrect"]:checked');
-    if (!correctRadio) { alert('Please select the correct answer.'); return; }
-    const opts = Array.from(document.querySelectorAll('#addAnswers input[type="text"]')).map(i => i.value);
+
+    const questionSections = document.querySelectorAll('#questionsContainer .question-section');
+    const questionsData = [];
+
+    for (const section of questionSections) {
+        const questionText = section.querySelector('.addQuestion').value.trim();
+        const correctRadio = section.querySelector('.addCorrect:checked');
+        const answerInputs = section.querySelectorAll('.addAnswers input[type="text"]');
+        const explanation = section.querySelector('.addExplanation').value.trim();
+
+        if (!questionText) { alert('All questions must have text.'); return; }
+        if (!correctRadio) { alert('Please select the correct answer for all questions.'); return; }
+        if (!explanation) { alert('All questions must have an explanation.'); return; }
+
+        const answerOptions = Array.from(answerInputs).map(i => i.value.trim());
+        if (answerOptions.some(a => !a)) { alert('All answer options must be filled.'); return; }
+
+        questionsData.push({
+            questionText,
+            answerOptions,
+            correctAnswerIndex: parseInt(correctRadio.value),
+            explanation
+        });
+    }
+
+    if (questionsData.length === 0) { alert('Please add at least one question.'); return; }
 
     const body = {
-    topicName:          document.getElementById('addTopic').value,
-    lessonTitle,
-    questionText:       document.getElementById('addQuestion').value,
-    answerOptions:      opts,
-    correctAnswerIndex: parseInt(correctRadio.value),
-    explanation:        document.getElementById('addExplanation').value,
-    difficulty:         'mixed',
-    order:              1,
-};
+        topicName: document.getElementById('addTopic').value,
+        lessonTitle,
+        questions: questionsData,
+        difficulty: 'mixed',
+        order: 1,
+    };
 
     try {
-        const res  = await fetch(`${API}/quizzes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const res  = await fetch(`${API}/quizzes`, { 
+            method: 'POST', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(body) 
+        });
         const data = await res.json();
         if (data.success) { closeAddModal(); await loadAll(); }
         else alert('Error: ' + data.error);
@@ -505,42 +693,95 @@ async function submitAdd(e) {
 
 // ── Edit modal ─────────────────────────────────────────────────
 function openEditModal(quizId) {
-    const q = quizzes.find(q => q._id === quizId);
-    if (!q) return;
-    document.getElementById('editId').value          = q._id;
-    document.getElementById('editQuestion').value    = q.questionText;
-    document.getElementById('editExplanation').value = q.explanation || '';
-
-    const container = document.getElementById('editAnswers');
+    // Find all questions with this lesson
+    const allQuestionsForQuiz = quizzes.filter(q => q.lessonTitle === quizzes.find(qq => qq._id === quizId)?.lessonTitle);
+    
+    const container = document.getElementById('editQuestionsContainer');
     container.innerHTML = '';
-    (q.answerOptions || []).forEach((opt, idx) => {
-        container.innerHTML += `
-        <div class="answer-option">
-            <input type="radio" name="editCorrect" value="${idx}" ${idx === q.correctAnswerIndex ? 'checked' : ''} />
-            <input type="text" value="${opt.replace(/"/g, '&quot;')}" required
-                class="px-3 py-2 border border-gray-300 rounded-lg flex-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+    
+    allQuestionsForQuiz.forEach((q, idx) => {
+        const questionHTML = `
+        <div class="question-section" data-question-index="${idx}">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold text-gray-800 text-lg">Question ${idx + 1}</h3>
+                <button type="button" onclick="removeEditQuestion(${idx})" class="text-red-500 hover:text-red-700">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+
+            <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
+                <textarea rows="2"
+                    class="editQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>${q.questionText}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
+                <div class="editAnswers">
+                    ${(q.answerOptions || []).map((opt, oi) => `
+                    <div class="answer-option">
+                        <input type="radio" class="editCorrect" value="${oi}" ${oi === q.correctAnswerIndex ? 'checked' : ''} />
+                        <input type="text" value="${opt.replace(/"/g, '&quot;')}" required
+                            class="px-3 py-2 border border-gray-300 rounded-lg flex-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+                    </div>`).join('')}
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
+                <textarea rows="2"
+                    class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required>${q.explanation || ''}</textarea>
+            </div>
+            <input type="hidden" class="questionId" value="${q._id}" />
         </div>`;
+        container.insertAdjacentHTML('beforeend', questionHTML);
     });
+
+    document.getElementById('editId').value = quizId;
     document.getElementById('editModal').classList.add('active');
 }
+
 function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
 
 async function submitEdit(e) {
     e.preventDefault();
-    const id           = document.getElementById('editId').value;
-    const correctRadio = document.querySelector('input[name="editCorrect"]:checked');
-    if (!correctRadio) { alert('Select the correct answer.'); return; }
-    const opts = Array.from(document.querySelectorAll('#editAnswers input[type="text"]')).map(i => i.value);
+    const quizId = document.getElementById('editId').value;
+    const questionSections = document.querySelectorAll('#editQuestionsContainer .question-section');
+    const questionsData = [];
 
-    const body = {
-        questionText:       document.getElementById('editQuestion').value,
-        answerOptions:      opts,
-        correctAnswerIndex: parseInt(correctRadio.value),
-        explanation:        document.getElementById('editExplanation').value,
-    };
+    for (const section of questionSections) {
+        const questionText = section.querySelector('.editQuestion').value.trim();
+        const correctRadio = section.querySelector('.editCorrect:checked');
+        const answerInputs = section.querySelectorAll('.editAnswers input[type="text"]');
+        const explanation = section.querySelector('.editExplanation').value.trim();
+        const questionId = section.querySelector('.questionId').value;
+
+        if (!questionText) { alert('All questions must have text.'); return; }
+        if (!correctRadio) { alert('Please select the correct answer for all questions.'); return; }
+        if (!explanation) { alert('All questions must have an explanation.'); return; }
+
+        const answerOptions = Array.from(answerInputs).map(i => i.value.trim());
+        if (answerOptions.some(a => !a)) { alert('All answer options must be filled.'); return; }
+
+        questionsData.push({
+            _id: questionId,
+            questionText,
+            answerOptions,
+            correctAnswerIndex: parseInt(correctRadio.value),
+            explanation
+        });
+    }
+
+    if (questionsData.length === 0) { alert('Please keep at least one question.'); return; }
+
+    const body = { questions: questionsData };
 
     try {
-        const res  = await fetch(`${API}/quizzes/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const res  = await fetch(`${API}/quizzes/${quizId}/questions`, { 
+            method: 'PUT', 
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify(body) 
+        });
         const data = await res.json();
         if (data.success) { closeEditModal(); await loadAll(); }
         else alert('Error: ' + data.error);
@@ -548,8 +789,8 @@ async function submitEdit(e) {
 }
 
 // ── Delete ─────────────────────────────────────────────────────
-async function deleteQuiz(id) {
-    if (!confirm('Delete this quiz?')) return;
+async function deleteQuestion(id) {
+    if (!confirm('Delete this question?')) return;
     try {
         const res  = await fetch(`${API}/quizzes/${id}`, { method: 'DELETE' });
         const data = await res.json();
