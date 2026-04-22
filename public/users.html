@@ -9,13 +9,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     * { font-family: "Poppins", sans-serif; }
-    
     .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
     .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-
-    .stat-card { animation: slideUp 0.3s ease; }
-    @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
     .toast {
       position: fixed; bottom: 24px; right: 24px;
       padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
@@ -25,7 +20,6 @@
       z-index: 999; max-width: 340px; pointer-events: none;
     }
     .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
     .loading-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.3); z-index: 200;
@@ -34,30 +28,15 @@
     .loading-overlay.show { display: flex; }
     .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .user-row { transition: background 0.15s; cursor: pointer; }
+    .user-row { transition: background 0.15s; }
     .user-row:hover { background: #f9fafb; }
-    .user-row.expanded { background: #f3f4f6; }
-
     .progress-bar-track { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
     .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
-
-    .ds-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
-    .ds-badge-Arrays { background: #e0e7ff; color: #4f46e5; }
-    .ds-badge-Stacks { background: #f3e8ff; color: #7c3aed; }
-    .ds-badge-Queue { background: #d1fae5; color: #059669; }
-    .ds-badge-LinkedList { background: #ffe4e6; color: #be185d; }
-    .ds-badge-Graph { background: #cffafe; color: #0369a1; }
-    .ds-badge-Trees { background: #dcfce7; color: #15803d; }
-
     .quiz-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
     .quiz-excellent { background: #dcfce7; color: #15803d; }
     .quiz-good { background: #fef3c7; color: #b45309; }
     .quiz-fair { background: #fed7aa; color: #92400e; }
     .quiz-poor { background: #fecaca; color: #b91c1c; }
-
-    .ds-icon { font-size: 14px; }
-    
     .modal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.4); z-index: 300;
@@ -71,16 +50,12 @@
       animation: modalSlide 0.3s ease;
     }
     @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
     .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: #6b7280; }
     .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
-
-    .scenario-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; background: #f3f4f6; border-radius: 6px; font-size: 11px; margin: 2px; }
   </style>
 </head>
 <body class="bg-gray-100">
 
-  <!-- Sidebar -->
   <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
     <div class="p-6 border-b border-indigo-700">
       <div class="flex items-center space-x-3">
@@ -101,12 +76,11 @@
       <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
       <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
       <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chart-line w-5"></i>
-        <span class="font-medium">User & Scenario Analytics</span></a>
-        </nav>
+        <i class="fas fa-chart-line w-5"></i><span class="font-medium">User & Scenario Analytics</span>
+      </a>
+    </nav>
   </aside>
 
-  <!-- Navbar -->
   <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
     <div class="px-8 py-4 flex items-center justify-between">
       <div>
@@ -135,10 +109,7 @@
     </div>
   </nav>
 
-  <!-- Main Content -->
   <main class="ml-64 mt-20 p-8">
-
-    <!-- Search & Filter -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
       <div class="flex items-center gap-3 flex-wrap">
         <div class="relative flex-1 min-w-64">
@@ -153,7 +124,6 @@
       </div>
     </div>
 
-    <!-- Users Table -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
@@ -172,7 +142,6 @@
         </table>
       </div>
     </div>
-
   </main>
 
   <!-- User Details Modal -->
@@ -191,7 +160,6 @@
         </button>
       </div>
 
-      <!-- Modal Tabs -->
       <div class="flex gap-0 border-b border-gray-100 px-6 bg-gray-50">
         <button class="tab-btn active" id="tabQuizPerf" onclick="switchModalTab('quiz')">
           <i class="fas fa-chart-bar mr-2"></i>Quiz Performance
@@ -201,25 +169,16 @@
         </button>
       </div>
 
-      <!-- Tab Content -->
       <div class="p-6">
-
-        <!-- QUIZ PERFORMANCE TAB -->
         <div id="tabQuizContent" class="space-y-6">
-          <p class="text-sm text-gray-500 mb-4">Lesson quiz scores per Data Structure</p>
-          <div id="quizPerformanceList" class="space-y-5">
-            <!-- Quiz stats injected here -->
-          </div>
+          <p class="text-sm text-gray-500 mb-4">Lesson quiz scores per Data Structure — sourced directly from your database</p>
+          <div id="quizPerformanceList" class="space-y-5"></div>
         </div>
 
-        <!-- SCENARIO USAGE TAB -->
         <div id="tabScenarioContent" class="hidden space-y-6">
           <p class="text-sm text-gray-500 mb-4">Most frequently used scenario per Data Structure</p>
-          <div id="scenarioUsageList" class="space-y-5">
-            <!-- Scenario usage injected here -->
-          </div>
+          <div id="scenarioUsageList" class="space-y-5"></div>
         </div>
-
       </div>
     </div>
   </div>
@@ -230,6 +189,7 @@
   <script>
     const SERVER_URL = 'https://structureality-admin.onrender.com';
 
+    // Topic names must match exactly what your DB stores in progress keys
     const DS_CONFIG = {
       Arrays:      { label: 'Arrays',       icon: '📊', color: '#6366f1' },
       Stacks:      { label: 'Stacks',       icon: '📚', color: '#8b5cf6' },
@@ -241,9 +201,7 @@
 
     let allUsers = [];
     let filteredUsers = [];
-    let currentUserModal = null;
 
-    // ── AUTH ──────────────────────────────────────────────────────────────────
     function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
     function checkAuth() {
       const raw = localStorage.getItem('adminUser');
@@ -251,7 +209,6 @@
       try { return JSON.parse(raw); } catch { logout(); return null; }
     }
 
-    // ── TOAST ────────────────────────────────────────────────────────────────
     function showToast(msg, type = 'info') {
       const colorMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
       const iconMap  = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
@@ -261,33 +218,48 @@
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3500);
     }
-
     function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
 
-    // ── LOAD USERS ────────────────────────────────────────────────────────────
     async function loadUsers() {
       showLoading(true);
       try {
-        const res = await fetch(`${SERVER_URL}/api/users`);
+        // Fetch full progress so we have lessonQuizScores without a second call
+        const res = await fetch(`${SERVER_URL}/api/progress`);
         const data = await res.json();
         if (data.success) {
-          allUsers = data.users || [];
+          // /api/progress returns the full user+progress objects
+          allUsers = data.data || [];
           filteredUsers = [...allUsers];
           renderUsersTable();
           document.getElementById('apiStatus').textContent = 'connected';
           document.getElementById('apiStatus').className = 'font-medium text-green-500';
-          showToast('Users loaded successfully', 'success');
+          showToast(`${allUsers.length} users loaded`, 'success');
+        } else {
+          throw new Error(data.error || 'Unknown error');
         }
       } catch (err) {
-        showToast('Failed to load users: ' + err.message, 'error');
-        document.getElementById('apiStatus').textContent = 'offline';
-        document.getElementById('apiStatus').className = 'font-medium text-red-500';
+        // Fallback: try /api/users without progress
+        try {
+          const res2 = await fetch(`${SERVER_URL}/api/users`);
+          const data2 = await res2.json();
+          if (data2.success) {
+            allUsers = data2.users || [];
+            filteredUsers = [...allUsers];
+            renderUsersTable();
+            document.getElementById('apiStatus').textContent = 'connected';
+            document.getElementById('apiStatus').className = 'font-medium text-green-500';
+            showToast(`${allUsers.length} users loaded (no progress data)`, 'info');
+          }
+        } catch (err2) {
+          showToast('Failed to load users: ' + err.message, 'error');
+          document.getElementById('apiStatus').textContent = 'offline';
+          document.getElementById('apiStatus').className = 'font-medium text-red-500';
+        }
       } finally {
         showLoading(false);
       }
     }
 
-    // ── FILTER USERS ──────────────────────────────────────────────────────────
     function filterUsers() {
       const term = document.getElementById('searchInput').value.toLowerCase();
       filteredUsers = allUsers.filter(u =>
@@ -298,7 +270,6 @@
       renderUsersTable();
     }
 
-    // ── RENDER USERS TABLE ────────────────────────────────────────────────────
     function renderUsersTable() {
       const tbody = document.getElementById('usersTableBody');
       if (!filteredUsers.length) {
@@ -307,27 +278,38 @@
       }
 
       tbody.innerHTML = filteredUsers.map(user => {
-        const joined = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
+        const joined = user.registerDate
+          ? new Date(user.registerDate).toLocaleDateString()
+          : user.createdAt
+            ? new Date(user.createdAt).toLocaleDateString()
+            : '—';
         const initials = (user.name || user.username).substring(0, 2).toUpperCase();
-        const sessions = (user.progress && Object.keys(user.progress).length) || 0;
+        const topicCount = (user.topics || []).length;
+
+        // Count total lesson quiz scores across all topics
+        let totalQuizzes = 0;
+        (user.topics || []).forEach(t => {
+          totalQuizzes += t.lessonQuizCount || 0;
+        });
+
         return `
           <tr class="user-row border-b border-gray-100">
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">
-                  ${initials}
-                </div>
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">${initials}</div>
                 <div>
                   <p class="font-semibold text-gray-800 text-sm">${user.name || user.username}</p>
                   <p class="text-xs text-gray-500">@${user.username}</p>
                 </div>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600">${user.email}</td>
+            <td class="px-6 py-4 text-sm text-gray-600">${user.email || '—'}</td>
             <td class="px-6 py-4 text-sm text-gray-500">${joined}</td>
             <td class="px-6 py-4 text-center">
-              <div class="flex items-center justify-center gap-3">
-                <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">${sessions} topics</span>
+              <div class="flex items-center justify-center gap-2 flex-wrap">
+                <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">${topicCount} topics</span>
+                ${totalQuizzes > 0 ? `<span class="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold">${totalQuizzes} quizzes</span>` : ''}
+                ${user.streak > 0 ? `<span class="inline-block px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-semibold">🔥 ${user.streak}</span>` : ''}
               </div>
             </td>
             <td class="px-6 py-4 text-center">
@@ -339,51 +321,32 @@
       }).join('');
     }
 
-    // ── MODAL FUNCTIONS ───────────────────────────────────────────────────────
     async function openUserModal(username) {
-      console.log('🔍 Opening modal for:', username);
       showLoading(true);
       try {
-        console.log('📡 Fetching user data from:', `${SERVER_URL}/api/users/${username}`);
-        const userRes = await fetch(`${SERVER_URL}/api/users/${username}`);
-        console.log('📥 User response status:', userRes.status);
-        const userData = await userRes.json();
-        console.log('✅ User data received:', userData);
+        // Fetch the full progress record — it contains lessonQuizScores, codeOperationStats etc.
+        const progressRes = await fetch(`${SERVER_URL}/api/progress/${username}`);
+        const progressData = await progressRes.json();
 
-        console.log('📡 Fetching quiz results from:', `${SERVER_URL}/api/quizzes/results/${username}`);
-        const quizRes = await fetch(`${SERVER_URL}/api/quizzes/results/${username}`);
-        console.log('📥 Quiz response status:', quizRes.status);
-        const quizData = await quizRes.json();
-        console.log('✅ Quiz data received:', quizData);
+        if (!progressData.success) throw new Error(progressData.error || 'Could not load progress');
 
-        // Handle both response formats
-        const user = userData.user || userData;
-        
-        if (!user || !user.username) {
-          console.error('❌ Invalid user data:', userData);
-          showToast('User data is invalid', 'error');
-          return;
-        }
+        const userData = progressData.data;
 
-        currentUserModal = user;
-        
-        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+        const initials = (userData.name || userData.username).substring(0, 2).toUpperCase();
         document.getElementById('modalUserAvatar').textContent = initials;
-        document.getElementById('modalUserName').textContent = user.name || user.username;
-        document.getElementById('modalUserEmail').textContent = user.email || 'No email';
+        document.getElementById('modalUserName').textContent = userData.name || userData.username;
+        document.getElementById('modalUserEmail').textContent = userData.email || 'No email';
 
-        console.log('📊 Rendering quiz performance with', (quizData.results || []).length, 'results');
-        renderQuizPerformance(user, quizData.results || []);
-        
-        console.log('🎮 Rendering scenario usage...');
-        await renderScenarioUsage(user);
+        // Build a lookup map: topicName → topic object (includes lessonQuizScores, codeLabsCount, etc.)
+        const topicMap = {};
+        (userData.topics || []).forEach(t => { topicMap[t.topicName] = t; });
 
-        console.log('✅ Showing modal...');
+        renderQuizPerformance(topicMap);
+        await renderScenarioUsage(username);
+
         document.getElementById('userModal').classList.add('show');
-        
       } catch (err) {
-        console.error('❌ Modal error:', err);
-        console.error('Error stack:', err.stack);
+        console.error('Modal error:', err);
         showToast('Failed to load user analytics: ' + err.message, 'error');
       } finally {
         showLoading(false);
@@ -392,7 +355,6 @@
 
     function closeModal() {
       document.getElementById('userModal').classList.remove('show');
-      currentUserModal = null;
     }
 
     function switchModalTab(tab) {
@@ -402,208 +364,226 @@
       document.getElementById('tabScenarioContent').classList.toggle('hidden', tab !== 'scenario');
     }
 
-    // ── RENDER QUIZ PERFORMANCE ───────────────────────────────────────────────
-    function renderQuizPerformance(user, quizResults) {
-      console.log('📊 renderQuizPerformance called with user:', user.username);
-      console.log('📊 Quiz results:', quizResults);
-      
+    // ── QUIZ PERFORMANCE — reads real lessonQuizScores from progress ──────────
+    // The /api/progress/:username endpoint returns topics[] with lessonQuizCount
+    // but we need the actual scores. We get those from /api/progress which returns
+    // lessonQuizScores per topic (stored as { "LessonTitle_sanitized": score }).
+    function renderQuizPerformance(topicMap) {
       const container = document.getElementById('quizPerformanceList');
-      const progress = user.progress || {};
-      const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Graph', 'Trees'];
-
-      // ✅ FILTER: Only include lesson quizzes (exclude Easy/Medium/Hard/Mixed Quiz)
-      const lessonQuizzes = quizResults.filter(q => {
-        const name = q.quizName || '';
-        return !name.match(/^(Easy|Medium|Hard|Mixed)\s+Quiz$/i);
-      });
-
-      console.log(`  Filtered: ${quizResults.length} total → ${lessonQuizzes.length} lesson quizzes`);
+      const ALL_DS = Object.keys(DS_CONFIG);
 
       container.innerHTML = ALL_DS.map(ds => {
-        const dsProgress = progress[ds] || {};
-        const topicQuizzes = lessonQuizzes.filter(q => q.topicName === ds) || [];
-        
-        console.log(`  ${ds}: ${topicQuizzes.length} lesson quizzes found`);
-        
-        let percentage = 0, attempted = 0;
-        if (topicQuizzes.length > 0) {
-          const totalScore = topicQuizzes.reduce((sum, q) => sum + (q.score || 0), 0);
-          const totalMax = topicQuizzes.reduce((sum, q) => sum + (q.maxScore || 100), 0);
-          percentage = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
-          attempted = topicQuizzes.length;
+        const cfg = DS_CONFIG[ds];
+        const topic = topicMap[ds];
+
+        if (!topic) {
+          return `
+            <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
+              <div class="flex items-center gap-3 mb-2">
+                <span class="text-2xl">${cfg.icon}</span>
+                <div>
+                  <h3 class="font-semibold text-gray-800">${cfg.label}</h3>
+                  <p class="text-xs text-gray-400">No activity yet</p>
+                </div>
+              </div>
+            </div>`;
         }
 
-        const badge = percentage >= 80 ? 'quiz-excellent' : percentage >= 60 ? 'quiz-good' : percentage >= 40 ? 'quiz-fair' : 'quiz-poor';
-        const badgeText = percentage >= 80 ? 'Excellent' : percentage >= 60 ? 'Good' : percentage >= 40 ? 'Fair' : 'Needs Work';
+        // lessonQuizScores comes from the full progress endpoint as an object
+        // keys are sanitized lesson titles (dots replaced with underscores), values are 0-100
+        const rawScores = topic.lessonQuizScores || {};
+        const scoreEntries = Object.entries(rawScores).filter(([, v]) => v > 0);
+        const attempted = scoreEntries.length;
+
+        // Restore display name: reverse the _-to-dot sanitization
+        const formatTitle = (key) => key.replace(/_/g, ' ').replace(/\./g, ' ');
+
+        // Average score
+        const avgScore = attempted > 0
+          ? Math.round(scoreEntries.reduce((sum, [, v]) => sum + v, 0) / attempted)
+          : 0;
+
+        const badge = avgScore >= 80 ? 'quiz-excellent' : avgScore >= 60 ? 'quiz-good' : avgScore >= 40 ? 'quiz-fair' : 'quiz-poor';
+        const badgeText = avgScore >= 80 ? 'Excellent' : avgScore >= 60 ? 'Good' : avgScore >= 40 ? 'Fair' : 'Needs Work';
+
+        // Progress overview: lesson progress and quiz progress from topic
+        const lessonPct  = topic.lessonProgress  || 0;
+        const quizPct    = topic.quizProgress    || 0;
+        const totalPct   = topic.progressPercentage || 0;
+
+        // Sort by score descending for display
+        const sorted = [...scoreEntries].sort((a, b) => b[1] - a[1]);
 
         return `
           <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
             <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-3">
-                <span class="text-2xl">${DS_CONFIG[ds].icon}</span>
+                <span class="text-2xl">${cfg.icon}</span>
                 <div>
-                  <h3 class="font-semibold text-gray-800">${DS_CONFIG[ds].label}</h3>
-                  <p class="text-xs text-gray-500">${attempted} lesson quiz${attempted !== 1 ? 'zes' : ''} completed</p>
+                  <h3 class="font-semibold text-gray-800">${cfg.label}</h3>
+                  <p class="text-xs text-gray-500">${attempted} quiz${attempted !== 1 ? 'zes' : ''} completed · ${topic.lessonsCompleted || 0} lessons done</p>
                 </div>
               </div>
-              ${percentage > 0 ? `<span class="quiz-badge ${badge}">${percentage}% • ${badgeText}</span>` : ''}
+              ${attempted > 0 ? `<span class="quiz-badge ${badge}">${avgScore}% avg · ${badgeText}</span>` : ''}
             </div>
 
-            <div class="space-y-3">
-              ${percentage > 0 ? `
+            <!-- Progress breakdown bars -->
+            <div class="space-y-2 mb-4">
               <div>
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-medium text-gray-700">Overall Score</span>
-                  <span class="text-xs font-bold" style="color:${DS_CONFIG[ds].color}">${percentage}%</span>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-500">Lesson progress</span>
+                  <span class="text-xs font-semibold" style="color:${cfg.color}">${lessonPct}%</span>
                 </div>
                 <div class="progress-bar-track">
-                  <div class="progress-bar-fill" style="width:${percentage}%;background:${DS_CONFIG[ds].color}"></div>
+                  <div class="progress-bar-fill" style="width:${Math.min(lessonPct,100)}%;background:${cfg.color}90"></div>
                 </div>
               </div>
-              ` : ''}
-
-              ${topicQuizzes.length > 0 ? `
-                <div class="mt-4 pt-4 border-t border-gray-200">
-                  <p class="text-xs font-semibold text-gray-700 mb-2">Recent Attempts</p>
-                  <div class="space-y-2">
-                    ${topicQuizzes.slice(0, 5).map(q => {
-                      const qScore = Math.round(((q.score || 0) / (q.maxScore || 100)) * 100);
-                      return `
-                        <div class="flex items-center justify-between text-xs">
-                          <span class="text-gray-600">${q.quizName || 'Quiz'}</span>
-                          <div class="flex items-center gap-2">
-                            <span class="font-medium" style="color:${DS_CONFIG[ds].color}">${q.score || 0}/${q.maxScore || 100}</span>
-                            <span class="px-2 py-0.5 rounded text-white text-xs font-semibold" style="background:${qScore >= 80 ? '#10b981' : qScore >= 60 ? '#f59e0b' : '#ef4444'}">${qScore}%</span>
-                          </div>
-                        </div>`;
-                    }).join('')}
-                  </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-500">Quiz score avg</span>
+                  <span class="text-xs font-semibold" style="color:${cfg.color}">${quizPct}%</span>
                 </div>
-              ` : '<p class="text-xs text-gray-400 mt-2">No lesson quiz attempts yet</p>'}
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" style="width:${Math.min(quizPct,100)}%;background:${cfg.color}"></div>
+                </div>
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-gray-700">Overall progress</span>
+                  <span class="text-xs font-bold" style="color:${cfg.color}">${totalPct}%</span>
+                </div>
+                <div class="progress-bar-track" style="height:8px">
+                  <div class="progress-bar-fill" style="width:${Math.min(totalPct,100)}%;height:8px;background:${cfg.color}"></div>
+                </div>
+              </div>
             </div>
+
+            ${sorted.length > 0 ? `
+              <div class="pt-3 border-t border-gray-200">
+                <p class="text-xs font-semibold text-gray-700 mb-2">Per-lesson scores</p>
+                <div class="space-y-1.5 max-h-40 overflow-y-auto">
+                  ${sorted.map(([key, score]) => {
+                    const scoreColor = score >= 80 ? '#10b981' : score >= 60 ? '#f59e0b' : '#ef4444';
+                    return `
+                      <div class="flex items-center justify-between text-xs bg-white rounded px-3 py-1.5 border border-gray-100">
+                        <span class="text-gray-600 truncate mr-2">${formatTitle(key)}</span>
+                        <span class="font-bold flex-shrink-0 px-2 py-0.5 rounded text-white text-xs" style="background:${scoreColor}">${score}%</span>
+                      </div>`;
+                  }).join('')}
+                </div>
+              </div>
+            ` : `<p class="text-xs text-gray-400 italic mt-2">No quiz scores recorded yet</p>`}
+
+            ${topic.codeLabsCount > 0 ? `
+              <div class="mt-3 pt-3 border-t border-gray-200">
+                <p class="text-xs text-gray-500"><i class="fas fa-code mr-1"></i>${topic.codeLabsCount} code lab${topic.codeLabsCount !== 1 ? 's' : ''} completed</p>
+              </div>
+            ` : ''}
           </div>`;
       }).join('');
-      
-      console.log('✅ Quiz performance rendered');
     }
 
-    // ── RENDER SCENARIO USAGE ─────────────────────────────────────────────────
-    async function renderScenarioUsage(user) {
-      console.log('🎮 renderScenarioUsage called with user:', user.username);
-      
+    // ── SCENARIO USAGE — fetches directly from /api/scenarios/usage/:username ─
+    async function renderScenarioUsage(username) {
       const container = document.getElementById('scenarioUsageList');
-      
-      // ✅ Fetch scenario usage from API instead of relying on user.progress
+      container.innerHTML = '<p class="text-center text-gray-400 text-sm py-4">Loading…</p>';
+
+      const DS_COLORS = {
+        Arrays: '#6366f1', Stacks: '#8b5cf6', Queue: '#10b981',
+        LinkedList: '#f43f5e', Graph: '#0ea5e9', Trees: '#16a34a',
+      };
+      const DS_ICONS = {
+        Arrays: '📊', Stacks: '📚', Queue: '⏳',
+        LinkedList: '🔗', Graph: '🕸️', Trees: '🌳',
+      };
+
       try {
-        const res = await fetch(`${SERVER_URL}/api/scenarios/usage/${user.username}`);
+        const res  = await fetch(`${SERVER_URL}/api/scenarios/usage/${username}`);
         const data = await res.json();
-        
+
         if (!data.success) {
-          console.warn('❌ API returned error:', data.error);
-          container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">No scenario usage data available for this user.</p>';
+          container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">No scenario usage data available.</p>';
           return;
         }
 
         const scenarioUsage = data.scenarioUsage || {};
-        const ALL_DS = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Graph', 'Trees'];
-        
-        console.log('📊 Scenario usage data:', scenarioUsage);
-        
-        // Check if user has any scenario data at all
-        const hasAnyData = Object.keys(scenarioUsage).length > 0;
-        
-        if (!hasAnyData) {
+        const topicKeys = Object.keys(scenarioUsage);
+
+        if (!topicKeys.length) {
           container.innerHTML = '<p class="text-center text-gray-400 text-sm py-8">This user hasn\'t used any scenarios yet.</p>';
           return;
         }
 
-        container.innerHTML = ALL_DS.map(ds => {
-          const topicData = scenarioUsage[ds];
-          
-          if (!topicData || !topicData.scenarios || Object.keys(topicData.scenarios).length === 0) {
+        container.innerHTML = topicKeys.map(topicName => {
+          const topicData  = scenarioUsage[topicName];
+          const color      = DS_COLORS[topicName] || '#6366f1';
+          const icon       = DS_ICONS[topicName]  || '🎮';
+          const scenarios  = Object.entries(topicData.scenarios || {});
+
+          if (!scenarios.length) {
             return `
               <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
                 <div class="flex items-center gap-3 mb-2">
-                  <span class="text-2xl">${DS_CONFIG[ds].icon}</span>
-                  <h3 class="font-semibold text-gray-800">${DS_CONFIG[ds].label}</h3>
+                  <span class="text-2xl">${icon}</span>
+                  <h3 class="font-semibold text-gray-800">${topicName}</h3>
                 </div>
                 <p class="text-xs text-gray-400">No scenarios used yet</p>
               </div>`;
           }
 
-          const scenarios = topicData.scenarios;
-          const totalPicks = Object.values(scenarios).reduce((sum, s) => sum + (s.pickCount || 0), 0);
-          
-          // Find most used scenario
-          let mostUsedScenario = null, maxPicks = 0;
-          Object.entries(scenarios).forEach(([id, info]) => {
-            if (info.pickCount > maxPicks) {
-              maxPicks = info.pickCount;
-              mostUsedScenario = { id, ...info };
-            }
-          });
+          const sorted = scenarios.sort((a, b) => b[1].pickCount - a[1].pickCount);
+          const totalPicks = sorted.reduce((s, [, x]) => s + (x.pickCount || 0), 0);
+          const [topId, topInfo] = sorted[0];
 
           return `
             <div class="bg-gray-50 rounded-lg border border-gray-200 p-5">
               <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <span class="text-2xl">${DS_CONFIG[ds].icon}</span>
+                  <span class="text-2xl">${icon}</span>
                   <div>
-                    <h3 class="font-semibold text-gray-800">${DS_CONFIG[ds].label}</h3>
+                    <h3 class="font-semibold text-gray-800">${topicName}</h3>
                     <p class="text-xs text-gray-500">${totalPicks} total pick${totalPicks !== 1 ? 's' : ''}</p>
                   </div>
                 </div>
               </div>
 
-              <div class="space-y-3">
-                ${mostUsedScenario ? `
-                  <div class="bg-white rounded-lg p-4 border-2" style="border-color:${DS_CONFIG[ds].color}20">
-                    <p class="text-xs font-semibold text-gray-600 mb-2">⭐ Most Used Scenario</p>
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="font-semibold text-gray-800">${mostUsedScenario.name}</p>
-                        <p class="text-xs text-gray-500 mt-1">${mostUsedScenario.pickCount} times</p>
-                      </div>
-                      <div style="width:40px;height:40px;background:${DS_CONFIG[ds].color}20;border-radius:10px;display:flex;align-items:center;justify-content:center;color:${DS_CONFIG[ds].color};font-weight:bold">
-                        ${Math.round((mostUsedScenario.pickCount / totalPicks) * 100)}%
-                      </div>
-                    </div>
-                  </div>
-                ` : ''}
-
-                <div>
-                  <p class="text-xs font-semibold text-gray-700 mb-3">All Scenarios</p>
-                  <div class="space-y-2">
-                    ${Object.entries(scenarios).sort((a, b) => b[1].pickCount - a[1].pickCount).map(([id, info]) => {
-                      const pct = Math.round((info.pickCount / totalPicks) * 100);
-                      return `
-                        <div>
-                          <div class="flex items-center justify-between mb-1">
-                            <span class="text-xs text-gray-700 font-medium">${info.name}</span>
-                            <span class="text-xs font-bold" style="color:${DS_CONFIG[ds].color}">${info.pickCount}×</span>
-                          </div>
-                          <div class="progress-bar-track">
-                            <div class="progress-bar-fill" style="width:${pct}%;background:${DS_CONFIG[ds].color}"></div>
-                          </div>
-                        </div>`;
-                    }).join('')}
-                  </div>
+              <!-- Most used highlight -->
+              <div class="bg-white rounded-lg p-3 border-2 mb-4" style="border-color:${color}30">
+                <p class="text-xs font-semibold text-gray-500 mb-1">⭐ Preferred scenario</p>
+                <div class="flex items-center justify-between">
+                  <p class="font-semibold text-gray-800 text-sm">${topInfo.name}</p>
+                  <span class="text-sm font-bold px-2 py-0.5 rounded" style="background:${color}15;color:${color}">${topInfo.pickCount}×</span>
                 </div>
+                ${topInfo.lastPicked ? `<p class="text-xs text-gray-400 mt-1">Last used: ${new Date(topInfo.lastPicked).toLocaleDateString()}</p>` : ''}
+              </div>
+
+              <!-- All scenarios breakdown -->
+              <div class="space-y-2">
+                ${sorted.map(([id, info]) => {
+                  const pct = totalPicks > 0 ? Math.round((info.pickCount / totalPicks) * 100) : 0;
+                  return `
+                    <div>
+                      <div class="flex items-center justify-between mb-1">
+                        <span class="text-xs text-gray-700 font-medium">${info.name}</span>
+                        <span class="text-xs font-bold" style="color:${color}">${info.pickCount}× (${pct}%)</span>
+                      </div>
+                      <div class="progress-bar-track">
+                        <div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div>
+                      </div>
+                    </div>`;
+                }).join('')}
               </div>
             </div>`;
         }).join('');
-        
-        console.log('✅ Scenario usage rendered');
-        
+
       } catch (err) {
-        console.error('❌ Error fetching scenario usage:', err);
+        console.error('Scenario usage error:', err);
         container.innerHTML = '<p class="text-center text-red-500 text-sm py-8">Error loading scenario data. Please try again.</p>';
       }
     }
 
     // ── INIT ──────────────────────────────────────────────────────────────────
     window.addEventListener('load', async () => {
-      console.log('🚀 Page loaded, checking auth...');
       const user = checkAuth();
       if (user) {
         document.getElementById('adminUserDisplay').textContent = user.name || user.username;
@@ -612,7 +592,6 @@
       await loadUsers();
     });
 
-    // Close modal on outside click
     document.getElementById('userModal').addEventListener('click', (e) => {
       if (e.target.id === 'userModal') closeModal();
     });
