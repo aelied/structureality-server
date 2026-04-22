@@ -302,7 +302,7 @@ async function loadAll() {
         fetch(`${API}/quizzes`).then(r => r.json()).catch(() => ({ success: false })),
     ]);
 
-    lessons = (lRes.success ? lRes.lessons : []).filter(l => (l.difficultyLevel || 'beginner') === 'beginner');
+    lessons = lRes.success ? lRes.lessons : [];
     quizzes = qRes.success ? qRes.quizzes : [];
 
     updateStats();
