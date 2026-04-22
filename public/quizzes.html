@@ -217,10 +217,10 @@
                     <div class="mb-3">
                         <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
                         <div class="addAnswers">
-                            <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
                         </div>
                     </div>
 
@@ -521,10 +521,10 @@ function addQuestion() {
         <div class="mb-3">
             <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
             <div class="addAnswers">
-                <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
             </div>
         </div>
 
@@ -567,7 +567,12 @@ function addEditQuestion() {
 
         <div class="mb-3">
             <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
-            <div class="editAnswers"></div>
+            <div class="editAnswers">
+                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+            </div>
         </div>
 
         <div class="mb-3">
@@ -575,22 +580,24 @@ function addEditQuestion() {
             <textarea placeholder="Explain why the answer is correct…" rows="2"
                 class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
         </div>
+        <input type="hidden" class="questionId" value="" />
     </div>`;
     
     container.insertAdjacentHTML('beforeend', questionHTML);
 }
 
 function removeEditQuestion(index) {
-    const section = document.querySelector(`[data-question-index="${index}"]`);
+    const sections = document.querySelectorAll('#editQuestionsContainer .question-section');
+    if (sections.length <= 1) {
+        alert('You must keep at least one question in the quiz.');
+        return;
+    }
+    
+    const section = document.querySelector(`#editQuestionsContainer [data-question-index="${index}"]`);
     if (section) {
         section.remove();
     }
 }
-
-// ── API Endpoints Documentation ────────────────────────────────
-// POST /api/quizzes - Now accepts 'questions' array instead of single question
-// PUT /api/quizzes/:quizId/questions - Update all questions for a quiz lesson
-// DELETE /api/quizzes/:quizId - Delete single question (by _id)
 
 // ── Add modal ──────────────────────────────────────────────────
 function openAddModal(prefillTopic = '', prefillLesson = '') {
@@ -617,10 +624,10 @@ function openAddModal(prefillTopic = '', prefillLesson = '') {
         <div class="mb-3">
             <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
             <div class="addAnswers">
-                <div class="answer-option"><input type="radio" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
+                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
             </div>
         </div>
 
@@ -643,11 +650,16 @@ function closeAddModal() { document.getElementById('addModal').classList.remove(
 async function submitAdd(e) {
     e.preventDefault();
     const lessonTitle  = document.getElementById('addLesson').value;
+    const topicName = document.getElementById('addTopic').value;
+    
     if (!lessonTitle) { alert('Please select a lesson.'); return; }
+    if (!topicName) { alert('Please select a topic.'); return; }
 
     const questionSections = document.querySelectorAll('#questionsContainer .question-section');
-    const questionsData = [];
-
+    
+    // Submit each question individually to the API
+    let successCount = 0;
+    
     for (const section of questionSections) {
         const questionText = section.querySelector('.addQuestion').value.trim();
         const correctRadio = section.querySelector('.addCorrect:checked');
@@ -661,40 +673,50 @@ async function submitAdd(e) {
         const answerOptions = Array.from(answerInputs).map(i => i.value.trim());
         if (answerOptions.some(a => !a)) { alert('All answer options must be filled.'); return; }
 
-        questionsData.push({
-            questionText,
-            answerOptions,
+        const body = {
+            topicName: topicName,
+            lessonTitle: lessonTitle,
+            questionText: questionText,
+            answerOptions: answerOptions,
             correctAnswerIndex: parseInt(correctRadio.value),
-            explanation
-        });
+            explanation: explanation,
+            difficulty: 'beginner',
+            order: 1,
+        };
+
+        try {
+            const res = await fetch(`${API}/quizzes`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(body) 
+            });
+            const data = await res.json();
+            if (data.success) {
+                successCount++;
+            } else {
+                alert('Error creating question: ' + data.error);
+                return;
+            }
+        } catch (err) {
+            alert('Network error: ' + err.message);
+            return;
+        }
     }
 
-    if (questionsData.length === 0) { alert('Please add at least one question.'); return; }
-
-    const body = {
-        topicName: document.getElementById('addTopic').value,
-        lessonTitle,
-        questions: questionsData,
-        difficulty: 'mixed',
-        order: 1,
-    };
-
-    try {
-        const res  = await fetch(`${API}/quizzes`, { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(body) 
-        });
-        const data = await res.json();
-        if (data.success) { closeAddModal(); await loadAll(); }
-        else alert('Error: ' + data.error);
-    } catch (err) { alert('Network error: ' + err.message); }
+    if (successCount > 0) {
+        closeAddModal();
+        await loadAll();
+    }
 }
 
 // ── Edit modal ─────────────────────────────────────────────────
 function openEditModal(quizId) {
-    // Find all questions with this lesson
-    const allQuestionsForQuiz = quizzes.filter(q => q.lessonTitle === quizzes.find(qq => qq._id === quizId)?.lessonTitle);
+    // Find the quiz that was clicked
+    const clickedQuiz = quizzes.find(q => q._id === quizId);
+    if (!clickedQuiz) return;
+    
+    // Find all questions for this lesson
+    const allQuestionsForQuiz = quizzes.filter(q => q.lessonTitle === clickedQuiz.lessonTitle);
     
     const container = document.getElementById('editQuestionsContainer');
     container.innerHTML = '';
@@ -720,7 +742,7 @@ function openEditModal(quizId) {
                 <div class="editAnswers">
                     ${(q.answerOptions || []).map((opt, oi) => `
                     <div class="answer-option">
-                        <input type="radio" class="editCorrect" value="${oi}" ${oi === q.correctAnswerIndex ? 'checked' : ''} />
+                        <input type="radio" name="editCorrect${idx}" class="editCorrect" value="${oi}" ${oi === q.correctAnswerIndex ? 'checked' : ''} required />
                         <input type="text" value="${opt.replace(/"/g, '&quot;')}" required
                             class="px-3 py-2 border border-gray-300 rounded-lg flex-1 focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
                     </div>`).join('')}
@@ -747,8 +769,15 @@ async function submitEdit(e) {
     e.preventDefault();
     const quizId = document.getElementById('editId').value;
     const questionSections = document.querySelectorAll('#editQuestionsContainer .question-section');
-    const questionsData = [];
 
+    if (questionSections.length === 0) {
+        alert('Please keep at least one question.');
+        return;
+    }
+
+    // Update each question individually
+    let successCount = 0;
+    
     for (const section of questionSections) {
         const questionText = section.querySelector('.editQuestion').value.trim();
         const correctRadio = section.querySelector('.editCorrect:checked');
@@ -763,29 +792,36 @@ async function submitEdit(e) {
         const answerOptions = Array.from(answerInputs).map(i => i.value.trim());
         if (answerOptions.some(a => !a)) { alert('All answer options must be filled.'); return; }
 
-        questionsData.push({
-            _id: questionId,
+        const body = {
             questionText,
             answerOptions,
             correctAnswerIndex: parseInt(correctRadio.value),
             explanation
-        });
+        };
+
+        try {
+            const res = await fetch(`${API}/quizzes/${questionId}`, { 
+                method: 'PUT', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(body) 
+            });
+            const data = await res.json();
+            if (data.success) {
+                successCount++;
+            } else {
+                alert('Error updating question: ' + data.error);
+                return;
+            }
+        } catch (err) {
+            alert('Network error: ' + err.message);
+            return;
+        }
     }
 
-    if (questionsData.length === 0) { alert('Please keep at least one question.'); return; }
-
-    const body = { questions: questionsData };
-
-    try {
-        const res  = await fetch(`${API}/quizzes/${quizId}/questions`, { 
-            method: 'PUT', 
-            headers: { 'Content-Type': 'application/json' }, 
-            body: JSON.stringify(body) 
-        });
-        const data = await res.json();
-        if (data.success) { closeEditModal(); await loadAll(); }
-        else alert('Error: ' + data.error);
-    } catch (err) { alert('Network error: ' + err.message); }
+    if (successCount > 0) {
+        closeEditModal();
+        await loadAll();
+    }
 }
 
 // ── Delete ─────────────────────────────────────────────────────
