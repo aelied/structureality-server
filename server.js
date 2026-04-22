@@ -801,6 +801,81 @@ app.get('/api/admins', async (req, res) => {
         });
     }
 });
+
+app.get('/api/progress/:username/analytics', async (req, res) => {
+    try {
+        const { username } = req.params;
+        
+        const user = await usersCollection.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+
+        // ── Initialize counters ──────────────────────────────────
+        let totalLessonsCompleted = 0;
+        let allQuizScores = [];
+        let totalCodeSuccesses = 0;
+        let totalCodeFailures = 0;
+
+        // ── Process each topic in user progress ──────────────────
+        if (user.progress) {
+            Object.entries(user.progress).forEach(([topicName, topicData]) => {
+                // Lessons count
+                totalLessonsCompleted += topicData.lessonsCompleted || 0;
+
+                // Quiz scores - extract all lesson quiz scores
+                if (topicData.lessonQuizScores) {
+                    Object.values(topicData.lessonQuizScores).forEach(score => {
+                        if (score > 0) {
+                            allQuizScores.push(score);
+                        }
+                    });
+                }
+
+                // Code challenge stats
+                if (topicData.codeOperationStats) {
+                    Object.values(topicData.codeOperationStats).forEach(stats => {
+                        totalCodeSuccesses += stats.successes || 0;
+                        totalCodeFailures += stats.failures || 0;
+                    });
+                }
+            });
+        }
+
+        // ── Calculate averages ───────────────────────────────────
+        const avgQuizScore = allQuizScores.length > 0
+            ? Math.round(allQuizScores.reduce((a, b) => a + b, 0) / allQuizScores.length)
+            : 0;
+
+        const totalCodeAttempts = totalCodeSuccesses + totalCodeFailures;
+        const avgCodeFailureRate = totalCodeAttempts > 0
+            ? Math.round((totalCodeFailures / totalCodeAttempts) * 100)
+            : 0;
+
+        // ── Send response ────────────────────────────────────────
+        res.json({
+            success: true,
+            data: {
+                totalLessonsCompleted,
+                totalQuizzesTaken: allQuizScores.length,
+                avgQuizScore,
+                totalCodeAttempts,
+                totalCodeSuccesses,
+                totalCodeFailures,
+                avgCodeFailureRate
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching progress analytics:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch analytics',
+            details: error.message
+        });
+    }
+});
+
 // ==================== USER ENDPOINTS ====================
 app.post('/api/users', async (req, res) => {
     try {
