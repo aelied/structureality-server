@@ -305,6 +305,13 @@ async function loadAll() {
     lessons = lRes.success ? lRes.lessons : [];
     quizzes = qRes.success ? qRes.quizzes : [];
 
+    console.log(`📚 Loaded ${lessons.length} lessons`);
+    console.log(`📝 Loaded ${quizzes.length} quizzes`);
+    console.log('Lessons by topic:', lessons.reduce((acc, l) => {
+        acc[l.topicName] = (acc[l.topicName] || 0) + 1;
+        return acc;
+    }, {}));
+
     updateStats();
     renderAll();
 }
@@ -482,14 +489,37 @@ function renderAll() {
     document.getElementById('coverageGrid').innerHTML = html;
 }
 
-// ── Lesson picker ──────────────────────────────────────────────
+// ── Lesson picker ──────────────────────────────────────────
+// ✅ FIXED: Added debug logging to find the issue
 function populateLessonPicker(selectId, topicSelectId, prefill = '') {
     const topic = document.getElementById(topicSelectId).value;
     const sel   = document.getElementById(selectId);
     sel.innerHTML = '<option value="">— select a lesson —</option>';
-    if (!topic) return;
-    lessons
-        .filter(l => l.topicName === topic)
+    
+    console.log(`🔍 populateLessonPicker called:`);
+    console.log(`   Topic: "${topic}"`);
+    console.log(`   SelectId: ${selectId}`);
+    console.log(`   Total lessons available: ${lessons.length}`);
+    
+    if (!topic) {
+        console.log('   ⚠️ No topic selected');
+        return;
+    }
+    
+    const filtered = lessons.filter(l => {
+        const match = l.topicName === topic;
+        console.log(`   Checking: "${l.title}" (topicName: "${l.topicName}") → ${match ? '✓ MATCH' : '✗'}`);
+        return match;
+    });
+    
+    console.log(`✅ Found ${filtered.length} lessons for "${topic}"`);
+    
+    if (filtered.length === 0) {
+        sel.innerHTML = '<option value="">❌ No lessons found for this topic</option>';
+        return;
+    }
+    
+    filtered
         .sort((a, b) => a.order - b.order)
         .forEach(l => {
             const opt = document.createElement('option');
