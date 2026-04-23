@@ -1484,7 +1484,7 @@ app.post('/api/progress/:username/difficulty', async (req, res) => {
 
         // ✅ Update the specific difficulty score (only if new score is higher)
         const currentScore = user.progress[topicName]?.difficultyScores?.[normalizedDifficulty] || 0;
-        const newScore = Math.max(currentScore, parseInt(score));
+        const newScore = Math.min(100, parseInt(score));
         
         const updateResult = await usersCollection.updateOne(
             { username },
@@ -1724,8 +1724,7 @@ app.post('/api/progress/:username/lesson-quiz', async (req, res) => {
         }
  
         // ── Keep highest score per lesson ─────────────────────────
-        const currentScore = user.progress?.[topicName]?.lessonQuizScores?.[lessonTitle] || 0;
-        const newScore     = Math.max(currentScore, Math.min(100, parseInt(score)));
+        const newScore = Math.min(100, parseInt(score));
  
         await usersCollection.updateOne({ username }, {
             $set: {
