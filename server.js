@@ -2193,19 +2193,16 @@ app.get('/api/progress/:username', async (req, res) => {
                     puzzleCompleted:    topic.puzzleCompleted   || false,
                     puzzleScore:        topic.score             || 0,
                     progressPercentage: topic.progressPercentage || 0,
-                    lessonProgress:     topic.lessonProgress    || 0,
-                    quizProgress:       topic.quizProgress      || 0,
+                    lessonProgress:     topic.lessonProgress    || 0,   // ← ADD
+                    quizProgress:       topic.quizProgress      || 0,   // ← ADD
                     lastAccessed:       topic.lastAccessed      || '',
                     timeSpent:          topic.timeSpent         || 0,
                     lessonsCompleted: lessonCounts[topicName] > 0
-                        ? Math.min(topic.lessonsCompleted || 0, lessonCounts[topicName])
-                        : (topic.lessonsCompleted || 0),
+                    ? Math.min(topic.lessonsCompleted || 0, lessonCounts[topicName])
+                    : (topic.lessonsCompleted || 0),
                     difficultyScores:   topic.difficultyScores  || { easy: 0, medium: 0, hard: 0, mixed: 0 },
                     lessonQuizCount: Object.values(topic.lessonQuizScores || {}).filter(s => s > 0).length,
-                    codeLabsCount: Object.values(topic.codeOperationStats || {}).filter(c => c.successes > 0).length,
-                    // ★ ADD THESE TWO:
-                    lessonQuizScores:   topic.lessonQuizScores   || {},
-                    codeOperationStats: topic.codeOperationStats || {}
+                    codeLabsCount: Object.values(topic.codeOperationStats || {}).filter(c => c.successes > 0).length
                 });
             });
         }
