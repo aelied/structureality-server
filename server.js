@@ -1564,6 +1564,9 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
 
         const lessonsCount = parseInt(lessonsCompleted);
 
+        const existingCount = user.progress?.[topicName]?.lessonsCompleted || 0;
+        const finalCount = Math.max(lessonsCount, existingCount);
+
         if (!user.progress || !user.progress[topicName]) {
             await usersCollection.updateOne({ username }, {
                 $set: {
