@@ -1182,9 +1182,9 @@ app.put('/api/progress/:username', async (req, res) => {
         const lessonCounts = {};
         const userDifficultyLevel = existingUser.difficultyLevel || 'beginner';
         const allLessons = await lessonsCollection.find({ 
-            difficultyLevel: userDifficultyLevel  // ✅ Filter here
+            difficultyLevel: userDifficultyLevel  // ✅ Filter by difficulty
         }).toArray();
-        
+         
         allLessons.forEach(lesson => {
             const normalizedTopic = lesson.topicName.trim();
             if (!lessonCounts[normalizedTopic]) {
@@ -1192,42 +1192,10 @@ app.put('/api/progress/:username', async (req, res) => {
             }
             lessonCounts[normalizedTopic]++;
         });
-    
+         
         console.log(`📚 Lesson counts for ${userDifficultyLevel}:`, lessonCounts);
-
-        // ✅ CALCULATE STREAK
-        let newStreak = existingUser.streak || 0;
-        if (newStreak === 0 && existingUser.streak === undefined) newStreak = 1;
-
-        const now = new Date();
-
-        if (existingUser.lastActivity) {
-            const lastActivity = new Date(existingUser.lastActivity);
-            const toDateString = (d) => d.toISOString().split('T')[0];
-            const todayStr = toDateString(now);
-            const lastActiveStr = toDateString(lastActivity);
-            const msPerDay = 1000 * 60 * 60 * 24;
-            const todayDate = new Date(todayStr);
-            const lastActiveDate = new Date(lastActiveStr);
-            const diffDays = Math.floor((todayDate - lastActiveDate) / msPerDay);
-
-            if (diffDays === 1) {
-                newStreak = (existingUser.streak || 0) + 1;
-                console.log(`🔥 Streak incremented to ${newStreak}`);
-            } else if (diffDays === 0) {
-                newStreak = existingUser.streak || 1;
-                console.log(`✓ Streak maintained at ${newStreak}`);
-            } else {
-                if (existingUser.streak > 0) {
-                    console.log(`❌ Streak broken. Reset to 1`);
-                }
-                newStreak = 1;
-            }
-        } else {
-            newStreak = 1;
-        }
-
-        // ✅ FIX: Process topics while PRESERVING existing data
+         
+        // ✅ Process topics while PRESERVING existing data
         if (progressData.topics && Array.isArray(progressData.topics)) {
             progressData.topics.forEach(topic => {
                 const totalLessonsForTopic = lessonCounts[topic.topicName] || 5;
@@ -1246,8 +1214,6 @@ app.put('/api/progress/:username', async (req, res) => {
                 }
             
                 // ✅ FIX: Auto-set tutorialCompleted when all lessons done
-                //    NEVER lower it from true → false (Unity sends false because it
-                //    never calls CompleteTutorial(), so we ignore incoming false values)
                 const allLessonsFinished = totalLessonsForTopic > 0 && finalLessonsCompleted >= totalLessonsForTopic;
                 const finalTutorialCompleted =
                     allLessonsFinished ||                         // auto-complete when lessons done
@@ -1290,6 +1256,7 @@ app.put('/api/progress/:username', async (req, res) => {
                 console.log(`   Puzzle: Easy=${finalDifficultyScores.easy}% Med=${finalDifficultyScores.medium}% Hard=${finalDifficultyScores.hard}% Mix=${finalDifficultyScores.mixed}%`);
                 console.log(`   Total: ${calculatedProgress.toFixed(1)}%`);
             
+                // ✅ FIX: PRESERVE quiz and code stats - never lose them
                 mergedProgress[topic.topicName] = {
                     tutorialCompleted: finalTutorialCompleted,
                     puzzleCompleted: completedDifficulties >= 4,
@@ -1309,14 +1276,14 @@ app.put('/api/progress/:username', async (req, res) => {
                     ),
                     lessonsCompleted: finalLessonsCompleted,
                     difficultyScores: finalDifficultyScores,
-                    // ✅ ADD THESE THREE — preserve fields Unity doesn't send
+                    
+                    // ✅ ADD THESE — preserve fields Unity doesn't send
                     lessonProgress:     existingTopic.lessonProgress     || 0,
                     quizProgress:       existingTopic.quizProgress       || 0,
                     lessonQuizScores:   existingTopic.lessonQuizScores   || {},
                     codeOperationStats: existingTopic.codeOperationStats || {}
                 };
             });
-            
         }
 
         const updateData = {
