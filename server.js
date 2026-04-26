@@ -204,7 +204,9 @@ app.get('/api/quizzes/:topicName/mixed', async (req, res) => {
 // Get all quizzes for a topic (no difficulty filter)
 app.get('/api/quizzes/:topicName', async (req, res) => {
     try {
-        const quizzes = await quizzesCollection.find({ topicName: req.params.topicName })
+        const name = req.params.topicName;
+        const variants = [name, name + 's', name.replace(/s$/i, '')];
+        const quizzes = await quizzesCollection.find({ topicName: { $in: variants } })
             .sort({ order: 1 })
             .toArray();
         res.json({ success: true, topicName: req.params.topicName, count: quizzes.length, quizzes });
@@ -1285,6 +1287,17 @@ app.put('/api/progress/:username', async (req, res) => {
                 };
             });
         }
+
+        const now = new Date();
+        const lastActivity = existingUser.lastActivity ? new Date(existingUser.lastActivity) : null;
+        const daysSinceLast = lastActivity
+            ? Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24))
+            : null;
+        const newStreak = daysSinceLast === 1
+            ? (existingUser.streak || 0) + 1
+            : daysSinceLast === 0
+                ? (existingUser.streak || 0)
+                : 1;
 
         const updateData = {
             progress: mergedProgress,
