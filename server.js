@@ -2187,8 +2187,13 @@ app.get('/api/progress/:username', async (req, res) => {
                     codeLabsCount: Object.values(topic.codeOperationStats || {}).filter(c => c.successes > 0).length,
                     // ✅ ADD THESE TWO — send full nested data so C# and HTML can read them
                     lessonQuizScores:   topic.lessonQuizScores   || {},
-                    codeOperationStats: topic.codeOperationStats || {}
-                });
+                    codeOperationStats: topic.codeOperationStats || {},
+                    lessonOnlyProgress: (() => {
+                        const total = lessonCounts[topicName] || 0;
+                        const done  = topic.lessonsCompleted  || 0;
+                        return total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
+                    })(),
+                    });
             });
         }
 
