@@ -795,7 +795,7 @@
 
     function renderTopicPills(usage) {
       const container = document.getElementById('topicPills');
-      const topics = ['Arrays', 'Stacks', 'Queue', 'LinkedLists', 'Graph', 'Trees'];
+      const topics = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
       
       container.innerHTML = topics.map(topic => {
         const total = Object.values(usage[topic] || {}).reduce((s, x) => s + x.totalPicks, 0);
