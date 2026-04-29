@@ -1283,7 +1283,9 @@ app.put('/api/progress/:username', async (req, res) => {
                     lessonProgress:     existingTopic.lessonProgress     || 0,
                     quizProgress:       existingTopic.quizProgress       || 0,
                     lessonQuizScores:   existingTopic.lessonQuizScores   || {},
-                    codeOperationStats: existingTopic.codeOperationStats || {}
+                    codeOperationStats: existingTopic.codeOperationStats || {},
+                    scenarioUsage:      existingTopic.scenarioUsage      || {},
+    lastScenario:       existingTopic.lastScenario       || null
                 };
             });
         }
