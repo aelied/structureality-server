@@ -312,13 +312,13 @@
             const topics = {};
 
             lessons.forEach(lesson => {
-                if (!topics[lesson.topicName]) {
-                    topics[lesson.topicName] = 0;
-                }
-                topics[lesson.topicName]++;
-            });
+    // Normalize topic names
+    const topic = lesson.topicName === 'Queue' ? 'Queues' : lesson.topicName;
+    if (!topics[topic]) topics[topic] = 0;
+    topics[topic]++;
+});
 
-            const topicNames = ['Arrays', 'Queue', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
+const topicNames = ['Arrays', 'Queues', 'Stacks', 'LinkedLists', 'Trees', 'Graphs'];
             const colors = ['indigo', 'blue', 'green', 'purple', 'yellow', 'red'];
 
             let html = '';
