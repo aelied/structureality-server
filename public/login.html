@@ -185,11 +185,16 @@
 
       // Check if already logged in
       window.addEventListener('load', () => {
-        const adminUser = localStorage.getItem('adminUser');
-        if (adminUser) {
-          window.location.href = 'index.html';
-        }
-      });
+  const adminUser = localStorage.getItem('adminUser');
+  if (adminUser && adminUser !== 'undefined') {
+    try {
+      JSON.parse(adminUser); // Make sure it's valid JSON
+      window.location.href = 'index.html';
+    } catch (e) {
+      localStorage.removeItem('adminUser'); // Clear bad data, stay on login
+    }
+  }
+});
     </script>
   </body>
 </html>
