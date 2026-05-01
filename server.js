@@ -925,13 +925,20 @@ app.post('/api/users', async (req, res) => {
         }
 
         const result = await usersCollection.insertOne(userData);
-        console.log(`✅ New user registered: ${userData.username} (Level: ${userData.difficultyLevel}, Instructor: ${userData.instructor || 'None'})`);
+console.log(`✅ New user registered: ${userData.username} ...`);
 
-        res.status(201).json({
-            success: true,
-            message: 'User registered successfully',
-            userId: result.insertedId
-        });
+// Send verification email (non-blocking — don't fail registration if email fails)
+try {
+    await sendVerificationEmail(userData);
+} catch (emailErr) {
+    console.error('⚠️ Verification email failed (account still created):', emailErr.message);
+}
+
+res.status(201).json({
+    success: true,
+    message: 'User registered successfully',
+    userId: result.insertedId
+});
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({
@@ -979,6 +986,12 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
+        if (!user.isVerified) {
+            return res.status(403).json({
+                success: false,
+                error: `Email not verified: ${user.email}`
+            });
+        }
         // Update last login
         await usersCollection.updateOne(
             { _id: user._id },
