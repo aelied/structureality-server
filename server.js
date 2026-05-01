@@ -3455,6 +3455,140 @@ app.post('/api/admin/seed-scenario-data', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
+
+
+// ==================== EMAIL VERIFICATION ====================
+
+// In-memory store (same pattern as resetTokens)
+const verificationTokens = new Map();
+
+// Called automatically after POST /api/users succeeds — send verification email
+async function sendVerificationEmail(user) {
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiry = Date.now() + 86400000; // 24 hours
+
+    verificationTokens.set(token, {
+        username: user.username,
+        email: user.email,
+        expiry: expiry
+    });
+
+    const verifyLink = `https://structureality-admin.onrender.com/api/verify-email/${token}`;
+
+    const msg = {
+        to: user.email,
+        from: {
+            email: process.env.SENDGRID_FROM_EMAIL || 'quelangliezl@gmail.com',
+            name: 'StructuReality'
+        },
+        subject: 'StructuReality — Please Verify Your Email',
+        html: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                <div style="text-align:center;padding:20px;background:linear-gradient(135deg,#7B5EE8,#5ba8fa);border-radius:10px 10px 0 0;">
+                    <h1 style="color:white;margin:0;font-size:26px;">✉️ Verify Your Email</h1>
+                </div>
+                <div style="background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px;">
+                    <p style="font-size:16px;color:#333;">Hello <strong>${user.name || user.username}</strong>,</p>
+                    <p style="font-size:14px;color:#666;line-height:1.6;">
+                        Thanks for signing up for StructuReality! Click the button below to verify your email and activate your account.
+                    </p>
+                    <div style="text-align:center;margin:30px 0;">
+                        <a href="${verifyLink}"
+                           style="background:linear-gradient(135deg,#7B5EE8,#5ba8fa);color:white;padding:14px 40px;
+                                  text-decoration:none;border-radius:8px;display:inline-block;
+                                  font-weight:bold;font-size:16px;">
+                            Verify My Email
+                        </a>
+                    </div>
+                    <p style="font-size:12px;color:#999;margin-top:20px;">
+                        ⏱️ This link expires in <strong>24 hours</strong><br>
+                        🔒 If you didn't create this account, ignore this email.
+                    </p>
+                </div>
+            </div>
+        `
+    };
+
+    await sgMail.send(msg);
+    console.log(`✅ Verification email sent to: ${user.email}`);
+    return token;
+}
+
+// GET — clicking the link in the email lands here
+app.get('/api/verify-email/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const data = verificationTokens.get(token);
+
+        if (!data) {
+            return res.send(`<html><body style="font-family:Arial;text-align:center;padding:60px;">
+                <h2>❌ Invalid or Expired Link</h2>
+                <p>This verification link is invalid or has already been used.</p>
+                <p>Please open StructuReality and request a new verification email.</p>
+            </body></html>`);
+        }
+
+        if (Date.now() > data.expiry) {
+            verificationTokens.delete(token);
+            return res.send(`<html><body style="font-family:Arial;text-align:center;padding:60px;">
+                <h2>⏰ Link Expired</h2>
+                <p>This link expired after 24 hours.</p>
+                <p>Please open StructuReality and tap "Resend Verification Email".</p>
+            </body></html>`);
+        }
+
+        // Mark user as verified in MongoDB
+        await usersCollection.updateOne(
+            { username: data.username },
+            { $set: { isVerified: true, verifiedAt: new Date().toISOString() } }
+        );
+
+        verificationTokens.delete(token);
+        console.log(`✅ Email verified for: ${data.username}`);
+
+        res.send(`<html><body style="font-family:Arial;text-align:center;padding:60px;
+                  background:linear-gradient(135deg,#c8c0f0,#7aacf8);min-height:100vh;">
+            <div style="background:white;border-radius:20px;padding:40px;max-width:400px;margin:0 auto;
+                        box-shadow:0 8px 32px rgba(0,0,0,0.1);">
+                <div style="font-size:64px;margin-bottom:16px;">🎉</div>
+                <h2 style="color:#1a1a3e;margin-bottom:8px;">Email Verified!</h2>
+                <p style="color:#7A7A9A;">Your account is now active. Open StructuReality and log in to start learning!</p>
+            </div>
+        </body></html>`);
+
+    } catch (error) {
+        console.error('❌ Verify email error:', error);
+        res.status(500).send('<h2>Server error. Please try again.</h2>');
+    }
+});
+
+// POST — resend verification email
+app.post('/api/resend-verification', async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, error: 'Email required' });
+
+        const user = await usersCollection.findOne({ email });
+        if (!user) return res.status(404).json({ success: false, error: 'User not found' });
+        if (user.isVerified) return res.json({ success: false, error: 'Account is already verified' });
+
+        await sendVerificationEmail(user);
+        res.json({ success: true, message: 'Verification email resent' });
+
+    } catch (error) {
+        console.error('❌ Resend verification error:', error);
+        res.status(500).json({ success: false, error: 'Failed to send email' });
+    }
+});
+
+// Clean up expired verification tokens every 10 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [token, data] of verificationTokens.entries()) {
+        if (now > data.expiry) verificationTokens.delete(token);
+    }
+}, 600000);
+
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
