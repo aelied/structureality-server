@@ -3401,6 +3401,24 @@ app.get('/api/scenarios/leaderboard', async (req, res) => {
     }
 });
 
+// ==================== ONE-TIME MIGRATION: Mark all existing users as verified ====================
+app.post('/api/admin/verify-all-users', async (req, res) => {
+    try {
+        const result = await usersCollection.updateMany(
+            { isVerified: { $ne: true } },  // only touch unverified ones
+            { $set: { isVerified: true, verifiedAt: new Date().toISOString() } }
+        );
+
+        console.log(`✅ Verified ${result.modifiedCount} existing users`);
+        res.json({
+            success: true,
+            message: `${result.modifiedCount} users marked as verified`
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // ==================== SEED DUMMY SCENARIO DATA ====================
 app.post('/api/admin/seed-scenario-data', async (req, res) => {
     try {
