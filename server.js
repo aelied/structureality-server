@@ -1627,7 +1627,7 @@ app.put('/api/progress/:username/lessons', async (req, res) => {
 
         await usersCollection.updateOne({ username }, {
             $set: {
-                [`progress.${topicName}.lessonsCompleted`]: lessonsCount,
+                [`progress.${topicName}.lessonsCompleted`]: finalCount,
                 [`progress.${topicName}.lastAccessed`]: new Date().toISOString(),
                 [`progress.${topicName}.tutorialCompleted`]: finalTutorialCompleted  // ✅ FIXED
             }
