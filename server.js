@@ -2194,9 +2194,7 @@ app.get('/api/progress/:username', async (req, res) => {
                     quizProgress:       topic.quizProgress      || 0,
                     lastAccessed:       topic.lastAccessed      || '',
                     timeSpent:          topic.timeSpent         || 0,
-                    lessonsCompleted: lessonCounts[topicName] > 0
-                        ? Math.min(topic.lessonsCompleted || 0, lessonCounts[topicName])
-                        : (topic.lessonsCompleted || 0),
+                    lessonsCompleted: topic.lessonsCompleted || 0,
                     difficultyScores:   topic.difficultyScores  || { easy: 0, medium: 0, hard: 0, mixed: 0 },
                     lessonQuizCount: Object.values(topic.lessonQuizScores || {}).filter(s => s > 0).length,
                     codeLabsCount: Object.values(topic.codeOperationStats || {}).filter(c => c.successes > 0).length,
