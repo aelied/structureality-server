@@ -52,8 +52,6 @@
     @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: #6b7280; }
     .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
-
-    /* Delete Modal */
     #deleteModal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.55); z-index: 400;
@@ -133,6 +131,92 @@
       transition: all 0.2s; margin-left: 6px;
     }
     .btn-delete-user:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
+    .checklist-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: #dc2626; }
+    .checklist-item i { color: #f87171; width: 14px; flex-shrink: 0; }
+    .cascade-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      background: #fef2f2; border: 1px solid #fca5a5;
+      color: #b91c1c; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; margin-left: 6px;
+    }
+    /* Add Admin Modal */
+    #addAdminModal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55); z-index: 400;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+    #addAdminModal.show { display: flex; }
+    .add-admin-content {
+      background: white; border-radius: 20px; width: 90%;
+      max-width: 480px; overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.25);
+      animation: addAdminIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1);
+    }
+    @keyframes addAdminIn {
+      from { transform: scale(0.88) translateY(24px); opacity: 0; }
+      to   { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    .add-admin-header {
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+      padding: 28px 28px 20px; text-align: center;
+      border-bottom: 1px solid #c7d2fe;
+    }
+    .add-admin-icon-wrap {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #4338ca);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 24px rgba(99,102,241,0.35);
+    }
+    .add-admin-body { padding: 24px 28px 28px; }
+    .form-field { margin-bottom: 16px; }
+    .form-field label { display: block; font-size: 11px; font-weight: 700; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
+    .form-field input, .form-field select {
+      width: 100%; padding: 11px 14px;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 13px; font-family: 'Poppins', sans-serif; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s; color: #1f2937;
+      box-sizing: border-box;
+    }
+    .form-field input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
+    .form-field input.field-error { border-color: #ef4444; }
+    .field-error-msg { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .btn-add-admin-submit {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #6366f1, #4338ca);
+      color: white; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.4); letter-spacing: 0.5px;
+    }
+    .btn-add-admin-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+    .btn-add-admin-submit:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-add-admin-submit:not(:disabled):active { transform: translateY(0); }
+    .btn-add-admin-cancel {
+      width: 100%; padding: 11px; background: transparent; color: #6b7280;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; margin-top: 10px;
+    }
+    .btn-add-admin-cancel:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
+    .password-toggle { position: relative; }
+    .password-toggle input { padding-right: 44px; }
+    .toggle-eye {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: #9ca3af; font-size: 14px; transition: color 0.2s;
+    }
+    .toggle-eye:hover { color: #6366f1; }
+    .role-pill {
+      flex: 1; padding: 10px; border-radius: 12px;
+      font-size: 13px; font-weight: 600; border: 2px solid;
+      cursor: pointer; transition: all 0.2s; background: white;
+    }
+    .role-pill-admin-active   { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
+    .role-pill-admin-inactive { border-color: #e5e7eb; color: #6b7280; }
+    .role-pill-inst-active    { border-color: #10b981; background: #ecfdf5; color: #065f46; }
+    .role-pill-inst-inactive  { border-color: #e5e7eb; color: #6b7280; }
   </style>
 </head>
 <body class="bg-gray-100">
@@ -167,11 +251,15 @@
         <h2 class="text-2xl font-bold text-gray-800">Users</h2>
         <p class="text-sm text-gray-500">Manage and analyze user progress</p>
       </div>
-      <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-3">
         <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
           <span class="text-gray-500">API:</span>
           <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
         </div>
+        <button onclick="openAddAdminModal()"
+          class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold shadow-sm">
+          <i class="fas fa-user-shield"></i> Add Admin
+        </button>
         <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" onclick="window.location.href='profile.html'">
           <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
             <i class="fas fa-user text-indigo-700 text-sm"></i>
@@ -267,7 +355,10 @@
           <i class="fas fa-user-times text-white text-2xl"></i>
         </div>
         <h2 class="text-xl font-bold text-red-800">Delete User Account</h2>
-        <p class="text-sm text-red-600 mt-1">This action is <strong>permanent</strong> and cannot be undone</p>
+        <p class="text-sm text-red-600 mt-1">
+          This action is <strong>permanent</strong> and cannot be undone
+          <span class="cascade-badge"><i class="fas fa-database"></i> Full Data Wipe</span>
+        </p>
       </div>
       <div class="delete-modal-body">
         <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200">
@@ -280,13 +371,15 @@
           <i class="fas fa-exclamation-triangle text-red-400 text-lg ml-auto flex-shrink-0"></i>
         </div>
         <div class="bg-red-50 rounded-xl p-4 mb-5 border border-red-100">
-          <p class="text-xs font-semibold text-red-700 mb-2 uppercase tracking-wide">This will permanently delete:</p>
-          <ul class="space-y-1.5">
-            <li class="flex items-center gap-2 text-xs text-red-600"><i class="fas fa-times-circle text-red-400 w-3"></i> User account &amp; profile</li>
-            <li class="flex items-center gap-2 text-xs text-red-600"><i class="fas fa-times-circle text-red-400 w-3"></i> All quiz scores &amp; progress</li>
-            <li class="flex items-center gap-2 text-xs text-red-600"><i class="fas fa-times-circle text-red-400 w-3"></i> Scenario usage history</li>
-            <li class="flex items-center gap-2 text-xs text-red-600"><i class="fas fa-times-circle text-red-400 w-3"></i> All associated data</li>
-          </ul>
+          <p class="text-xs font-semibold text-red-700 mb-2 uppercase tracking-wide">
+            <i class="fas fa-database mr-1"></i> The following data will be permanently wiped:
+          </p>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> User account &amp; profile</div>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> All progress data (lessons, quizzes, topics)</div>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> All quiz scores &amp; difficulty scores</div>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> AR scenario usage &amp; history</div>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> Code challenge statistics</div>
+          <div class="checklist-item"><i class="fas fa-times-circle"></i> Streak &amp; activity records</div>
         </div>
         <div class="mb-2">
           <label class="block text-sm font-semibold text-gray-700 mb-2">Type the confirmation phrase to continue:</label>
@@ -298,10 +391,79 @@
         </div>
         <p class="text-xs text-center mt-2 mb-4 font-medium" id="deleteInputStatus" style="color:#9ca3af;min-height:16px;"></p>
         <button id="btnConfirmDelete" class="btn-delete-confirm" disabled onclick="confirmDelete()">
-          <i class="fas fa-trash-alt mr-2"></i> Permanently Delete User
+          <i class="fas fa-trash-alt mr-2"></i> Permanently Delete &amp; Wipe All Data
         </button>
         <button class="btn-delete-cancel" onclick="closeDeleteModal()">
           <i class="fas fa-arrow-left mr-2"></i> Cancel, keep this user
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Admin / Instructor Modal -->
+  <div id="addAdminModal">
+    <div class="add-admin-content">
+      <div class="add-admin-header">
+        <div class="add-admin-icon-wrap">
+          <i class="fas fa-user-shield text-white text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-indigo-900">Add Admin / Instructor</h2>
+        <p class="text-sm text-indigo-400 mt-1">Create a new portal account</p>
+      </div>
+      <div class="add-admin-body">
+
+        <!-- Role pills -->
+        <div class="flex gap-3 mb-4">
+          <button id="rolePillAdmin" class="role-pill role-pill-admin-active" onclick="selectRole('admin')">
+            <i class="fas fa-shield-alt mr-1.5"></i> Admin
+          </button>
+          <button id="rolePillInstructor" class="role-pill role-pill-inst-inactive" onclick="selectRole('instructor')">
+            <i class="fas fa-chalkboard-teacher mr-1.5"></i> Instructor
+          </button>
+        </div>
+
+        <!-- Role description -->
+        <div class="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 mb-4 border border-gray-100 flex items-start gap-2">
+          <i class="fas fa-info-circle text-indigo-400 mt-0.5 flex-shrink-0"></i>
+          <span id="roleDescText">Admins have full access to all portal features including analytics, user management, and settings.</span>
+        </div>
+
+        <!-- Fields -->
+        <div class="form-row">
+          <div class="form-field">
+            <label>Full Name</label>
+            <input type="text" id="adminName" placeholder="e.g. Jane Smith" autocomplete="off" oninput="clearFieldError('adminName','errAdminName')" />
+            <p class="field-error-msg" id="errAdminName">Name is required</p>
+          </div>
+          <div class="form-field">
+            <label>Username</label>
+            <input type="text" id="adminUsername" placeholder="e.g. jsmith" autocomplete="off" oninput="clearFieldError('adminUsername','errAdminUsername')" />
+            <p class="field-error-msg" id="errAdminUsername">Username is required</p>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label>Email Address</label>
+          <input type="email" id="adminEmail" placeholder="e.g. jane@school.edu" autocomplete="off" oninput="clearFieldError('adminEmail','errAdminEmail')" />
+          <p class="field-error-msg" id="errAdminEmail">Valid email is required</p>
+        </div>
+
+        <div class="form-field">
+          <label>Password</label>
+          <div class="password-toggle">
+            <input type="password" id="adminPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="clearFieldError('adminPassword','errAdminPassword')" />
+            <i class="fas fa-eye toggle-eye" id="eyeIcon" onclick="toggleAdminPw()"></i>
+          </div>
+          <p class="field-error-msg" id="errAdminPassword">Password must be at least 8 characters</p>
+        </div>
+
+        <div id="addAdminStatus" class="hidden text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium"></div>
+
+        <button id="btnSubmitAdmin" class="btn-add-admin-submit" onclick="submitAddAdmin()">
+          <i class="fas fa-user-plus mr-2"></i> Create Account
+        </button>
+        <button class="btn-add-admin-cancel" onclick="closeAddAdminModal()">
+          <i class="fas fa-times mr-2"></i> Cancel
         </button>
       </div>
     </div>
@@ -322,6 +484,7 @@
     };
 
     let allUsers = [], filteredUsers = [], pendingDeleteUser = null;
+    let selectedAdminRole = 'admin';
 
     function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
     function checkAuth() {
@@ -403,13 +566,13 @@
           </div></td>
           <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-1">
             <button onclick="openUserModal('${user.username}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold">View Analytics</button>
-            <button onclick="openDeleteModal('${user.username}')" class="btn-delete-user" title="Delete user"><i class="fas fa-trash-alt"></i></button>
+            <button onclick="openDeleteModal('${user.username}')" class="btn-delete-user" title="Delete user and all data"><i class="fas fa-trash-alt"></i></button>
           </div></td>
         </tr>`;
       }).join('');
     }
 
-    // ── DELETE ──
+    // ══ DELETE ══════════════════════════════════════════════════════
     function buildConfirmPhrase(user) { return 'DELETE ' + (user.name || user.username).toUpperCase(); }
 
     function openDeleteModal(username) {
@@ -457,6 +620,17 @@
       btn.disabled = !isMatch;
     }
 
+    /**
+     * Cascading delete explanation:
+     * All user data — progress, lesson scores, quiz scores, scenario usage,
+     * code challenge stats, streak — is stored as embedded sub-documents
+     * inside the single user document in MongoDB.
+     * DELETE /api/users/:username removes that document entirely, which
+     * constitutes a full cascading wipe of all associated data in one operation.
+     *
+     * Additionally, if this user was an instructor, DELETE /api/admins/:username
+     * removes their admin record and sets students' instructor field to null.
+     */
     async function confirmDelete() {
       if (!pendingDeleteUser) return;
       const phrase = buildConfirmPhrase(pendingDeleteUser);
@@ -467,21 +641,141 @@
         showToast('Confirmation phrase does not match', 'error'); return;
       }
       const username = pendingDeleteUser.username;
-      closeDeleteModal(); showLoading(true);
+      closeDeleteModal();
+      showLoading(true);
       try {
+        // Step 1 — delete user document (wipes ALL embedded data in one shot)
         const res = await fetch(SERVER_URL + '/api/users/' + username, { method: 'DELETE' });
         const data = await res.json();
-        if (data.success) {
-          allUsers = allUsers.filter(u => u.username !== username);
-          filteredUsers = filteredUsers.filter(u => u.username !== username);
-          renderUsersTable();
-          showToast('User "' + username + '" permanently deleted', 'success');
-        } else { throw new Error(data.error || 'Delete failed'); }
-      } catch (err) { showToast('Failed to delete user: ' + err.message, 'error'); }
-      finally { showLoading(false); }
+        if (!data.success) throw new Error(data.error || 'Delete failed');
+
+        // Step 2 — best-effort: remove instructor record & unlink their students
+        // (harmless 404 if this user was never an instructor)
+        try {
+          await fetch(SERVER_URL + '/api/admins/' + username, { method: 'DELETE' });
+        } catch (_) { /* not an instructor — safe to ignore */ }
+
+        allUsers = allUsers.filter(u => u.username !== username);
+        filteredUsers = filteredUsers.filter(u => u.username !== username);
+        renderUsersTable();
+        showToast(`"${username}" and all associated data permanently deleted`, 'success');
+      } catch (err) {
+        showToast('Failed to delete user: ' + err.message, 'error');
+      } finally {
+        showLoading(false);
+      }
     }
 
-    // ── USER MODAL ──
+    // ══ ADD ADMIN ════════════════════════════════════════════════
+    function openAddAdminModal() {
+      ['adminName','adminUsername','adminEmail','adminPassword'].forEach(id => {
+        document.getElementById(id).value = '';
+        document.getElementById(id).classList.remove('field-error');
+      });
+      ['errAdminName','errAdminUsername','errAdminEmail','errAdminPassword'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+      });
+      const status = document.getElementById('addAdminStatus');
+      status.className = 'hidden'; status.textContent = '';
+      document.getElementById('btnSubmitAdmin').disabled = false;
+      document.getElementById('btnSubmitAdmin').innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
+      document.getElementById('adminPassword').type = 'password';
+      document.getElementById('eyeIcon').className = 'fas fa-eye toggle-eye';
+      selectRole('admin');
+      document.getElementById('addAdminModal').classList.add('show');
+      setTimeout(() => document.getElementById('adminName').focus(), 350);
+    }
+
+    function closeAddAdminModal() { document.getElementById('addAdminModal').classList.remove('show'); }
+
+    function selectRole(role) {
+      selectedAdminRole = role;
+      const pa = document.getElementById('rolePillAdmin');
+      const pi = document.getElementById('rolePillInstructor');
+      const dt = document.getElementById('roleDescText');
+      if (role === 'admin') {
+        pa.className = 'role-pill role-pill-admin-active';
+        pi.className = 'role-pill role-pill-inst-inactive';
+        dt.textContent = 'Admins have full access to all portal features including analytics, user management, and settings.';
+      } else {
+        pi.className = 'role-pill role-pill-inst-active';
+        pa.className = 'role-pill role-pill-admin-inactive';
+        dt.textContent = 'Instructors can view and manage their assigned students\' progress. They do not have access to global analytics or admin settings.';
+      }
+    }
+
+    function toggleAdminPw() {
+      const inp = document.getElementById('adminPassword');
+      const ico = document.getElementById('eyeIcon');
+      if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fas fa-eye-slash toggle-eye'; }
+      else { inp.type = 'password'; ico.className = 'fas fa-eye toggle-eye'; }
+    }
+
+    function clearFieldError(inputId, errId) {
+      document.getElementById(inputId).classList.remove('field-error');
+      document.getElementById(errId).style.display = 'none';
+    }
+    function showFieldError(inputId, errId, msg) {
+      document.getElementById(inputId).classList.add('field-error');
+      const e = document.getElementById(errId);
+      if (msg) e.textContent = msg;
+      e.style.display = 'block';
+    }
+
+    function validateAdminForm() {
+      let ok = true;
+      const name = document.getElementById('adminName').value.trim();
+      const user = document.getElementById('adminUsername').value.trim();
+      const mail = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      if (!name) { showFieldError('adminName','errAdminName','Full name is required'); ok=false; }
+      else clearFieldError('adminName','errAdminName');
+      if (!user) { showFieldError('adminUsername','errAdminUsername','Username is required'); ok=false; }
+      else if (user.length < 3) { showFieldError('adminUsername','errAdminUsername','At least 3 characters'); ok=false; }
+      else clearFieldError('adminUsername','errAdminUsername');
+      if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { showFieldError('adminEmail','errAdminEmail','Enter a valid email'); ok=false; }
+      else clearFieldError('adminEmail','errAdminEmail');
+      if (!pass || pass.length < 8) { showFieldError('adminPassword','errAdminPassword','Min. 8 characters'); ok=false; }
+      else clearFieldError('adminPassword','errAdminPassword');
+      return ok;
+    }
+
+    async function submitAddAdmin() {
+      if (!validateAdminForm()) return;
+      const btn    = document.getElementById('btnSubmitAdmin');
+      const status = document.getElementById('addAdminStatus');
+      const name = document.getElementById('adminName').value.trim();
+      const user = document.getElementById('adminUsername').value.trim();
+      const mail = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating…';
+      status.className = 'hidden';
+      try {
+        // Uses the existing create-instructor endpoint which accepts a `role` field
+        const res = await fetch(SERVER_URL + '/api/admin/create-instructor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: user, password: pass, email: mail, name, role: selectedAdminRole })
+        });
+        const data = await res.json();
+        if (data.success) {
+          const label = selectedAdminRole === 'admin' ? 'Admin' : 'Instructor';
+          status.textContent = '✓ ' + label + ' account "' + user + '" created successfully!';
+          status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
+          btn.innerHTML = '<i class="fas fa-check mr-2"></i> Created!';
+          showToast(label + ' "' + user + '" added', 'success');
+          setTimeout(() => closeAddAdminModal(), 1800);
+        } else { throw new Error(data.error || 'Creation failed'); }
+      } catch (err) {
+        status.textContent = '✗ ' + err.message;
+        status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-red-50 border border-red-200 text-red-700';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
+      }
+    }
+
+    // ══ USER ANALYTICS MODAL ════════════════════════════════════
     async function openUserModal(username) {
       showLoading(true);
       try {
@@ -573,10 +867,14 @@
       await loadUsers();
     });
 
-    document.getElementById('userModal').addEventListener('click', e => { if (e.target.id === 'userModal') closeModal(); });
-    document.getElementById('deleteModal').addEventListener('click', e => { if (e.target.id === 'deleteModal') closeDeleteModal(); });
+    document.getElementById('userModal').addEventListener('click',    e => { if (e.target.id === 'userModal')    closeModal(); });
+    document.getElementById('deleteModal').addEventListener('click',  e => { if (e.target.id === 'deleteModal')  closeDeleteModal(); });
+    document.getElementById('addAdminModal').addEventListener('click',e => { if (e.target.id === 'addAdminModal') closeAddAdminModal(); });
     document.getElementById('deleteConfirmInput').addEventListener('keydown', e => {
       if (e.key === 'Enter' && !document.getElementById('btnConfirmDelete').disabled) confirmDelete();
+    });
+    document.getElementById('adminPassword').addEventListener('keydown', e => {
+      if (e.key === 'Enter') submitAddAdmin();
     });
   </script>
 </body>
