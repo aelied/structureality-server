@@ -399,7 +399,7 @@
         <div class="add-admin-icon-wrap">
           <i class="fas fa-user-shield text-white text-2xl"></i>
         </div>
-        <h2 class="text-xl font-bold text-indigo-900">Add Admin / Instructor</h2>
+        <h2 class="text-xl font-bold text-indigo-900">Add Admin</h2>
         <p class="text-sm text-indigo-400 mt-1">Create a new admin account</p>
       </div>
       <div class="add-admin-body">
@@ -722,7 +722,7 @@
         });
         const data = await res.json();
         if (data.success) {
-          const label = selectedAdminRole === 'admin' ? 'Admin' : 'Instructor';
+          
           status.textContent = '✓ Admin account "' + user + '" created successfully!';
                     status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
           btn.innerHTML = '<i class="fas fa-check mr-2"></i> Created!';
