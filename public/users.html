@@ -208,15 +208,7 @@
       cursor: pointer; color: #9ca3af; font-size: 14px; transition: color 0.2s;
     }
     .toggle-eye:hover { color: #6366f1; }
-    .role-pill {
-      flex: 1; padding: 10px; border-radius: 12px;
-      font-size: 13px; font-weight: 600; border: 2px solid;
-      cursor: pointer; transition: all 0.2s; background: white;
-    }
-    .role-pill-admin-active   { border-color: #6366f1; background: #eef2ff; color: #4338ca; }
-    .role-pill-admin-inactive { border-color: #e5e7eb; color: #6b7280; }
-    .role-pill-inst-active    { border-color: #10b981; background: #ecfdf5; color: #065f46; }
-    .role-pill-inst-inactive  { border-color: #e5e7eb; color: #6b7280; }
+  
   </style>
 </head>
 <body class="bg-gray-100">
@@ -408,26 +400,11 @@
           <i class="fas fa-user-shield text-white text-2xl"></i>
         </div>
         <h2 class="text-xl font-bold text-indigo-900">Add Admin / Instructor</h2>
-        <p class="text-sm text-indigo-400 mt-1">Create a new portal account</p>
+        <p class="text-sm text-indigo-400 mt-1">Create a new admin account</p>
       </div>
       <div class="add-admin-body">
 
-        <!-- Role pills -->
-        <div class="flex gap-3 mb-4">
-          <button id="rolePillAdmin" class="role-pill role-pill-admin-active" onclick="selectRole('admin')">
-            <i class="fas fa-shield-alt mr-1.5"></i> Admin
-          </button>
-          <button id="rolePillInstructor" class="role-pill role-pill-inst-inactive" onclick="selectRole('instructor')">
-            <i class="fas fa-chalkboard-teacher mr-1.5"></i> Instructor
-          </button>
-        </div>
-
-        <!-- Role description -->
-        <div class="text-xs text-gray-500 bg-gray-50 rounded-lg p-3 mb-4 border border-gray-100 flex items-start gap-2">
-          <i class="fas fa-info-circle text-indigo-400 mt-0.5 flex-shrink-0"></i>
-          <span id="roleDescText">Admins have full access to all portal features including analytics, user management, and settings.</span>
-        </div>
-
+       
         <!-- Fields -->
         <div class="form-row">
           <div class="form-field">
@@ -484,8 +461,7 @@
     };
 
     let allUsers = [], filteredUsers = [], pendingDeleteUser = null;
-    let selectedAdminRole = 'admin';
-
+    
     function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
     function checkAuth() {
       const raw = localStorage.getItem('adminUser');
@@ -681,28 +657,14 @@
       document.getElementById('btnSubmitAdmin').innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
       document.getElementById('adminPassword').type = 'password';
       document.getElementById('eyeIcon').className = 'fas fa-eye toggle-eye';
-      selectRole('admin');
+      
       document.getElementById('addAdminModal').classList.add('show');
       setTimeout(() => document.getElementById('adminName').focus(), 350);
     }
 
     function closeAddAdminModal() { document.getElementById('addAdminModal').classList.remove('show'); }
 
-    function selectRole(role) {
-      selectedAdminRole = role;
-      const pa = document.getElementById('rolePillAdmin');
-      const pi = document.getElementById('rolePillInstructor');
-      const dt = document.getElementById('roleDescText');
-      if (role === 'admin') {
-        pa.className = 'role-pill role-pill-admin-active';
-        pi.className = 'role-pill role-pill-inst-inactive';
-        dt.textContent = 'Admins have full access to all portal features including analytics, user management, and settings.';
-      } else {
-        pi.className = 'role-pill role-pill-inst-active';
-        pa.className = 'role-pill role-pill-admin-inactive';
-        dt.textContent = 'Instructors can view and manage their assigned students\' progress. They do not have access to global analytics or admin settings.';
-      }
-    }
+    
 
     function toggleAdminPw() {
       const inp = document.getElementById('adminPassword');
@@ -756,15 +718,15 @@
         const res = await fetch(SERVER_URL + '/api/admin/create-instructor', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: user, password: pass, email: mail, name, role: selectedAdminRole })
+          body: JSON.stringify({ username: user, password: pass, email: mail, name, role: 'admin' })
         });
         const data = await res.json();
         if (data.success) {
           const label = selectedAdminRole === 'admin' ? 'Admin' : 'Instructor';
-          status.textContent = '✓ ' + label + ' account "' + user + '" created successfully!';
-          status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
+          status.textContent = '✓ Admin account "' + user + '" created successfully!';
+                    status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
           btn.innerHTML = '<i class="fas fa-check mr-2"></i> Created!';
-          showToast(label + ' "' + user + '" added', 'success');
+          showToast('Admin "' + user + '" added', 'success');
           setTimeout(() => closeAddAdminModal(), 1800);
         } else { throw new Error(data.error || 'Creation failed'); }
       } catch (err) {
