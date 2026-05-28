@@ -536,10 +536,17 @@
     async function loadUsers() {
       showLoading(true);
       try {
-        const res  = await fetch(SERVER_URL + '/api/progress');
-        const data = await res.json();
+        const [progressRes, usersRes] = await Promise.all([
+    fetch(SERVER_URL + '/api/progress'),
+    fetch(SERVER_URL + '/api/users')
+]);
+const usersData = await usersRes.json();
+const usersMap = {};
+if (usersData.success) usersData.users.forEach(u => usersMap[u.username] = u);
+const res = progressRes;        const data = await res.json();
         if (data.success) {
           allUsers = data.data || []; filteredUsers = [...allUsers];
+          allUsers = allUsers.map(u => ({ ...usersMap[u.username], ...u }));
           renderUsersTable();
           document.getElementById('apiStatus').textContent  = 'connected';
           document.getElementById('apiStatus').className    = 'font-medium text-green-500';
@@ -583,8 +590,13 @@
       const start = (currentPage - 1) * PAGE_SIZE;
       const pageUsers = filteredUsers.slice(start, start + PAGE_SIZE);
       tbody.innerHTML = pageUsers.map(user => {
-        const joined = user.registerDate ? new Date(user.registerDate).toLocaleDateString() : user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
-        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+        const joined = user.registerDate 
+    ? new Date(user.registerDate).toLocaleDateString() 
+    : user.createdAt 
+        ? new Date(user.createdAt).toLocaleDateString() 
+        : user.lastUpdated
+            ? new Date(user.lastUpdated).toLocaleDateString()
+            : '—';        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
         const topicCount = (user.topics || []).length;
         let totalQuizzes = 0;
         (user.topics || []).forEach(t => { totalQuizzes += t.lessonQuizCount || 0; });
