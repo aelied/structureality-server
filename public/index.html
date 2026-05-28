@@ -252,8 +252,11 @@
         `;
 
             users.forEach(user => {
-                const completedTopics = user.topics?.filter(t => t.puzzleCompleted).length || 0;
-                const progressPercent = Math.round((completedTopics / 6) * 100);
+                const progressPercent = user.topics && user.topics.length > 0
+    ? Math.round(
+        user.topics.reduce((sum, t) => sum + (t.progressPercentage || 0), 0) / user.topics.length
+      )
+    : 0;
 
                 const isActive = user.topics?.some(t => {
                     const lastAccess = new Date(t.lastAccessed);
