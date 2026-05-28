@@ -52,6 +52,12 @@
     @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: #6b7280; }
     .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
+
+    /* ── Page-level tab bar ──────────────────────────────────── */
+    .page-tab { padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .page-tab.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
+
+    /* ── Delete modal ──────────────────────────────────────────── */
     #deleteModal {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.55); z-index: 400;
@@ -112,17 +118,8 @@
     }
     .btn-delete-cancel:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
     .confirm-hint { font-size: 11.5px; color: #9ca3af; text-align: center; margin-top: 10px; letter-spacing: 0.2px; }
-    .confirm-hint code {
-      font-family: 'Courier New', monospace; font-weight: 700;
-      color: #ef4444; background: #fef2f2; padding: 1px 6px; border-radius: 4px;
-    }
-    @keyframes shake {
-      0%,100% { transform: translateX(0); }
-      20% { transform: translateX(-6px); }
-      40% { transform: translateX(6px); }
-      60% { transform: translateX(-4px); }
-      80% { transform: translateX(4px); }
-    }
+    .confirm-hint code { font-family: 'Courier New', monospace; font-weight: 700; color: #ef4444; background: #fef2f2; padding: 1px 6px; border-radius: 4px; }
+    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
     .shake { animation: shake 0.4s ease; }
     .btn-delete-user {
       padding: 7px 12px; background: #fef2f2; color: #ef4444;
@@ -133,86 +130,60 @@
     .btn-delete-user:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
     .checklist-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: #dc2626; }
     .checklist-item i { color: #f87171; width: 14px; flex-shrink: 0; }
-    .cascade-badge {
-      display: inline-flex; align-items: center; gap: 4px;
-      background: #fef2f2; border: 1px solid #fca5a5;
-      color: #b91c1c; font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 20px; margin-left: 6px;
-    }
-    /* Add Admin Modal */
-    #addAdminModal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.55); z-index: 400;
-      align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-    }
+    .cascade-badge { display: inline-flex; align-items: center; gap: 4px; background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+
+    /* ── Add Admin modal ─────────────────────────────────────── */
+    #addAdminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
     #addAdminModal.show { display: flex; }
-    .add-admin-content {
-      background: white; border-radius: 20px; width: 90%;
-      max-width: 480px; overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.25);
-      animation: addAdminIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1);
-    }
-    @keyframes addAdminIn {
-      from { transform: scale(0.88) translateY(24px); opacity: 0; }
-      to   { transform: scale(1) translateY(0); opacity: 1; }
-    }
-    .add-admin-header {
-      background: linear-gradient(135deg, #eef2ff, #e0e7ff);
-      padding: 28px 28px 20px; text-align: center;
-      border-bottom: 1px solid #c7d2fe;
-    }
-    .add-admin-icon-wrap {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(135deg, #6366f1, #4338ca);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 14px;
-      box-shadow: 0 8px 24px rgba(99,102,241,0.35);
-    }
+    .add-admin-content { background: white; border-radius: 20px; width: 90%; max-width: 480px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation: addAdminIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1); }
+    @keyframes addAdminIn { from { transform: scale(0.88) translateY(24px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+    .add-admin-header { background: linear-gradient(135deg, #eef2ff, #e0e7ff); padding: 28px 28px 20px; text-align: center; border-bottom: 1px solid #c7d2fe; }
+    .add-admin-icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4338ca); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
     .add-admin-body { padding: 24px 28px 28px; }
     .form-field { margin-bottom: 16px; }
     .form-field label { display: block; font-size: 11px; font-weight: 700; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
-    .form-field input, .form-field select {
-      width: 100%; padding: 11px 14px;
-      border: 2px solid #e5e7eb; border-radius: 10px;
-      font-size: 13px; font-family: 'Poppins', sans-serif; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s; color: #1f2937;
-      box-sizing: border-box;
-    }
+    .form-field input, .form-field select { width: 100%; padding: 11px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; color: #1f2937; box-sizing: border-box; }
     .form-field input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
     .form-field input.field-error { border-color: #ef4444; }
     .field-error-msg { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn-add-admin-submit {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #6366f1, #4338ca);
-      color: white; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 14px rgba(99,102,241,0.4); letter-spacing: 0.5px;
-    }
+    .btn-add-admin-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, #6366f1, #4338ca); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(99,102,241,0.4); letter-spacing: 0.5px; }
     .btn-add-admin-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
     .btn-add-admin-submit:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
     .btn-add-admin-submit:not(:disabled):active { transform: translateY(0); }
-    .btn-add-admin-cancel {
-      width: 100%; padding: 11px; background: transparent; color: #6b7280;
-      border: 2px solid #e5e7eb; border-radius: 10px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; margin-top: 10px;
-    }
+    .btn-add-admin-cancel { width: 100%; padding: 11px; background: transparent; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
     .btn-add-admin-cancel:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
     .password-toggle { position: relative; }
     .password-toggle input { padding-right: 44px; }
-    .toggle-eye {
-      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
-      cursor: pointer; color: #9ca3af; font-size: 14px; transition: color 0.2s;
-    }
+    .toggle-eye { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; font-size: 14px; transition: color 0.2s; }
     .toggle-eye:hover { color: #6366f1; }
-  
+
+    /* ── Deleted users tab ────────────────────────────────────── */
+    .countdown-ring { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+    .days-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .days-critical { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .days-warning  { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
+    .days-ok       { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
+    .appeal-badge  { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+    .appeal-none    { background: #f3f4f6; color: #6b7280; }
+    .appeal-pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+    .appeal-approved { background: #dcfce7; color: #15803d; }
+    .appeal-rejected { background: #fef2f2; color: #b91c1c; }
+
+    /* ── Appeal detail modal ──────────────────────────────────── */
+    #appealModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    #appealModal.show { display: flex; }
+    .appeal-modal-content { background: white; border-radius: 20px; width: 90%; max-width: 500px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation: addAdminIn 0.3s ease; }
+
+    /* ── Permanent delete modal ───────────────────────────────── */
+    #permDeleteModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+    #permDeleteModal.show { display: flex; }
+    .perm-delete-content { background: white; border-radius: 20px; width: 90%; max-width: 440px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.3); animation: deleteModalIn 0.3s ease; }
   </style>
 </head>
 <body class="bg-gray-100">
 
+  <!-- Sidebar -->
   <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
     <div class="p-6 border-b border-indigo-700">
       <div class="flex items-center space-x-3">
@@ -232,11 +203,12 @@
       <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
       <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
       <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chart-line w-5"></i><span class="font-medium">User & Scenario Analytics</span>
+        <i class="fas fa-chart-line w-5"></i><span class="font-medium">User &amp; Scenario Analytics</span>
       </a>
     </nav>
   </aside>
 
+  <!-- Top nav -->
   <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
     <div class="px-8 py-4 flex items-center justify-between">
       <div>
@@ -252,7 +224,7 @@
           class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold shadow-sm">
           <i class="fas fa-user-shield"></i> Add Admin
         </button>
-        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" onclick="window.location.href='profile.html'">
+        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
           <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
             <i class="fas fa-user text-indigo-700 text-sm"></i>
           </div>
@@ -269,41 +241,101 @@
   </nav>
 
   <main class="ml-64 mt-20 p-8">
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-      <div class="flex items-center gap-3 flex-wrap">
-        <div class="relative flex-1 min-w-64">
-          <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-          <input type="text" id="searchInput" placeholder="Search username, email, or name…"
-            class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-            oninput="filterUsers()" />
+
+    <!-- Page-level tab bar -->
+    <div class="flex gap-0 border-b border-gray-200 mb-6 bg-white rounded-t-xl px-4 pt-2">
+      <button class="page-tab active" id="pgTabActive"  onclick="switchPageTab('active')">
+        <i class="fas fa-users mr-2"></i>Active Users <span id="activeCount" class="ml-1 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold"></span>
+      </button>
+      <button class="page-tab" id="pgTabDeleted" onclick="switchPageTab('deleted')">
+        <i class="fas fa-user-slash mr-2 text-red-500"></i>Deleted Users <span id="deletedCount" class="ml-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold"></span>
+      </button>
+    </div>
+
+    <!-- ══ ACTIVE USERS PANEL ══════════════════════════════════════ -->
+    <div id="panelActive">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="relative flex-1 min-w-64">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" id="searchInput" placeholder="Search username, email, or name…"
+              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              oninput="filterUsers()" />
+          </div>
+          <button onclick="loadUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition text-sm font-semibold">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
         </div>
-        <button onclick="loadUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition text-sm font-semibold">
-          <i class="fas fa-sync-alt"></i> Refresh
-        </button>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="activeTableWrap">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-gray-50 border-b border-gray-100">
+              <tr>
+                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
+                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
+                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
+                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Activity</th>
+                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody" class="divide-y divide-gray-100">
+              <tr class="text-center py-8"><td colspan="5" class="py-8 text-gray-400 text-sm">Loading users…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
-              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-              <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
-              <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Activity</th>
-              <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
-            </tr>
-          </thead>
-          <tbody id="usersTableBody" class="divide-y divide-gray-100">
-            <tr class="text-center py-8"><td colspan="5" class="py-8 text-gray-400 text-sm">Loading users…</td></tr>
-          </tbody>
-        </table>
+    <!-- ══ DELETED USERS PANEL ════════════════════════════════════ -->
+    <div id="panelDeleted" class="hidden">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
+        <div class="flex items-center gap-3 flex-wrap">
+          <div class="relative flex-1 min-w-64">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+            <input type="text" id="searchDeletedInput" placeholder="Search deleted users…"
+              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
+              oninput="filterDeletedUsers()" />
+          </div>
+          <button onclick="loadDeletedUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm font-semibold">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+
+      <!-- Info banner -->
+      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-800">
+        <i class="fas fa-clock mt-0.5 flex-shrink-0"></i>
+        <div>
+          <span class="font-semibold">30-Day Restore Window.</span>
+          Deleted accounts are kept for 30 days. During this time admins can restore them if an appeal is submitted.
+          After 30 days the account is permanently purged automatically (pending appeals are exempt).
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead class="bg-red-50 border-b border-red-100">
+              <tr>
+                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
+                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Deleted</th>
+                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Time Left</th>
+                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Appeal</th>
+                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="deletedTableBody" class="divide-y divide-gray-100">
+              <tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </main>
 
-  <!-- User Details Modal -->
+  <!-- ══ USER ANALYTICS MODAL ══════════════════════════════════════ -->
   <div id="userModal" class="modal">
     <div class="modal-content">
       <div class="flex items-center justify-between p-6 border-b border-gray-100">
@@ -319,141 +351,136 @@
         </button>
       </div>
       <div class="flex gap-0 border-b border-gray-100 px-6 bg-gray-50">
-        <button class="tab-btn active" id="tabQuizPerf" onclick="switchModalTab('quiz')">
-          <i class="fas fa-chart-bar mr-2"></i>Quiz Performance
-        </button>
-        <button class="tab-btn" id="tabScenarioUsage" onclick="switchModalTab('scenario')">
-          <i class="fas fa-vr-cardboard mr-2"></i>Scenario Usage
-        </button>
+        <button class="tab-btn active" id="tabQuizPerf"      onclick="switchModalTab('quiz')"><i class="fas fa-chart-bar mr-2"></i>Quiz Performance</button>
+        <button class="tab-btn"        id="tabScenarioUsage" onclick="switchModalTab('scenario')"><i class="fas fa-vr-cardboard mr-2"></i>Scenario Usage</button>
       </div>
       <div class="p-6">
-        <div id="tabQuizContent" class="space-y-6">
-          <p class="text-sm text-gray-500 mb-4">Lesson quiz scores per Data Structure — sourced directly from your database</p>
-          <div id="quizPerformanceList" class="space-y-5"></div>
-        </div>
-        <div id="tabScenarioContent" class="hidden space-y-6">
-          <p class="text-sm text-gray-500 mb-4">Most frequently used scenario per Data Structure</p>
-          <div id="scenarioUsageList" class="space-y-5"></div>
-        </div>
+        <div id="tabQuizContent"     class="space-y-6"><p class="text-sm text-gray-500 mb-4">Lesson quiz scores per Data Structure</p><div id="quizPerformanceList" class="space-y-5"></div></div>
+        <div id="tabScenarioContent" class="hidden space-y-6"><p class="text-sm text-gray-500 mb-4">Most frequently used scenario per Data Structure</p><div id="scenarioUsageList" class="space-y-5"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- Delete Confirmation Modal -->
+  <!-- ══ SOFT-DELETE CONFIRMATION MODAL ════════════════════════════ -->
   <div id="deleteModal">
     <div class="delete-modal-content">
       <div class="delete-modal-header">
-        <div class="delete-icon-wrap">
-          <i class="fas fa-user-times text-white text-2xl"></i>
-        </div>
+        <div class="delete-icon-wrap"><i class="fas fa-user-times text-white text-2xl"></i></div>
         <h2 class="text-xl font-bold text-red-800">Delete User Account</h2>
         <p class="text-sm text-red-600 mt-1">
-          This action is <strong>permanent</strong> and cannot be undone
-          <span class="cascade-badge"><i class="fas fa-database"></i> Full Data Wipe</span>
+          Account will be moved to a 30-day holding period
+          <span class="cascade-badge"><i class="fas fa-clock"></i> Recoverable</span>
         </p>
       </div>
       <div class="delete-modal-body">
         <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200">
           <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-base flex-shrink-0" id="deleteUserAvatar">?</div>
-          <div class="min-w-0">
+          <div class="min-w-0 flex-1">
             <p class="font-semibold text-gray-800 text-sm truncate" id="deleteUserName">—</p>
             <p class="text-xs text-gray-500 truncate" id="deleteUserEmail">—</p>
             <p class="text-xs text-red-500 font-medium mt-0.5">@<span id="deleteUsername">—</span></p>
           </div>
           <i class="fas fa-exclamation-triangle text-red-400 text-lg ml-auto flex-shrink-0"></i>
         </div>
-        <div class="bg-red-50 rounded-xl p-4 mb-5 border border-red-100">
-          <p class="text-xs font-semibold text-red-700 mb-2 uppercase tracking-wide">
-            <i class="fas fa-database mr-1"></i> The following data will be permanently wiped:
-          </p>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> User account &amp; profile</div>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> All progress data (lessons, quizzes, topics)</div>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> All quiz scores &amp; difficulty scores</div>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> AR scenario usage &amp; history</div>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> Code challenge statistics</div>
-          <div class="checklist-item"><i class="fas fa-times-circle"></i> Streak &amp; activity records</div>
+
+        <!-- Reason field -->
+        <div class="mb-4">
+          <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Reason for deletion <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
+          <input type="text" id="deleteReason" placeholder="e.g. Violated terms of service…"
+            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200" />
         </div>
+
+        <div class="bg-amber-50 rounded-xl p-4 mb-5 border border-amber-200">
+          <p class="text-xs font-semibold text-amber-700 mb-1"><i class="fas fa-envelope mr-1"></i>The user will receive a notification email</p>
+          <p class="text-xs text-amber-600">It will explain the deletion, the reason, and that they have 30 days to appeal.</p>
+        </div>
+
         <div class="mb-2">
           <label class="block text-sm font-semibold text-gray-700 mb-2">Type the confirmation phrase to continue:</label>
-          <p class="confirm-hint mb-3">Please type <code id="deleteConfirmPhrase">DELETE USERNAME</code> exactly to confirm</p>
+          <p class="confirm-hint mb-3">Please type <code id="deleteConfirmPhrase">DELETE USERNAME</code> exactly</p>
           <input type="text" id="deleteConfirmInput" class="delete-confirm-input"
-            placeholder="Type here to confirm…"
-            autocomplete="off" spellcheck="false"
+            placeholder="Type here to confirm…" autocomplete="off" spellcheck="false"
             oninput="onDeleteInputChange()" />
         </div>
         <p class="text-xs text-center mt-2 mb-4 font-medium" id="deleteInputStatus" style="color:#9ca3af;min-height:16px;"></p>
         <button id="btnConfirmDelete" class="btn-delete-confirm" disabled onclick="confirmDelete()">
-          <i class="fas fa-trash-alt mr-2"></i> Permanently Delete &amp; Wipe All Data
+          <i class="fas fa-user-slash mr-2"></i> Delete &amp; Notify User
         </button>
         <button class="btn-delete-cancel" onclick="closeDeleteModal()">
-          <i class="fas fa-arrow-left mr-2"></i> Cancel, keep this user
+          <i class="fas fa-arrow-left mr-2"></i> Cancel
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Add Admin / Instructor Modal -->
+  <!-- ══ APPEAL DETAIL MODAL ════════════════════════════════════════ -->
+  <div id="appealModal">
+    <div class="appeal-modal-content">
+      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-gavel mr-2 text-amber-500"></i>Appeal Review</h3>
+        <button onclick="closeAppealModal()" class="text-gray-400 hover:text-gray-600 text-xl"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-6" id="appealModalBody"></div>
+    </div>
+  </div>
+
+  <!-- ══ PERMANENT DELETE CONFIRMATION ══════════════════════════════ -->
+  <div id="permDeleteModal">
+    <div class="perm-delete-content">
+      <div style="background:linear-gradient(135deg,#1c0a0a,#3b0a0a);padding:28px;text-align:center;">
+        <div style="width:64px;height:64px;border-radius:50%;background:#7f1d1d;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+          <i class="fas fa-skull text-red-300 text-2xl"></i>
+        </div>
+        <h2 class="text-xl font-bold text-red-200">Permanent Deletion</h2>
+        <p class="text-sm text-red-400 mt-1">This cannot be undone under any circumstances</p>
+      </div>
+      <div class="p-6">
+        <div class="bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200 flex items-center gap-3">
+          <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center text-red-700 font-bold flex-shrink-0" id="permDeleteAvatar">?</div>
+          <div>
+            <p class="font-semibold text-gray-800 text-sm" id="permDeleteName">—</p>
+            <p class="text-xs text-red-500 font-medium">@<span id="permDeleteUsername">—</span></p>
+          </div>
+        </div>
+        <p class="text-sm text-gray-600 mb-5">All archived data for this account will be wiped immediately. There is <strong>no recovery</strong> after this action.</p>
+        <button id="btnPermDelete" class="w-full py-3 bg-red-700 hover:bg-red-800 text-white rounded-xl font-bold text-sm transition" onclick="confirmPermDelete()">
+          <i class="fas fa-bomb mr-2"></i> Yes, Permanently Delete
+        </button>
+        <button class="btn-delete-cancel mt-2" onclick="closePermDeleteModal()">
+          <i class="fas fa-arrow-left mr-2"></i> Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ ADD ADMIN MODAL ════════════════════════════════════════════ -->
   <div id="addAdminModal">
     <div class="add-admin-content">
       <div class="add-admin-header">
-        <div class="add-admin-icon-wrap">
-          <i class="fas fa-user-shield text-white text-2xl"></i>
-        </div>
+        <div class="add-admin-icon-wrap"><i class="fas fa-user-shield text-white text-2xl"></i></div>
         <h2 class="text-xl font-bold text-indigo-900">Add Admin</h2>
         <p class="text-sm text-indigo-400 mt-1">Create a new admin account</p>
       </div>
       <div class="add-admin-body">
-
-       
-       <!-- Admin Accounts List -->
-<div id="adminListSection" class="mb-5">
-  <div class="flex items-center justify-between mb-2">
-    <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Admin Accounts</p>
-    <button onclick="loadAdminList()" class="text-xs text-indigo-500 hover:text-indigo-700 font-semibold"><i class="fas fa-sync-alt mr-1"></i>Refresh</button>
-  </div>
-  <div id="adminListBody" class="space-y-2 max-h-44 overflow-y-auto pr-1">
-    <p class="text-xs text-gray-400 text-center py-3">Loading…</p>
-  </div>
-</div>
-<hr class="border-gray-100 mb-5" />
-
-<!-- Fields -->
+        <div id="adminListSection" class="mb-5">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Admin Accounts</p>
+            <button onclick="loadAdminList()" class="text-xs text-indigo-500 hover:text-indigo-700 font-semibold"><i class="fas fa-sync-alt mr-1"></i>Refresh</button>
+          </div>
+          <div id="adminListBody" class="space-y-2 max-h-44 overflow-y-auto pr-1">
+            <p class="text-xs text-gray-400 text-center py-3">Loading…</p>
+          </div>
+        </div>
+        <hr class="border-gray-100 mb-5" />
         <div class="form-row">
-          <div class="form-field">
-            <label>Full Name</label>
-            <input type="text" id="adminName" placeholder="e.g. Jane Smith" autocomplete="off" oninput="clearFieldError('adminName','errAdminName')" />
-            <p class="field-error-msg" id="errAdminName">Name is required</p>
-          </div>
-          <div class="form-field">
-            <label>Username</label>
-            <input type="text" id="adminUsername" placeholder="e.g. jsmith" autocomplete="off" oninput="clearFieldError('adminUsername','errAdminUsername')" />
-            <p class="field-error-msg" id="errAdminUsername">Username is required</p>
-          </div>
+          <div class="form-field"><label>Full Name</label><input type="text" id="adminName" placeholder="e.g. Jane Smith" autocomplete="off" oninput="clearFieldError('adminName','errAdminName')" /><p class="field-error-msg" id="errAdminName">Name is required</p></div>
+          <div class="form-field"><label>Username</label><input type="text" id="adminUsername" placeholder="e.g. jsmith" autocomplete="off" oninput="clearFieldError('adminUsername','errAdminUsername')" /><p class="field-error-msg" id="errAdminUsername">Username is required</p></div>
         </div>
-
-        <div class="form-field">
-          <label>Email Address</label>
-          <input type="email" id="adminEmail" placeholder="e.g. jane@school.edu" autocomplete="off" oninput="clearFieldError('adminEmail','errAdminEmail')" />
-          <p class="field-error-msg" id="errAdminEmail">Valid email is required</p>
-        </div>
-
-        <div class="form-field">
-          <label>Password</label>
-          <div class="password-toggle">
-            <input type="password" id="adminPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="clearFieldError('adminPassword','errAdminPassword')" />
-            <i class="fas fa-eye toggle-eye" id="eyeIcon" onclick="toggleAdminPw()"></i>
-          </div>
-          <p class="field-error-msg" id="errAdminPassword">Password must be at least 8 characters</p>
-        </div>
-
+        <div class="form-field"><label>Email Address</label><input type="email" id="adminEmail" placeholder="e.g. jane@school.edu" autocomplete="off" oninput="clearFieldError('adminEmail','errAdminEmail')" /><p class="field-error-msg" id="errAdminEmail">Valid email is required</p></div>
+        <div class="form-field"><label>Password</label><div class="password-toggle"><input type="password" id="adminPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="clearFieldError('adminPassword','errAdminPassword')" /><i class="fas fa-eye toggle-eye" id="eyeIcon" onclick="toggleAdminPw()"></i></div><p class="field-error-msg" id="errAdminPassword">Password must be at least 8 characters</p></div>
         <div id="addAdminStatus" class="hidden text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium"></div>
-
-        <button id="btnSubmitAdmin" class="btn-add-admin-submit" onclick="submitAddAdmin()">
-          <i class="fas fa-user-plus mr-2"></i> Create Account
-        </button>
-        <button class="btn-add-admin-cancel" onclick="closeAddAdminModal()">
-          <i class="fas fa-times mr-2"></i> Cancel
-        </button>
+        <button id="btnSubmitAdmin" class="btn-add-admin-submit" onclick="submitAddAdmin()"><i class="fas fa-user-plus mr-2"></i> Create Account</button>
+        <button class="btn-add-admin-cancel" onclick="closeAddAdminModal()"><i class="fas fa-times mr-2"></i> Cancel</button>
       </div>
     </div>
   </div>
@@ -473,9 +500,12 @@
     };
 
     let allUsers = [], filteredUsers = [], pendingDeleteUser = null;
-    let currentPage = 1;
-const PAGE_SIZE = 10;
-    
+    let allDeletedUsers = [], filteredDeletedUsers = [], pendingPermDeleteUser = null;
+    let pendingAppealUser = null;
+    let currentPage = 1, deletedPage = 1;
+    const PAGE_SIZE = 10;
+
+    // ── Utilities ──────────────────────────────────────────────
     function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
     function checkAuth() {
       const raw = localStorage.getItem('adminUser');
@@ -483,43 +513,54 @@ const PAGE_SIZE = 10;
       try { return JSON.parse(raw); } catch { logout(); return null; }
     }
     function showToast(msg, type = 'info') {
-      const colorMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
-      const iconMap  = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
+      const cMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
+      const iMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
       const t = document.getElementById('toast');
-      t.className = 'toast ' + colorMap[type];
-      t.innerHTML = '<i class="fas ' + iconMap[type] + '"></i> ' + msg;
+      t.className = 'toast ' + cMap[type];
+      t.innerHTML = '<i class="fas ' + iMap[type] + '"></i> ' + msg;
       t.classList.add('show');
       setTimeout(() => t.classList.remove('show'), 3500);
     }
     function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
 
+    // ── Page tabs ──────────────────────────────────────────────
+    function switchPageTab(tab) {
+      document.getElementById('pgTabActive').classList.toggle('active', tab === 'active');
+      document.getElementById('pgTabDeleted').classList.toggle('active', tab === 'deleted');
+      document.getElementById('panelActive').classList.toggle('hidden', tab !== 'active');
+      document.getElementById('panelDeleted').classList.toggle('hidden', tab !== 'deleted');
+      if (tab === 'deleted' && allDeletedUsers.length === 0) loadDeletedUsers();
+    }
+
+    // ══ ACTIVE USERS ═══════════════════════════════════════════
     async function loadUsers() {
       showLoading(true);
       try {
-        const res = await fetch(SERVER_URL + '/api/progress');
+        const res  = await fetch(SERVER_URL + '/api/progress');
         const data = await res.json();
         if (data.success) {
           allUsers = data.data || []; filteredUsers = [...allUsers];
           renderUsersTable();
-          document.getElementById('apiStatus').textContent = 'connected';
-          document.getElementById('apiStatus').className = 'font-medium text-green-500';
+          document.getElementById('apiStatus').textContent  = 'connected';
+          document.getElementById('apiStatus').className    = 'font-medium text-green-500';
+          document.getElementById('activeCount').textContent = allUsers.length;
           showToast(allUsers.length + ' users loaded', 'success');
-        } else { throw new Error(data.error || 'Unknown error'); }
+        } else throw new Error(data.error || 'Unknown error');
       } catch (err) {
         try {
-          const res2 = await fetch(SERVER_URL + '/api/users');
-          const data2 = await res2.json();
-          if (data2.success) {
-            allUsers = data2.users || []; filteredUsers = [...allUsers];
+          const r2 = await fetch(SERVER_URL + '/api/users');
+          const d2 = await r2.json();
+          if (d2.success) {
+            allUsers = d2.users || []; filteredUsers = [...allUsers];
             renderUsersTable();
-            document.getElementById('apiStatus').textContent = 'connected';
-            document.getElementById('apiStatus').className = 'font-medium text-green-500';
-            showToast(allUsers.length + ' users loaded (no progress data)', 'info');
+            document.getElementById('apiStatus').textContent  = 'connected';
+            document.getElementById('apiStatus').className    = 'font-medium text-green-500';
+            document.getElementById('activeCount').textContent = allUsers.length;
           }
         } catch {
           showToast('Failed to load users: ' + err.message, 'error');
           document.getElementById('apiStatus').textContent = 'offline';
-          document.getElementById('apiStatus').className = 'font-medium text-red-500';
+          document.getElementById('apiStatus').className   = 'font-medium text-red-500';
         }
       } finally { showLoading(false); }
     }
@@ -535,99 +576,280 @@ const PAGE_SIZE = 10;
     }
 
     function renderUsersTable() {
-  const tbody = document.getElementById('usersTableBody');
-  if (!filteredUsers.length) {
-    tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">No users found</td></tr>';
-    renderPagination(0);
-    return;
-  }
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
-  if (currentPage > totalPages) currentPage = totalPages;
-  const start = (currentPage - 1) * PAGE_SIZE;
-  const pageUsers = filteredUsers.slice(start, start + PAGE_SIZE);
-  tbody.innerHTML = pageUsers.map(user => {
-    const joined = user.registerDate ? new Date(user.registerDate).toLocaleDateString() : user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
-    const initials = (user.name || user.username).substring(0, 2).toUpperCase();
-    const topicCount = (user.topics || []).length;
-    let totalQuizzes = 0;
-    (user.topics || []).forEach(t => { totalQuizzes += t.lessonQuizCount || 0; });
-    return `<tr class="user-row border-b border-gray-100">
-      <td class="px-6 py-4"><div class="flex items-center gap-3">
-        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">${initials}</div>
-        <div><p class="font-semibold text-gray-800 text-sm">${user.name || user.username}</p><p class="text-xs text-gray-500">@${user.username}</p></div>
-      </div></td>
-      <td class="px-6 py-4 text-sm text-gray-600">${user.email || '—'}</td>
-      <td class="px-6 py-4 text-sm text-gray-500">${joined}</td>
-      <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-2 flex-wrap">
-        <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">${topicCount} topics</span>
-        ${totalQuizzes > 0 ? `<span class="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold">${totalQuizzes} quizzes</span>` : ''}
-        ${user.streak > 0 ? `<span class="inline-block px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-semibold">🔥 ${user.streak}</span>` : ''}
-      </div></td>
-      <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-1">
-        <button onclick="openUserModal('${user.username}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold">View Analytics</button>
-        <button onclick="openDeleteModal('${user.username}')" class="btn-delete-user" title="Delete user and all data"><i class="fas fa-trash-alt"></i></button>
-      </div></td>
-    </tr>`;
-  }).join('');
-  renderPagination(totalPages);
-}
+      const tbody = document.getElementById('usersTableBody');
+      if (!filteredUsers.length) { tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">No users found</td></tr>'; renderActivePagination(0); return; }
+      const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const pageUsers = filteredUsers.slice(start, start + PAGE_SIZE);
+      tbody.innerHTML = pageUsers.map(user => {
+        const joined = user.registerDate ? new Date(user.registerDate).toLocaleDateString() : user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '—';
+        const initials = (user.name || user.username).substring(0, 2).toUpperCase();
+        const topicCount = (user.topics || []).length;
+        let totalQuizzes = 0;
+        (user.topics || []).forEach(t => { totalQuizzes += t.lessonQuizCount || 0; });
+        return `<tr class="user-row border-b border-gray-100">
+          <td class="px-6 py-4"><div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-sm">${initials}</div>
+            <div><p class="font-semibold text-gray-800 text-sm">${user.name || user.username}</p><p class="text-xs text-gray-500">@${user.username}</p></div>
+          </div></td>
+          <td class="px-6 py-4 text-sm text-gray-600">${user.email || '—'}</td>
+          <td class="px-6 py-4 text-sm text-gray-500">${joined}</td>
+          <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-2 flex-wrap">
+            <span class="inline-block px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-semibold">${topicCount} topics</span>
+            ${totalQuizzes > 0 ? `<span class="inline-block px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs font-semibold">${totalQuizzes} quizzes</span>` : ''}
+            ${user.streak > 0 ? `<span class="inline-block px-3 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-semibold">🔥 ${user.streak}</span>` : ''}
+          </div></td>
+          <td class="px-6 py-4 text-center"><div class="flex items-center justify-center gap-1">
+            <button onclick="openUserModal('${user.username}')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-xs font-semibold">View Analytics</button>
+            <button onclick="openDeleteModal('${user.username}')" class="btn-delete-user" title="Delete user"><i class="fas fa-trash-alt"></i></button>
+          </div></td>
+        </tr>`;
+      }).join('');
+      renderActivePagination(totalPages);
+    }
 
-function renderPagination(totalPages) {
-  const existing = document.getElementById('paginationBar');
-  if (existing) existing.remove();
-  if (totalPages <= 1) return;
-  const total = filteredUsers.length;
-  const start = (currentPage - 1) * PAGE_SIZE + 1;
-  const end = Math.min(currentPage * PAGE_SIZE, total);
-  const bar = document.createElement('div');
-  bar.id = 'paginationBar';
-  bar.className = 'flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white';
-  // Page number buttons — show up to 5 around current
-  let pages = '';
-  const delta = 2;
-  const left = Math.max(1, currentPage - delta);
-  const right = Math.min(totalPages, currentPage + delta);
-  if (left > 1) {
-    pages += pageBtn(1);
-    if (left > 2) pages += `<span class="px-1 text-gray-400 text-sm">…</span>`;
-  }
-  for (let i = left; i <= right; i++) pages += pageBtn(i);
-  if (right < totalPages) {
-    if (right < totalPages - 1) pages += `<span class="px-1 text-gray-400 text-sm">…</span>`;
-    pages += pageBtn(totalPages);
-  }
-  bar.innerHTML = `
-    <p class="text-xs text-gray-500">Showing <span class="font-semibold text-gray-700">${start}–${end}</span> of <span class="font-semibold text-gray-700">${total}</span> users</p>
-    <div class="flex items-center gap-1">
-      <button onclick="goToPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}
-        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm">
-        <i class="fas fa-chevron-left text-xs"></i>
-      </button>
-      ${pages}
-      <button onclick="goToPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}
-        class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm">
-        <i class="fas fa-chevron-right text-xs"></i>
-      </button>
-    </div>`;
-  document.querySelector('.bg-white.rounded-xl.shadow-sm.border.border-gray-100.overflow-hidden').appendChild(bar);
-}
+    function renderActivePagination(totalPages) {
+      const existing = document.getElementById('activePagBar');
+      if (existing) existing.remove();
+      if (totalPages <= 1) return;
+      const total = filteredUsers.length;
+      const start = (currentPage - 1) * PAGE_SIZE + 1;
+      const end   = Math.min(currentPage * PAGE_SIZE, total);
+      const bar   = document.createElement('div');
+      bar.id = 'activePagBar';
+      bar.className = 'flex items-center justify-between px-6 py-4 border-t border-gray-100 bg-white';
+      bar.innerHTML = `<p class="text-xs text-gray-500">Showing <span class="font-semibold text-gray-700">${start}–${end}</span> of <span class="font-semibold text-gray-700">${total}</span> users</p>
+        <div class="flex items-center gap-1">
+          <button onclick="goToActivePage(${currentPage-1})" ${currentPage===1?'disabled':''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm"><i class="fas fa-chevron-left text-xs"></i></button>
+          ${buildPageBtns(totalPages, currentPage, 'goToActivePage')}
+          <button onclick="goToActivePage(${currentPage+1})" ${currentPage===totalPages?'disabled':''} class="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:bg-indigo-50 disabled:opacity-30 disabled:cursor-not-allowed transition text-sm"><i class="fas fa-chevron-right text-xs"></i></button>
+        </div>`;
+      document.getElementById('activeTableWrap').appendChild(bar);
+    }
+    function goToActivePage(n) {
+      const tp = Math.ceil(filteredUsers.length / PAGE_SIZE);
+      if (n < 1 || n > tp) return;
+      currentPage = n; renderUsersTable();
+    }
 
-function pageBtn(n) {
-  const active = n === currentPage;
-  return `<button onclick="goToPage(${n})"
-    class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition
-    ${active ? 'bg-indigo-600 text-white border border-indigo-600' : 'border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600'}">
-    ${n}</button>`;
-}
+    function buildPageBtns(totalPages, current, fnName) {
+      let pages = ''; const delta = 2;
+      const left = Math.max(1, current - delta), right = Math.min(totalPages, current + delta);
+      if (left > 1) { pages += pageBtnHtml(1, current, fnName); if (left > 2) pages += `<span class="px-1 text-gray-400 text-sm">…</span>`; }
+      for (let i = left; i <= right; i++) pages += pageBtnHtml(i, current, fnName);
+      if (right < totalPages) { if (right < totalPages - 1) pages += `<span class="px-1 text-gray-400 text-sm">…</span>`; pages += pageBtnHtml(totalPages, current, fnName); }
+      return pages;
+    }
+    function pageBtnHtml(n, current, fn) {
+      const a = n === current;
+      return `<button onclick="${fn}(${n})" class="w-8 h-8 flex items-center justify-center rounded-lg text-xs font-semibold transition ${a?'bg-indigo-600 text-white border border-indigo-600':'border border-gray-200 text-gray-600 hover:bg-indigo-50 hover:border-indigo-300'}">${n}</button>`;
+    }
 
-function goToPage(n) {
-  const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
-  if (n < 1 || n > totalPages) return;
-  currentPage = n;
-  renderUsersTable();
-}
+    // ══ DELETED USERS ══════════════════════════════════════════
+    async function loadDeletedUsers() {
+      showLoading(true);
+      try {
+        const res  = await fetch(SERVER_URL + '/api/deleted-users');
+        const data = await res.json();
+        if (data.success) {
+          allDeletedUsers = data.deletedUsers || [];
+          filteredDeletedUsers = [...allDeletedUsers];
+          document.getElementById('deletedCount').textContent = allDeletedUsers.length;
+          renderDeletedTable();
+        } else throw new Error(data.error);
+      } catch (err) {
+        showToast('Failed to load deleted users: ' + err.message, 'error');
+        document.getElementById('deletedTableBody').innerHTML = '<tr><td colspan="5" class="py-8 text-center text-red-400 text-sm">Error loading data</td></tr>';
+      } finally { showLoading(false); }
+    }
 
-    // ══ DELETE ══════════════════════════════════════════════════════
+    function filterDeletedUsers() {
+      deletedPage = 1;
+      const term = document.getElementById('searchDeletedInput').value.toLowerCase();
+      filteredDeletedUsers = allDeletedUsers.filter(u =>
+        (u.username||'').toLowerCase().includes(term) ||
+        (u.email||'').toLowerCase().includes(term) ||
+        (u.name||'').toLowerCase().includes(term));
+      renderDeletedTable();
+    }
+
+    function renderDeletedTable() {
+      const tbody = document.getElementById('deletedTableBody');
+      if (!filteredDeletedUsers.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">No deleted users</td></tr>';
+        return;
+      }
+      tbody.innerHTML = filteredDeletedUsers.map(u => {
+        const initials  = (u.name || u.username).substring(0, 2).toUpperCase();
+        const deletedAt = new Date(u.deletedAt).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+        const deletedBy = u.deletedBy || 'admin';
+
+        const days  = u.daysLeft;
+        const daysCls = days <= 3 ? 'days-critical' : days <= 10 ? 'days-warning' : 'days-ok';
+        const daysLabel = days === 0 ? 'Expiring today' : `${days} day${days !== 1 ? 's' : ''} left`;
+
+        const as   = u.appealStatus || 'none';
+        const asLbl = { none: 'No appeal', pending: 'Pending review', approved: 'Approved', rejected: 'Rejected' }[as] || as;
+        const asCls = 'appeal-' + as;
+
+        const hasPending = as === 'pending';
+        return `<tr class="user-row border-b border-gray-100">
+          <td class="px-6 py-4">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-sm">${initials}</div>
+              <div>
+                <p class="font-semibold text-gray-800 text-sm">${u.name || u.username}</p>
+                <p class="text-xs text-gray-400">@${u.username}</p>
+                ${u.email ? `<p class="text-xs text-gray-400">${u.email}</p>` : ''}
+                ${u.deleteReason ? `<p class="text-xs text-red-400 mt-0.5 italic">"${u.deleteReason}"</p>` : ''}
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">
+            <p class="text-sm text-gray-700">${deletedAt}</p>
+            <p class="text-xs text-gray-400">by ${deletedBy}</p>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="days-badge ${daysCls}">${daysLabel}</span>
+          </td>
+          <td class="px-6 py-4 text-center">
+            <span class="appeal-badge ${asCls}">${asLbl}</span>
+            ${hasPending ? `<br><button onclick="openAppealModal('${u.username}')" class="mt-1 text-xs text-amber-600 hover:text-amber-800 font-semibold underline">Review</button>` : ''}
+          </td>
+          <td class="px-6 py-4 text-center">
+            <div class="flex items-center justify-center gap-1 flex-wrap">
+              ${days > 0 ? `<button onclick="restoreUser('${u.username}')" class="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-lg text-xs font-semibold hover:bg-green-600 hover:text-white hover:border-green-600 transition">
+                <i class="fas fa-undo mr-1"></i>Restore
+              </button>` : ''}
+              <button onclick="openPermDeleteModal('${u.username}')" class="px-3 py-1.5 bg-red-900 text-red-200 border border-red-800 rounded-lg text-xs font-semibold hover:bg-red-700 transition">
+                <i class="fas fa-skull mr-1"></i>Wipe
+              </button>
+            </div>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    // ── Restore ────────────────────────────────────────────────
+    async function restoreUser(username) {
+      const adminUser = checkAuth();
+      if (!confirm(`Restore account "${username}"? They will receive an email notification.`)) return;
+      showLoading(true);
+      try {
+        const res  = await fetch(`${SERVER_URL}/api/deleted-users/${username}/restore`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ restoredBy: adminUser?.username || 'admin' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`"${username}" restored successfully`, 'success');
+          await loadDeletedUsers();
+          await loadUsers();
+        } else throw new Error(data.error);
+      } catch (err) {
+        showToast('Restore failed: ' + err.message, 'error');
+      } finally { showLoading(false); }
+    }
+
+    // ── Permanent delete ───────────────────────────────────────
+    function openPermDeleteModal(username) {
+      const u = allDeletedUsers.find(x => x.username === username);
+      if (!u) { showToast('User not found', 'error'); return; }
+      pendingPermDeleteUser = u;
+      document.getElementById('permDeleteAvatar').textContent  = (u.name || u.username).substring(0,2).toUpperCase();
+      document.getElementById('permDeleteName').textContent    = u.name || u.username;
+      document.getElementById('permDeleteUsername').textContent = u.username;
+      document.getElementById('permDeleteModal').classList.add('show');
+    }
+    function closePermDeleteModal() { document.getElementById('permDeleteModal').classList.remove('show'); pendingPermDeleteUser = null; }
+    async function confirmPermDelete() {
+      if (!pendingPermDeleteUser) return;
+      const username = pendingPermDeleteUser.username;
+      closePermDeleteModal();
+      showLoading(true);
+      try {
+        const res  = await fetch(`${SERVER_URL}/api/deleted-users/${username}/permanent`, { method: 'DELETE' });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`"${username}" permanently wiped`, 'success');
+          allDeletedUsers = allDeletedUsers.filter(u => u.username !== username);
+          filteredDeletedUsers = filteredDeletedUsers.filter(u => u.username !== username);
+          document.getElementById('deletedCount').textContent = allDeletedUsers.length;
+          renderDeletedTable();
+        } else throw new Error(data.error);
+      } catch (err) {
+        showToast('Failed to permanently delete: ' + err.message, 'error');
+      } finally { showLoading(false); }
+    }
+
+    // ── Appeal modal ────────────────────────────────────────────
+    function openAppealModal(username) {
+      const u = allDeletedUsers.find(x => x.username === username);
+      if (!u) return;
+      pendingAppealUser = u;
+      const body = document.getElementById('appealModalBody');
+      const initials = (u.name || u.username).substring(0,2).toUpperCase();
+      const appealedAt = u.appealedAt ? new Date(u.appealedAt).toLocaleString() : '—';
+      body.innerHTML = `
+        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200">
+          <div class="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center text-amber-700 font-bold">${initials}</div>
+          <div>
+            <p class="font-semibold text-gray-800">${u.name || u.username} <span class="text-gray-400 font-normal text-sm">@${u.username}</span></p>
+            <p class="text-xs text-gray-500">${u.email || 'No email'}</p>
+          </div>
+        </div>
+        <div class="mb-4">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Appeal submitted</p>
+          <p class="text-sm text-gray-600">${appealedAt}</p>
+        </div>
+        <div class="mb-5">
+          <p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">User's message</p>
+          <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-gray-700 leading-relaxed">
+            ${u.appealMessage || '<em class="text-gray-400">No message provided</em>'}
+          </div>
+        </div>
+        ${u.deleteReason ? `<div class="mb-5"><p class="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Original deletion reason</p><p class="text-sm text-red-600 italic">"${u.deleteReason}"</p></div>` : ''}
+        <div class="flex gap-3">
+          <button onclick="resolveAppeal('${u.username}','restore')"
+            class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold text-sm transition">
+            <i class="fas fa-undo mr-2"></i>Restore Account
+          </button>
+          <button onclick="resolveAppeal('${u.username}','reject')"
+            class="flex-1 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-xl font-semibold text-sm transition">
+            <i class="fas fa-ban mr-2"></i>Reject Appeal
+          </button>
+        </div>`;
+      document.getElementById('appealModal').classList.add('show');
+    }
+    function closeAppealModal() { document.getElementById('appealModal').classList.remove('show'); pendingAppealUser = null; }
+
+    async function resolveAppeal(username, action) {
+      closeAppealModal();
+      if (action === 'restore') {
+        await restoreUser(username);
+      } else {
+        // Mark appeal as rejected
+        showLoading(true);
+        try {
+          await fetch(`${SERVER_URL}/api/deleted-users/${username}/appeal`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: '__rejected__' })
+          });
+          // Update local state
+          const u = allDeletedUsers.find(x => x.username === username);
+          if (u) u.appealStatus = 'rejected';
+          renderDeletedTable();
+          showToast(`Appeal for "${username}" rejected`, 'info');
+        } catch (err) {
+          showToast('Error: ' + err.message, 'error');
+        } finally { showLoading(false); }
+      }
+    }
+
+    // ══ SOFT-DELETE FLOW ═══════════════════════════════════════
     function buildConfirmPhrase(user) { return 'DELETE ' + (user.name || user.username).toUpperCase(); }
 
     function openDeleteModal(username) {
@@ -639,6 +861,7 @@ function goToPage(n) {
       document.getElementById('deleteUserName').textContent   = user.name || user.username;
       document.getElementById('deleteUserEmail').textContent  = user.email || 'No email';
       document.getElementById('deleteUsername').textContent   = user.username;
+      document.getElementById('deleteReason').value           = '';
       const phrase = buildConfirmPhrase(user);
       document.getElementById('deleteConfirmPhrase').textContent = phrase;
       const input = document.getElementById('deleteConfirmInput');
@@ -650,204 +873,76 @@ function goToPage(n) {
       document.getElementById('deleteModal').classList.add('show');
       setTimeout(() => input.focus(), 350);
     }
-
     function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('show'); pendingDeleteUser = null; }
 
     function onDeleteInputChange() {
       if (!pendingDeleteUser) return;
       const phrase = buildConfirmPhrase(pendingDeleteUser);
-      const input = document.getElementById('deleteConfirmInput');
-      const typed = input.value;
+      const input  = document.getElementById('deleteConfirmInput');
+      const typed  = input.value;
       const statusEl = document.getElementById('deleteInputStatus');
-      const btn = document.getElementById('btnConfirmDelete');
+      const btn    = document.getElementById('btnConfirmDelete');
       const isMatch = typed === phrase;
       input.classList.remove('match', 'no-match');
-      if (typed.length === 0) {
-        input.className = 'delete-confirm-input'; statusEl.textContent = ''; statusEl.style.color = '#9ca3af';
-      } else if (isMatch) {
-        input.classList.add('match'); statusEl.textContent = '✓ Phrase matched — you may proceed'; statusEl.style.color = '#10b981';
-      } else if (phrase.startsWith(typed)) {
-        const r = phrase.length - typed.length;
-        statusEl.textContent = r + ' character' + (r !== 1 ? 's' : '') + ' remaining…'; statusEl.style.color = '#9ca3af';
-      } else {
-        input.classList.add('no-match'); statusEl.textContent = '✗ Phrase does not match'; statusEl.style.color = '#ef4444';
-      }
+      if (!typed.length) { input.className = 'delete-confirm-input'; statusEl.textContent = ''; statusEl.style.color = '#9ca3af'; }
+      else if (isMatch) { input.classList.add('match'); statusEl.textContent = '✓ Phrase matched — you may proceed'; statusEl.style.color = '#10b981'; }
+      else if (phrase.startsWith(typed)) { const r = phrase.length - typed.length; statusEl.textContent = r + ' character' + (r !== 1 ? 's' : '') + ' remaining…'; statusEl.style.color = '#9ca3af'; }
+      else { input.classList.add('no-match'); statusEl.textContent = '✗ Phrase does not match'; statusEl.style.color = '#ef4444'; }
       btn.disabled = !isMatch;
     }
 
-    /**
-     * Cascading delete explanation:
-     * All user data — progress, lesson scores, quiz scores, scenario usage,
-     * code challenge stats, streak — is stored as embedded sub-documents
-     * inside the single user document in MongoDB.
-     * DELETE /api/users/:username removes that document entirely, which
-     * constitutes a full cascading wipe of all associated data in one operation.
-     *
-     * Additionally, if this user was an instructor, DELETE /api/admins/:username
-     * removes their admin record and sets students' instructor field to null.
-     */
     async function confirmDelete() {
       if (!pendingDeleteUser) return;
       const phrase = buildConfirmPhrase(pendingDeleteUser);
-      const typed = document.getElementById('deleteConfirmInput').value;
+      const typed  = document.getElementById('deleteConfirmInput').value;
       if (typed !== phrase) {
         const input = document.getElementById('deleteConfirmInput');
         input.classList.add('shake'); setTimeout(() => input.classList.remove('shake'), 450);
         showToast('Confirmation phrase does not match', 'error'); return;
       }
       const username = pendingDeleteUser.username;
+      const reason   = document.getElementById('deleteReason').value.trim();
+      const adminUser = checkAuth();
       closeDeleteModal();
       showLoading(true);
       try {
-        // Step 1 — delete user document (wipes ALL embedded data in one shot)
-        const res = await fetch(SERVER_URL + '/api/users/' + username, { method: 'DELETE' });
+        // Soft-delete via new endpoint
+        const res  = await fetch(`${SERVER_URL}/api/users/${username}/soft`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deletedBy: adminUser?.username || 'admin', reason })
+        });
         const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Delete failed');
 
-        // Step 2 — best-effort: remove instructor record & unlink their students
-        // (harmless 404 if this user was never an instructor)
-        try {
-          await fetch(SERVER_URL + '/api/admins/' + username, { method: 'DELETE' });
-        } catch (_) { /* not an instructor — safe to ignore */ }
+        if (!data.success) {
+          // Fallback: server might not have the soft-delete endpoint yet — use old hard delete
+          const res2  = await fetch(`${SERVER_URL}/api/users/${username}`, { method: 'DELETE' });
+          const data2 = await res2.json();
+          if (!data2.success) throw new Error(data2.error || 'Delete failed');
+          showToast(`"${username}" deleted (note: soft-delete endpoint not available)`, 'info');
+        } else {
+          showToast(`"${username}" deleted. User notified by email. 30-day window started.`, 'success');
+        }
 
         allUsers = allUsers.filter(u => u.username !== username);
         filteredUsers = filteredUsers.filter(u => u.username !== username);
+        document.getElementById('activeCount').textContent = allUsers.length;
         renderUsersTable();
-        showToast(`"${username}" and all associated data permanently deleted`, 'success');
+
+        // Refresh deleted list if it was already loaded
+        if (allDeletedUsers.length > 0 || document.getElementById('pgTabDeleted').classList.contains('active')) {
+          await loadDeletedUsers();
+        }
       } catch (err) {
         showToast('Failed to delete user: ' + err.message, 'error');
-      } finally {
-        showLoading(false);
-      }
+      } finally { showLoading(false); }
     }
 
-    // ══ ADD ADMIN ════════════════════════════════════════════════
-    function openAddAdminModal() {
-      ['adminName','adminUsername','adminEmail','adminPassword'].forEach(id => {
-        document.getElementById(id).value = '';
-        document.getElementById(id).classList.remove('field-error');
-      });
-      ['errAdminName','errAdminUsername','errAdminEmail','errAdminPassword'].forEach(id => {
-        document.getElementById(id).style.display = 'none';
-      });
-      const status = document.getElementById('addAdminStatus');
-      status.className = 'hidden'; status.textContent = '';
-      document.getElementById('btnSubmitAdmin').disabled = false;
-      document.getElementById('btnSubmitAdmin').innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
-      document.getElementById('adminPassword').type = 'password';
-      document.getElementById('eyeIcon').className = 'fas fa-eye toggle-eye';
-      
-      document.getElementById('addAdminModal').classList.add('show');
-      setTimeout(() => document.getElementById('adminName').focus(), 350);
-      loadAdminList();
-    }
-
-    function closeAddAdminModal() { document.getElementById('addAdminModal').classList.remove('show'); }
-    async function loadAdminList() {
-  const body = document.getElementById('adminListBody');
-  body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Loading…</p>';
-  try {
-    const res = await fetch(SERVER_URL + '/api/admins');
-    const data = await res.json();
-    if (!data.success || !data.admins.length) {
-      body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">No admin accounts found.</p>';
-      return;
-    }
-    const admins = data.admins.filter(a => a.role === 'admin' || a.role === 'instructor');
-    body.innerHTML = admins.map(a => {
-      const roleBg   = a.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700';
-      const initials = (a.name || a.username).substring(0, 2).toUpperCase();
-      return `<div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
-        <div class="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">${initials}</div>
-        <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-gray-800 truncate">${a.name || a.username}</p>
-          <p class="text-xs text-gray-400 truncate">${a.email || '—'}</p>
-        </div>
-        <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${roleBg}">${a.role}</span>
-      </div>`;
-    }).join('');
-  } catch {
-    body.innerHTML = '<p class="text-xs text-red-400 text-center py-3">Failed to load admins.</p>';
-  }
-}
-    
-
-    function toggleAdminPw() {
-      const inp = document.getElementById('adminPassword');
-      const ico = document.getElementById('eyeIcon');
-      if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fas fa-eye-slash toggle-eye'; }
-      else { inp.type = 'password'; ico.className = 'fas fa-eye toggle-eye'; }
-    }
-
-    function clearFieldError(inputId, errId) {
-      document.getElementById(inputId).classList.remove('field-error');
-      document.getElementById(errId).style.display = 'none';
-    }
-    function showFieldError(inputId, errId, msg) {
-      document.getElementById(inputId).classList.add('field-error');
-      const e = document.getElementById(errId);
-      if (msg) e.textContent = msg;
-      e.style.display = 'block';
-    }
-
-    function validateAdminForm() {
-      let ok = true;
-      const name = document.getElementById('adminName').value.trim();
-      const user = document.getElementById('adminUsername').value.trim();
-      const mail = document.getElementById('adminEmail').value.trim();
-      const pass = document.getElementById('adminPassword').value;
-      if (!name) { showFieldError('adminName','errAdminName','Full name is required'); ok=false; }
-      else clearFieldError('adminName','errAdminName');
-      if (!user) { showFieldError('adminUsername','errAdminUsername','Username is required'); ok=false; }
-      else if (user.length < 3) { showFieldError('adminUsername','errAdminUsername','At least 3 characters'); ok=false; }
-      else clearFieldError('adminUsername','errAdminUsername');
-      if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { showFieldError('adminEmail','errAdminEmail','Enter a valid email'); ok=false; }
-      else clearFieldError('adminEmail','errAdminEmail');
-      if (!pass || pass.length < 8) { showFieldError('adminPassword','errAdminPassword','Min. 8 characters'); ok=false; }
-      else clearFieldError('adminPassword','errAdminPassword');
-      return ok;
-    }
-
-    async function submitAddAdmin() {
-      if (!validateAdminForm()) return;
-      const btn    = document.getElementById('btnSubmitAdmin');
-      const status = document.getElementById('addAdminStatus');
-      const name = document.getElementById('adminName').value.trim();
-      const user = document.getElementById('adminUsername').value.trim();
-      const mail = document.getElementById('adminEmail').value.trim();
-      const pass = document.getElementById('adminPassword').value;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating…';
-      status.className = 'hidden';
-      try {
-        // Uses the existing create-instructor endpoint which accepts a `role` field
-        const res = await fetch(SERVER_URL + '/api/admin/create-instructor', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: user, password: pass, email: mail, name, role: 'admin' })
-        });
-        const data = await res.json();
-        if (data.success) {
-          
-          status.textContent = '✓ Admin account "' + user + '" created successfully!';
-                    status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
-          btn.innerHTML = '<i class="fas fa-check mr-2"></i> Created!';
-          showToast('Admin "' + user + '" added', 'success');
-          setTimeout(() => closeAddAdminModal(), 1800);
-        } else { throw new Error(data.error || 'Creation failed'); }
-      } catch (err) {
-        status.textContent = '✗ ' + err.message;
-        status.className = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-red-50 border border-red-200 text-red-700';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
-      }
-    }
-
-    // ══ USER ANALYTICS MODAL ════════════════════════════════════
+    // ══ USER ANALYTICS MODAL ═══════════════════════════════════
     async function openUserModal(username) {
       showLoading(true);
       try {
-        const progressRes = await fetch(SERVER_URL + '/api/progress/' + username);
+        const progressRes  = await fetch(SERVER_URL + '/api/progress/' + username);
         const progressData = await progressRes.json();
         if (!progressData.success) throw new Error(progressData.error || 'Could not load progress');
         const userData = progressData.data;
@@ -863,7 +958,6 @@ function goToPage(n) {
       } catch (err) { showToast('Failed to load user analytics: ' + err.message, 'error'); }
       finally { showLoading(false); }
     }
-
     function closeModal() { document.getElementById('userModal').classList.remove('show'); }
     function switchModalTab(tab) {
       document.getElementById('tabQuizPerf').classList.toggle('active', tab === 'quiz');
@@ -926,24 +1020,98 @@ function goToPage(n) {
       } catch { container.innerHTML='<p class="text-center text-red-500 text-sm py-8">Error loading scenario data.</p>'; }
     }
 
+    // ══ ADD ADMIN ══════════════════════════════════════════════
+    function openAddAdminModal() {
+      ['adminName','adminUsername','adminEmail','adminPassword'].forEach(id => { document.getElementById(id).value = ''; document.getElementById(id).classList.remove('field-error'); });
+      ['errAdminName','errAdminUsername','errAdminEmail','errAdminPassword'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+      const status = document.getElementById('addAdminStatus');
+      status.className = 'hidden'; status.textContent = '';
+      document.getElementById('btnSubmitAdmin').disabled = false;
+      document.getElementById('btnSubmitAdmin').innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
+      document.getElementById('adminPassword').type = 'password';
+      document.getElementById('eyeIcon').className = 'fas fa-eye toggle-eye';
+      document.getElementById('addAdminModal').classList.add('show');
+      setTimeout(() => document.getElementById('adminName').focus(), 350);
+      loadAdminList();
+    }
+    function closeAddAdminModal() { document.getElementById('addAdminModal').classList.remove('show'); }
+    async function loadAdminList() {
+      const body = document.getElementById('adminListBody');
+      body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Loading…</p>';
+      try {
+        const res = await fetch(SERVER_URL + '/api/admins');
+        const data = await res.json();
+        if (!data.success || !data.admins.length) { body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">No admin accounts found.</p>'; return; }
+        const admins = data.admins.filter(a => a.role === 'admin' || a.role === 'instructor');
+        body.innerHTML = admins.map(a => {
+          const roleBg = a.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700';
+          const initials = (a.name || a.username).substring(0, 2).toUpperCase();
+          return `<div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+            <div class="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">${initials}</div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-gray-800 truncate">${a.name || a.username}</p><p class="text-xs text-gray-400 truncate">${a.email || '—'}</p></div>
+            <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${roleBg}">${a.role}</span>
+          </div>`;
+        }).join('');
+      } catch { body.innerHTML = '<p class="text-xs text-red-400 text-center py-3">Failed to load admins.</p>'; }
+    }
+    function toggleAdminPw() {
+      const inp = document.getElementById('adminPassword'), ico = document.getElementById('eyeIcon');
+      if (inp.type === 'password') { inp.type = 'text'; ico.className = 'fas fa-eye-slash toggle-eye'; }
+      else { inp.type = 'password'; ico.className = 'fas fa-eye toggle-eye'; }
+    }
+    function clearFieldError(inputId, errId) { document.getElementById(inputId).classList.remove('field-error'); document.getElementById(errId).style.display = 'none'; }
+    function showFieldError(inputId, errId, msg) { document.getElementById(inputId).classList.add('field-error'); const e = document.getElementById(errId); if (msg) e.textContent = msg; e.style.display = 'block'; }
+    function validateAdminForm() {
+      let ok = true;
+      const name = document.getElementById('adminName').value.trim();
+      const user = document.getElementById('adminUsername').value.trim();
+      const mail = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      if (!name) { showFieldError('adminName','errAdminName','Full name is required'); ok=false; } else clearFieldError('adminName','errAdminName');
+      if (!user) { showFieldError('adminUsername','errAdminUsername','Username is required'); ok=false; } else if (user.length < 3) { showFieldError('adminUsername','errAdminUsername','At least 3 characters'); ok=false; } else clearFieldError('adminUsername','errAdminUsername');
+      if (!mail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) { showFieldError('adminEmail','errAdminEmail','Enter a valid email'); ok=false; } else clearFieldError('adminEmail','errAdminEmail');
+      if (!pass || pass.length < 8) { showFieldError('adminPassword','errAdminPassword','Min. 8 characters'); ok=false; } else clearFieldError('adminPassword','errAdminPassword');
+      return ok;
+    }
+    async function submitAddAdmin() {
+      if (!validateAdminForm()) return;
+      const btn = document.getElementById('btnSubmitAdmin'), status = document.getElementById('addAdminStatus');
+      const name = document.getElementById('adminName').value.trim();
+      const user = document.getElementById('adminUsername').value.trim();
+      const mail = document.getElementById('adminEmail').value.trim();
+      const pass = document.getElementById('adminPassword').value;
+      btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Creating…'; status.className = 'hidden';
+      try {
+        const res  = await fetch(SERVER_URL + '/api/admin/create-instructor', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user, password: pass, email: mail, name, role: 'admin' }) });
+        const data = await res.json();
+        if (data.success) {
+          status.textContent = '✓ Admin account "' + user + '" created successfully!';
+          status.className   = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-green-50 border border-green-200 text-green-700';
+          btn.innerHTML = '<i class="fas fa-check mr-2"></i> Created!';
+          showToast('Admin "' + user + '" added', 'success');
+          setTimeout(() => closeAddAdminModal(), 1800);
+        } else throw new Error(data.error || 'Creation failed');
+      } catch (err) {
+        status.textContent = '✗ ' + err.message;
+        status.className   = 'block text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium bg-red-50 border border-red-200 text-red-700';
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-user-plus mr-2"></i> Create Account';
+      }
+    }
+
+    // ── Init ────────────────────────────────────────────────────
     window.addEventListener('load', async () => {
       const user = checkAuth();
-      if (user) {
-        document.getElementById('adminUserDisplay').textContent = user.name || user.username;
-        document.getElementById('adminEmailDisplay').textContent = user.email || '';
-      }
+      if (user) { document.getElementById('adminUserDisplay').textContent = user.name || user.username; document.getElementById('adminEmailDisplay').textContent = user.email || ''; }
       await loadUsers();
     });
 
-    document.getElementById('userModal').addEventListener('click',    e => { if (e.target.id === 'userModal')    closeModal(); });
-    document.getElementById('deleteModal').addEventListener('click',  e => { if (e.target.id === 'deleteModal')  closeDeleteModal(); });
-    document.getElementById('addAdminModal').addEventListener('click',e => { if (e.target.id === 'addAdminModal') closeAddAdminModal(); });
-    document.getElementById('deleteConfirmInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter' && !document.getElementById('btnConfirmDelete').disabled) confirmDelete();
-    });
-    document.getElementById('adminPassword').addEventListener('keydown', e => {
-      if (e.key === 'Enter') submitAddAdmin();
-    });
+    document.getElementById('userModal').addEventListener('click',       e => { if (e.target.id === 'userModal')       closeModal(); });
+    document.getElementById('deleteModal').addEventListener('click',     e => { if (e.target.id === 'deleteModal')     closeDeleteModal(); });
+    document.getElementById('addAdminModal').addEventListener('click',   e => { if (e.target.id === 'addAdminModal')   closeAddAdminModal(); });
+    document.getElementById('appealModal').addEventListener('click',     e => { if (e.target.id === 'appealModal')     closeAppealModal(); });
+    document.getElementById('permDeleteModal').addEventListener('click', e => { if (e.target.id === 'permDeleteModal') closePermDeleteModal(); });
+    document.getElementById('deleteConfirmInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !document.getElementById('btnConfirmDelete').disabled) confirmDelete(); });
+    document.getElementById('adminPassword').addEventListener('keydown', e => { if (e.key === 'Enter') submitAddAdmin(); });
   </script>
 </body>
 </html>

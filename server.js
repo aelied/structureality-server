@@ -3618,6 +3618,258 @@ setInterval(() => {
     }
 }, 600000);
 
+
+// ==================== DELETED USERS ENDPOINTS ====================
+ 
+// GET all soft-deleted users
+app.get('/api/deleted-users', async (req, res) => {
+    try {
+        const deleted = await deletedUsersCollection
+            .find({})
+            .sort({ deletedAt: -1 })
+            .toArray();
+ 
+        // Annotate each with days remaining
+        const now = Date.now();
+        const annotated = deleted.map(u => {
+            const deletedAt = new Date(u.deletedAt).getTime();
+            const expiresAt = deletedAt + 30 * 24 * 60 * 60 * 1000; // 30 days
+            const msLeft    = expiresAt - now;
+            const daysLeft  = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
+            return { ...u, daysLeft, expiresAt: new Date(expiresAt).toISOString() };
+        });
+ 
+        res.json({ success: true, count: annotated.length, deletedUsers: annotated });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch deleted users', details: error.message });
+    }
+});
+ 
+// SOFT DELETE — move user to deletedUsers collection + send notification email
+app.delete('/api/users/:username/soft', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { deletedBy, reason } = req.body; // optional: admin who deleted + reason
+ 
+        const user = await usersCollection.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ success: false, error: 'User not found' });
+        }
+ 
+        const now = new Date().toISOString();
+ 
+        // Archive the full user document
+        const archivedUser = {
+            ...user,
+            deletedAt:  now,
+            deletedBy:  deletedBy  || 'admin',
+            deleteReason: reason   || '',
+            originalId: user._id.toString(),
+            appealStatus: 'none',   // none | pending | approved | rejected
+            appealMessage: '',
+            appealedAt:  null,
+            restoredAt:  null,
+        };
+        delete archivedUser._id; // let MongoDB assign a new _id
+ 
+        await deletedUsersCollection.insertOne(archivedUser);
+        await usersCollection.deleteOne({ username });
+ 
+        console.log(`🗑️ Soft-deleted user: ${username} (by ${deletedBy || 'admin'})`);
+ 
+        // ── Send deletion notification email ──────────────────────────
+        if (user.email && process.env.SENDGRID_API_KEY) {
+            const RESTORE_URL = `https://structureality-admin.onrender.com/appeal.html?u=${encodeURIComponent(username)}`;
+            const expiryDate  = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                    .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+ 
+            const msg = {
+                to:   user.email,
+                from: { email: process.env.SENDGRID_FROM_EMAIL || 'quelangliezl@gmail.com', name: 'StructuReality' },
+                subject: 'Your StructuReality account has been removed',
+                html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                  <div style="text-align:center;padding:24px;background:linear-gradient(135deg,#fee2e2,#fecaca);border-radius:10px 10px 0 0;">
+                    <h1 style="color:#b91c1c;margin:0;font-size:24px;">Account Removed</h1>
+                  </div>
+                  <div style="background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px;">
+                    <p style="font-size:16px;color:#333;">Hello <strong>${user.name || username}</strong>,</p>
+                    <p style="font-size:14px;color:#555;line-height:1.7;">
+                      Your StructuReality account (<strong>${username}</strong>) has been removed by an administrator.
+                      ${reason ? `<br><br><em>Reason: ${reason}</em>` : ''}
+                    </p>
+                    <div style="background:white;border:1px solid #fca5a5;border-radius:8px;padding:16px;margin:20px 0;">
+                      <p style="margin:0 0 8px;font-weight:bold;color:#b91c1c;font-size:13px;">⏰ 30-Day Appeal Window</p>
+                      <p style="margin:0;font-size:13px;color:#555;">
+                        Your account data will be permanently deleted on <strong>${expiryDate}</strong>.
+                        If you believe this was a mistake, you may submit an appeal before then.
+                      </p>
+                    </div>
+                    <div style="text-align:center;margin:28px 0;">
+                      <a href="${RESTORE_URL}"
+                         style="background:#dc2626;color:white;padding:13px 36px;text-decoration:none;
+                                border-radius:8px;display:inline-block;font-weight:bold;font-size:14px;">
+                        Submit an Appeal
+                      </a>
+                    </div>
+                    <p style="font-size:11px;color:#aaa;text-align:center;margin-top:24px;">
+                      If you did not expect this or need further help, contact your instructor or administrator.
+                    </p>
+                  </div>
+                </div>`
+            };
+ 
+            try {
+                await sgMail.send(msg);
+                console.log(`✅ Deletion notification email sent to: ${user.email}`);
+            } catch (emailErr) {
+                console.error('⚠️ Failed to send deletion email:', emailErr.message);
+            }
+        }
+ 
+        res.json({ success: true, message: 'User soft-deleted and notified', username });
+    } catch (error) {
+        console.error('❌ Soft-delete error:', error);
+        res.status(500).json({ success: false, error: 'Failed to soft-delete user', details: error.message });
+    }
+});
+ 
+// RESTORE — move user back from deletedUsers → users (admin restores after appeal)
+app.post('/api/deleted-users/:username/restore', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { restoredBy } = req.body;
+ 
+        const archived = await deletedUsersCollection.findOne({ username });
+        if (!archived) {
+            return res.status(404).json({ success: false, error: 'Deleted user not found' });
+        }
+ 
+        // Check if permanent-delete window has passed
+        const deletedAt  = new Date(archived.deletedAt).getTime();
+        const expiresAt  = deletedAt + 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() > expiresAt) {
+            return res.status(400).json({ success: false, error: 'Restore window has expired. Account must be permanently deleted.' });
+        }
+ 
+        // Check username is still available
+        const existing = await usersCollection.findOne({ username });
+        if (existing) {
+            return res.status(400).json({ success: false, error: 'Username already taken by another user' });
+        }
+ 
+        // Re-insert into users collection
+        const { _id, deletedAt: _da, deletedBy: _db, deleteReason: _dr,
+                originalId: _oi, appealStatus: _as, appealMessage: _am,
+                appealedAt: _ae, restoredAt: _ra, expiresAt: _exp, daysLeft: _dl,
+                ...userDoc } = archived;
+ 
+        userDoc.restoredAt  = new Date().toISOString();
+        userDoc.restoredBy  = restoredBy || 'admin';
+ 
+        await usersCollection.insertOne(userDoc);
+        await deletedUsersCollection.deleteOne({ username });
+ 
+        console.log(`✅ User restored: ${username}`);
+ 
+        // Send restoration email
+        if (userDoc.email && process.env.SENDGRID_API_KEY) {
+            const msg = {
+                to:   userDoc.email,
+                from: { email: process.env.SENDGRID_FROM_EMAIL || 'quelangliezl@gmail.com', name: 'StructuReality' },
+                subject: 'Your StructuReality account has been restored',
+                html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+                  <div style="text-align:center;padding:24px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);border-radius:10px 10px 0 0;">
+                    <h1 style="color:#166534;margin:0;font-size:24px;">Account Restored</h1>
+                  </div>
+                  <div style="background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px;">
+                    <p style="font-size:16px;color:#333;">Hello <strong>${userDoc.name || username}</strong>,</p>
+                    <p style="font-size:14px;color:#555;line-height:1.7;">
+                      Great news! Your StructuReality account (<strong>${username}</strong>) has been successfully restored.
+                      You can now log in and continue where you left off.
+                    </p>
+                    <div style="text-align:center;margin:28px 0;">
+                      <a href="https://structureality-admin.onrender.com"
+                         style="background:#16a34a;color:white;padding:13px 36px;text-decoration:none;
+                                border-radius:8px;display:inline-block;font-weight:bold;font-size:14px;">
+                        Open StructuReality
+                      </a>
+                    </div>
+                  </div>
+                </div>`
+            };
+            try { await sgMail.send(msg); } catch (_) {}
+        }
+ 
+        res.json({ success: true, message: 'User restored successfully', username });
+    } catch (error) {
+        console.error('❌ Restore error:', error);
+        res.status(500).json({ success: false, error: 'Failed to restore user', details: error.message });
+    }
+});
+ 
+// PERMANENT DELETE — fully wipe from deletedUsers (no recovery)
+app.delete('/api/deleted-users/:username/permanent', async (req, res) => {
+    try {
+        const { username } = req.params;
+ 
+        const result = await deletedUsersCollection.deleteOne({ username });
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, error: 'Deleted user not found' });
+        }
+ 
+        console.log(`💀 Permanently deleted: ${username}`);
+        res.json({ success: true, message: 'User permanently deleted', username });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to permanently delete user', details: error.message });
+    }
+});
+ 
+// SUBMIT APPEAL — user submits an appeal message (could be called from a public appeal page)
+app.post('/api/deleted-users/:username/appeal', async (req, res) => {
+    try {
+        const { username } = req.params;
+        const { message }  = req.body;
+ 
+        const archived = await deletedUsersCollection.findOne({ username });
+        if (!archived) {
+            return res.status(404).json({ success: false, error: 'Account not found or already permanently deleted' });
+        }
+ 
+        const deletedAt = new Date(archived.deletedAt).getTime();
+        const expiresAt = deletedAt + 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() > expiresAt) {
+            return res.status(400).json({ success: false, error: 'The 30-day appeal window has expired' });
+        }
+ 
+        await deletedUsersCollection.updateOne(
+            { username },
+            { $set: { appealStatus: 'pending', appealMessage: message || '', appealedAt: new Date().toISOString() } }
+        );
+ 
+        console.log(`📩 Appeal submitted for: ${username}`);
+        res.json({ success: true, message: 'Appeal submitted. An administrator will review it shortly.' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to submit appeal', details: error.message });
+    }
+});
+ 
+// Auto-purge expired deleted users (runs every 6 hours)
+setInterval(async () => {
+    try {
+        const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+        const result = await deletedUsersCollection.deleteMany({
+            deletedAt: { $lt: cutoff },
+            appealStatus: { $nin: ['pending'] } // don't auto-purge pending appeals
+        });
+        if (result.deletedCount > 0) {
+            console.log(`🧹 Auto-purged ${result.deletedCount} expired deleted user(s)`);
+        }
+    } catch (err) {
+        console.error('❌ Auto-purge error:', err.message);
+    }
+}, 6 * 60 * 60 * 1000);
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
