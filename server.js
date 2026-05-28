@@ -33,6 +33,8 @@ const USERS_COLLECTION = "users";
 const LESSONS_COLLECTION = "lessons";
 const QUIZZES_COLLECTION = "quizzes";
 const ADMINS_COLLECTION = "admins";
+const DELETED_USERS_COLLECTION = "deletedUsers";
+
 
 // MongoDB Client
 const client = new MongoClient(MONGODB_URI, {
@@ -48,6 +50,8 @@ let usersCollection;
 let lessonsCollection;
 let adminsCollection;
 let quizzesCollection;
+let deletedUsersCollection;
+
 
 // Store reset tokens temporarily (in production, use Redis or database)
 const resetTokens = new Map();
@@ -60,7 +64,11 @@ async function connectDB() {
         usersCollection = db.collection(USERS_COLLECTION);
         lessonsCollection = db.collection(LESSONS_COLLECTION);
         adminsCollection = db.collection(ADMINS_COLLECTION);
-        quizzesCollection = db.collection(QUIZZES_COLLECTION);  // ✅ ADD THIS LINE
+        quizzesCollection = db.collection(QUIZZES_COLLECTION); 
+        
+        deletedUsersCollection = db.collection(DELETED_USERS_COLLECTION);
+await deletedUsersCollection.createIndex({ username: 1 });
+await deletedUsersCollection.createIndex({ deletedAt: 1 });// ✅ ADD THIS LINE
 
         // Create indexes
         await usersCollection.createIndex({ username: 1 }, { unique: true });
