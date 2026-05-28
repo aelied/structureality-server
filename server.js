@@ -761,7 +761,7 @@ app.post('/api/admin/create-instructor', async (req, res) => {
             password,
             email,
             name: name || username,
-            role: 'instructor',
+            role: req.body.role || 'instructor',
             createdAt: new Date().toISOString()
         };
         
