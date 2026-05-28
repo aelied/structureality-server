@@ -405,7 +405,19 @@
       <div class="add-admin-body">
 
        
-        <!-- Fields -->
+       <!-- Admin Accounts List -->
+<div id="adminListSection" class="mb-5">
+  <div class="flex items-center justify-between mb-2">
+    <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Admin Accounts</p>
+    <button onclick="loadAdminList()" class="text-xs text-indigo-500 hover:text-indigo-700 font-semibold"><i class="fas fa-sync-alt mr-1"></i>Refresh</button>
+  </div>
+  <div id="adminListBody" class="space-y-2 max-h-44 overflow-y-auto pr-1">
+    <p class="text-xs text-gray-400 text-center py-3">Loading…</p>
+  </div>
+</div>
+<hr class="border-gray-100 mb-5" />
+
+<!-- Fields -->
         <div class="form-row">
           <div class="form-field">
             <label>Full Name</label>
@@ -660,10 +672,37 @@
       
       document.getElementById('addAdminModal').classList.add('show');
       setTimeout(() => document.getElementById('adminName').focus(), 350);
+      loadAdminList();
     }
 
     function closeAddAdminModal() { document.getElementById('addAdminModal').classList.remove('show'); }
-
+    async function loadAdminList() {
+  const body = document.getElementById('adminListBody');
+  body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Loading…</p>';
+  try {
+    const res = await fetch(SERVER_URL + '/api/admins');
+    const data = await res.json();
+    if (!data.success || !data.admins.length) {
+      body.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">No admin accounts found.</p>';
+      return;
+    }
+    const admins = data.admins.filter(a => a.role === 'admin' || a.role === 'instructor');
+    body.innerHTML = admins.map(a => {
+      const roleBg   = a.role === 'admin' ? 'bg-indigo-100 text-indigo-700' : 'bg-purple-100 text-purple-700';
+      const initials = (a.name || a.username).substring(0, 2).toUpperCase();
+      return `<div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs flex-shrink-0">${initials}</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-800 truncate">${a.name || a.username}</p>
+          <p class="text-xs text-gray-400 truncate">${a.email || '—'}</p>
+        </div>
+        <span class="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${roleBg}">${a.role}</span>
+      </div>`;
+    }).join('');
+  } catch {
+    body.innerHTML = '<p class="text-xs text-red-400 text-center py-3">Failed to load admins.</p>';
+  }
+}
     
 
     function toggleAdminPw() {
