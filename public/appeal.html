@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Appeal Account Deletion – StructuReality</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Poppins", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f1b3f 0%, #2a1b63 50%, #1a0a2e 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .card {
+      background: white; border-radius: 20px; width: 100%; max-width: 500px;
+      overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+      animation: slideUp 0.45s cubic-bezier(0.34, 1.36, 0.64, 1);
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .header {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      padding: 32px 28px 24px; text-align: center;
+      border-bottom: 1px solid #fca5a5;
+    }
+    .icon-wrap {
+      width: 68px; height: 68px; border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #b91c1c);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 8px 24px rgba(239,68,68,0.35);
+    }
+    .icon-wrap svg { width: 32px; height: 32px; fill: white; }
+    .header h1 { font-size: 22px; font-weight: 700; color: #7f1d1d; }
+    .header p  { font-size: 13px; color: #b91c1c; margin-top: 4px; }
+
+    .body { padding: 28px; }
+
+    .info-box {
+      background: #fff7ed; border: 1px solid #fed7aa; border-radius: 12px;
+      padding: 14px 16px; margin-bottom: 22px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .info-box svg { width: 18px; height: 18px; fill: #c2410c; flex-shrink: 0; margin-top: 1px; }
+    .info-box p { font-size: 12.5px; color: #7c2d12; line-height: 1.6; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 700; color: #374151;
+      text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 6px;
+    }
+    .field input, .field textarea {
+      width: 100%; padding: 11px 14px;
+      border: 2px solid #e5e7eb; border-radius: 10px;
+      font-size: 13px; font-family: 'Poppins', sans-serif;
+      outline: none; color: #1f2937; resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .field input:focus, .field textarea:focus {
+      border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .field input.err, .field textarea.err { border-color: #ef4444; }
+    .field-err { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
+    .field textarea { min-height: 110px; }
+    .char-count { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 4px; }
+
+    .btn-submit {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #4338ca);
+      color: white; border: none; border-radius: 10px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 14px rgba(99,102,241,0.4); letter-spacing: 0.5px;
+      font-family: 'Poppins', sans-serif;
+    }
+    .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+    .btn-submit:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-submit:not(:disabled):active { transform: translateY(0); }
+
+    .status-msg {
+      display: none; border-radius: 10px; padding: 12px 16px;
+      font-size: 13px; font-weight: 600; text-align: center; margin-top: 14px;
+    }
+    .status-success { display: block; background: #f0fdf4; border: 1.5px solid #86efac; color: #166534; }
+    .status-error   { display: block; background: #fef2f2; border: 1.5px solid #fca5a5; color: #b91c1c; }
+
+    .footer {
+      text-align: center; padding: 0 28px 24px;
+      font-size: 12px; color: #9ca3af; line-height: 1.6;
+    }
+    .footer strong { color: #6b7280; }
+
+    /* Loading spinner inside button */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner-inline {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 8px;
+    }
+
+    /* Success state card */
+    .success-view { display: none; padding: 40px 28px; text-align: center; }
+    .success-view .big-icon {
+      width: 72px; height: 72px; background: linear-gradient(135deg, #10b981, #059669);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; box-shadow: 0 8px 24px rgba(16,185,129,0.35);
+    }
+    .success-view .big-icon svg { width: 36px; height: 36px; fill: white; }
+    .success-view h2 { font-size: 20px; font-weight: 700; color: #064e3b; margin-bottom: 8px; }
+    .success-view p  { font-size: 13px; color: #6b7280; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<div class="card" id="mainCard">
+  <div class="header">
+    <div class="icon-wrap">
+      <!-- gavel icon -->
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9.5 3.5L3.5 9.5 5.5 11.5 11.5 5.5 9.5 3.5ZM10.5 4.5L12 6L6 12L4.5 10.5 10.5 4.5Z"/>
+        <path d="M13 3l-1.5 1.5 6.5 6.5L19.5 9.5 13 3zm1 1.4l4.1 4.1-.7.7L13.3 5.1l.7-.7z"/>
+        <path d="M14.5 14.5l-1.5 1.5L20 23l1.5-1.5-7-7z"/>
+        <path d="M3 21h8v-2H5l-2 2zM2 20l3-3h2v2H5.5l-1.5 1.5V20H2z"/>
+        <rect x="2" y="19" width="9" height="2" rx="1"/>
+      </svg>
+    </div>
+    <h1>Submit an Appeal</h1>
+    <p>Request a review of your account deletion</p>
+  </div>
+
+  <div class="body">
+    <div class="info-box">
+      <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20A10 10 0 0 0 12 2zm0 2a8 8 0 1 1 0 16A8 8 0 0 1 12 4zm-1 4v5h2V8h-2zm0 6v2h2v-2h-2z"/></svg>
+      <p>
+        Deleted accounts are held for <strong>30 days</strong>. Submit your appeal before the window expires and an admin will review it.
+        Pending appeals are never auto-purged.
+      </p>
+    </div>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="usernameField" placeholder="Your StructuReality username" autocomplete="off" spellcheck="false" oninput="clearErr(this,'errUsername')" />
+      <p class="field-err" id="errUsername">Username is required</p>
+    </div>
+
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="emailField" placeholder="Email linked to your account" autocomplete="off" oninput="clearErr(this,'errEmail')" />
+      <p class="field-err" id="errEmail">Please enter a valid email</p>
+    </div>
+
+    <div class="field">
+      <label>Why should your account be restored?</label>
+      <textarea id="messageField" placeholder="Explain your situation. The more detail you provide, the better the admin can evaluate your appeal…" maxlength="600" oninput="onMsgInput(); clearErr(this,'errMessage')"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+        <p class="field-err" id="errMessage" style="margin:0">Please write a brief message (at least 20 characters)</p>
+        <p class="char-count" id="charCount">0 / 600</p>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btnSubmit" onclick="submitAppeal()">
+      Submit Appeal
+    </button>
+    <div class="status-msg" id="statusMsg"></div>
+  </div>
+
+  <div class="footer">
+    Appeals are reviewed within <strong>1–3 business days</strong>.<br>
+    You will be notified at your registered email address.
+  </div>
+</div>
+
+<script>
+  const SERVER_URL = 'https://structureality-admin.onrender.com';
+
+  // Pre-fill username from query param ?u=...
+  (function() {
+    const params = new URLSearchParams(window.location.search);
+    const u = params.get('u');
+    if (u) document.getElementById('usernameField').value = decodeURIComponent(u);
+  })();
+
+  function onMsgInput() {
+    const val = document.getElementById('messageField').value;
+    document.getElementById('charCount').textContent = val.length + ' / 600';
+  }
+
+  function clearErr(el, errId) {
+    el.classList.remove('err');
+    document.getElementById(errId).style.display = 'none';
+  }
+
+  function showErr(inputId, errId) {
+    const input = document.getElementById(inputId);
+    input.classList.add('err');
+    const err = document.getElementById(errId);
+    err.style.display = 'block';
+    return input;
+  }
+
+  function validate() {
+    let ok = true;
+    const username = document.getElementById('usernameField').value.trim();
+    const email    = document.getElementById('emailField').value.trim();
+    const message  = document.getElementById('messageField').value.trim();
+
+    if (!username) { showErr('usernameField','errUsername'); ok = false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('emailField','errEmail'); ok = false; }
+    if (message.length < 20) { showErr('messageField','errMessage'); ok = false; }
+    return ok;
+  }
+
+  async function submitAppeal() {
+    if (!validate()) return;
+
+    const username = document.getElementById('usernameField').value.trim();
+    const message  = document.getElementById('messageField').value.trim();
+    const btn      = document.getElementById('btnSubmit');
+    const status   = document.getElementById('statusMsg');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-inline"></span> Submitting…';
+    status.className = 'status-msg';
+    status.style.display = 'none';
+
+    try {
+      const res  = await fetch(`${SERVER_URL}/api/deleted-users/${encodeURIComponent(username)}/appeal`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ message })
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        // Show success card
+        document.getElementById('mainCard').innerHTML = `
+          <div class="success-view" style="display:block;">
+            <div class="big-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 16.2l-3.5-3.5-1.4 1.4L9 19 20 8l-1.4-1.4z"/></svg>
+            </div>
+            <h2>Appeal submitted!</h2>
+            <p>
+              Your appeal for <strong style="color:#1f2937">@${username}</strong> has been received.<br><br>
+              An administrator will review it within <strong style="color:#1f2937">1–3 business days</strong>.<br>
+              You'll be notified by email when a decision is made.
+            </p>
+            <p style="margin-top:20px;font-size:12px;color:#9ca3af;">You may now close this page.</p>
+          </div>`;
+      } else {
+        throw new Error(data.error || 'Submission failed');
+      }
+    } catch (err) {
+      status.className = 'status-msg status-error';
+      status.textContent = '✗ ' + err.message;
+      btn.disabled = false;
+      btn.innerHTML = 'Submit Appeal';
+    }
+  }
+</script>
+</body>
+</html>
