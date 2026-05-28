@@ -692,8 +692,11 @@
         const as   = u.appealStatus || 'none';
         const asLbl = { none: 'No appeal', pending: 'Pending review', approved: 'Approved', rejected: 'Rejected' }[as] || as;
         const asCls = 'appeal-' + as;
-
         const hasPending = as === 'pending';
+        const appealHtml = hasPending
+  ? `<button onclick="openAppealModal('${u.username}')" class="appeal-badge appeal-pending" style="cursor:pointer;border:none;background:#fffbeb;transition:all 0.2s;" onmouseover="this.style.background='#fde68a'" onmouseout="this.style.background='#fffbeb'"><i class="fas fa-gavel" style="font-size:10px;margin-right:4px;"></i>Pending review</button>`
+  : `<span class="appeal-badge ${asCls}">${asLbl}</span>`;
+
         return `<tr class="user-row border-b border-gray-100">
           <td class="px-6 py-4">
             <div class="flex items-center gap-3">
@@ -714,8 +717,7 @@
             <span class="days-badge ${daysCls}">${daysLabel}</span>
           </td>
           <td class="px-6 py-4 text-center">
-            <span class="appeal-badge ${asCls}">${asLbl}</span>
-            ${hasPending ? `<br><button onclick="openAppealModal('${u.username}')" class="mt-1 text-xs text-amber-600 hover:text-amber-800 font-semibold underline">Review</button>` : ''}
+            ${appealHtml}
           </td>
           <td class="px-6 py-4 text-center">
             <div class="flex items-center justify-center gap-1 flex-wrap">
