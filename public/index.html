@@ -254,7 +254,8 @@
             users.forEach(user => {
                 const progressPercent = user.topics && user.topics.length > 0
     ? Math.round(
-        user.topics.reduce((sum, t) => sum + (t.lessonOnlyProgress || 0), 0) / user.topics.length
+        user.topics.reduce((sum, t) => sum + (t.lessonsCompleted || 0), 0) /
+        (user.topics.length * 7) * 100
       )
     : 0;
 
@@ -413,7 +414,7 @@ const topicNames = ['Arrays', 'Queues', 'Stacks', 'LinkedLists', 'Trees', 'Graph
                 // Load dashboard data immediately
                 loadDashboardData();
 
-                if (isInstructor(currentUser)) {
+                if (isInstructor(user)) {
             const instructorsLink = document.getElementById('instructorsLink');
             if (instructorsLink) {
                 instructorsLink.style.display = 'none';
