@@ -254,7 +254,7 @@
             users.forEach(user => {
                 const progressPercent = user.topics && user.topics.length > 0
     ? Math.round(
-        user.topics.reduce((sum, t) => sum + (t.progressPercentage || 0), 0) / user.topics.length
+        user.topics.reduce((sum, t) => sum + (t.lessonOnlyProgress || 0), 0) / user.topics.length
       )
     : 0;
 
