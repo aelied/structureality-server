@@ -180,6 +180,7 @@
       /* TOPIC PILLS */
       .pill-btn{padding:6px 14px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;}
       .pill-btn:hover{border-color:var(--accent);color:var(--accent2);}
+      .hidden { display: none !important; }
   
       @media(max-width:1100px){.scenarios-grid{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}}
       @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
@@ -359,6 +360,7 @@
           <p style="text-align:center;color:var(--text3);font-size:12px;">Loading leaderboard…</p>
         </div>
       </div>
+    </div>
 
       <div class="log-panel" id="activityLog">
         <div class="log-header">
@@ -506,40 +508,40 @@
         const hasNote = ['LinkedList','Graph','Trees'].includes(ds);
         const nc = noteColors[ds];
         return `
-          <div class="tab-panel ${i===0?'active':''} bg-white rounded-b-xl rounded-tr-xl shadow-sm border border-t-0 border-gray-200 p-6 mb-6" id="panel-${ds}">
-            ${hasNote ? `<div class="bg-${nc}-50 border border-${nc}-100 rounded-xl p-3 mb-5 flex items-start gap-3"><i class="fas fa-info-circle text-${nc}-400 mt-0.5 flex-shrink-0"></i><div class="text-xs text-${nc}-700">${noteTexts[ds]}</div></div>` : ''}
-            <div class="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-5 flex items-center gap-5 flex-wrap">
-              <div class="flex items-center gap-2 text-sm text-gray-500">
-                <i class="fas fa-mobile-alt text-${mobileColor[ds]}-500"></i>
-                <span class="font-medium text-gray-700">${DSLabels[ds]} Screen Preview</span>
-              </div>
-              <i class="fas fa-arrow-right text-gray-300 text-xs"></i>
-              <div class="flex gap-3 flex-wrap">
-                <div id="${p}PreviewBtn1" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 1</div>
-                <div id="${p}PreviewBtn2" class="preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition">Button 2</div>
-              </div>
-              <div class="ml-auto flex items-center gap-2 text-sm">
-                <span id="${p}ActiveCountBadge" class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 font-semibold text-xs">0 of 3 active</span>
-                <span id="${p}StatusHint" class="text-gray-400 text-xs">Select 2 scenarios to enable push.</span>
-              </div>
-            </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6" id="${p}ScenariosGrid"></div>
-            <div class="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-gray-100">
-              <div>
-                <h3 class="text-base font-semibold text-gray-800">Push ${DSLabels[ds]} Config to App</h3>
-                <p class="text-xs text-gray-400">The AR app reads this on every ${DSLabels[ds]} launch and reset.</p>
-              </div>
-              <div class="flex gap-3">
-                <button onclick="loadConfig('${ds}')" class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 ${DSHovers[ds]} transition">
-                  <i class="fas fa-sync-alt"></i> Reload
-                </button>
-                <button id="${p}PushBtn" onclick="pushConfig('${ds}')" disabled
-                  class="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-semibold text-white bg-gradient-to-r ${DSGradients[ds]} hover:opacity-90 transition disabled:opacity-40 disabled:cursor-not-allowed">
-                  <i class="fas fa-upload"></i> Push ${DSLabels[ds]}
-                </button>
-              </div>
-            </div>
-          </div>`;
+  <div class="tab-panel ${i===0?'active':''} panel" id="panel-${ds}" style="border-top:none;border-radius:0 var(--radius) var(--radius) var(--radius);">
+    <div class="panel-inner">
+      ${hasNote ? `<div class="info-note info-note-${nc==='rose'?'rose':nc==='sky'?'sky':'green'}">
+        <i class="fas fa-info-circle" style="flex-shrink:0;margin-top:1px;"></i>
+        <div>${noteTexts[ds]}</div>
+      </div>` : ''}
+      <div class="preview-bar">
+        <i class="fas fa-mobile-alt" style="color:var(--accent2);"></i>
+        <span style="font-size:12px;font-weight:600;color:var(--text2);">${DSLabels[ds]} Screen Preview</span>
+        <i class="fas fa-arrow-right" style="color:var(--text3);font-size:11px;"></i>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div id="${p}PreviewBtn1" class="preview-btn-empty">Button 1</div>
+          <div id="${p}PreviewBtn2" class="preview-btn-empty">Button 2</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <span id="${p}ActiveCountBadge" style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;background:rgba(251,191,36,0.15);color:var(--amber);">0 of 3 active</span>
+          <span id="${p}StatusHint" style="font-size:11px;color:var(--text3);">Select 2 scenarios to enable push.</span>
+        </div>
+      </div>
+      <div class="scenarios-grid" id="${p}ScenariosGrid"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:16px;border-top:1px solid var(--border);">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text);">Push ${DSLabels[ds]} Config to App</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px;">The AR app reads this on every ${DSLabels[ds]} launch and reset.</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button onclick="loadConfig('${ds}')" class="btn btn-ghost"><i class="fas fa-sync-alt"></i> Reload</button>
+          <button id="${p}PushBtn" onclick="pushConfig('${ds}')" disabled class="btn btn-primary" style="opacity:0.4;cursor:not-allowed;">
+            <i class="fas fa-upload"></i> Push ${DSLabels[ds]}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>`;
       }).join('');
     }
 
@@ -593,68 +595,54 @@
         const sparkId = `spark_${ds}_${sc.id}`;
 
         const card = document.createElement('div');
-        card.className = `scenario-card bg-white rounded-xl shadow-sm border-2 ${isActive ? `border-2 active-${ds}` : 'border-gray-100'} p-5 cursor-pointer card-hover`;
-        card.onclick = () => toggleScenario(ds, sc.id);
+        card.className = `scenario-card ${isActive ? `active-${ds}` : ''}`;
+card.onclick = () => toggleScenario(ds, sc.id);
 
-        const activeOpClass = ds==='Arrays' ? 'bg-indigo-50 text-indigo-600 border border-indigo-200'
-          : ds==='Stacks' ? 'bg-purple-50 text-purple-600 border border-purple-200'
-          : ds==='Queue'  ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
-          : ds==='Graph'  ? 'bg-sky-50 text-sky-600 border border-sky-200'
-          : ds==='Trees'  ? 'bg-green-50 text-green-700 border border-green-200'
-          : 'bg-rose-50 text-rose-600 border border-rose-200';
+const iconBg = isActive ? (DS_CONFIG[ds].accentColor + '25') : 'var(--surface3)';
+const opStyle = isActive
+  ? `background:${DS_CONFIG[ds].accentColor}20;color:${DS_CONFIG[ds].accentColor};border:1px solid ${DS_CONFIG[ds].accentColor}40;`
+  : 'background:var(--surface3);color:var(--text3);';
+const posBadgeStyle = `font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;background:${DS_CONFIG[ds].accentColor}20;color:${DS_CONFIG[ds].accentColor};`;
 
-        const iconBgClass = isActive
-          ? (ds==='Arrays'?'bg-indigo-100':ds==='Stacks'?'bg-purple-100':ds==='Queue'?'bg-emerald-100':ds==='Graph'?'bg-sky-100':ds==='Trees'?'bg-green-100':'bg-rose-100')
-          : 'bg-gray-100';
+const statsRow = hasData
+  ? `<div style="border-top:1px solid var(--border);padding-top:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
+      <div style="text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--text);">${totalPicks.toLocaleString()}</div>
+        <div style="font-size:10px;color:var(--text3);">Total Picks</div>
+      </div>
+      <svg id="${sparkId}" height="28" viewBox="0 0 100 28" preserveAspectRatio="none" style="flex:1;margin:0 8px;"></svg>
+      <div style="text-align:center;">
+        <div style="font-size:16px;font-weight:700;color:var(--text);">${uniqueUsers}</div>
+        <div style="font-size:10px;color:var(--text3);">Users</div>
+      </div>
+    </div>`
+  : `<div style="border-top:1px solid var(--border);padding-top:10px;text-align:center;">
+      <span style="font-size:11px;color:var(--text3);font-style:italic;">No picks recorded yet</span>
+    </div>`;
 
-        const badgeClass = isActive
-          ? (ds==='Arrays'?'bg-indigo-100 text-indigo-600':ds==='Stacks'?'bg-purple-100 text-purple-600':ds==='Queue'?'bg-emerald-100 text-emerald-600':ds==='Graph'?'bg-sky-100 text-sky-600':ds==='Trees'?'bg-green-100 text-green-700':'bg-rose-100 text-rose-600')
-          : '';
-
-        const diffBadges = sc.difficulties
-          ? sc.difficulties.map(d => `<span class="diff-badge ${d==='Beginner'?'diff-beginner':'diff-intermediate'}"><i class="fas ${d==='Beginner'?'fa-seedling':'fa-fire'}" style="font-size:9px"></i> ${d}</span>`).join('')
-          : '';
-
-        // Bottom stats row: show real pick count or "no picks yet"
-        const statsRow = hasData
-          ? `<div class="border-t border-gray-100 pt-3 flex items-center justify-between gap-2">
-              <div class="text-center">
-                <p class="text-lg font-bold text-gray-800">${totalPicks.toLocaleString()}</p>
-                <p class="text-xs text-gray-400">Total Picks</p>
-              </div>
-              <svg class="sparkline flex-1 mx-2" id="${sparkId}" height="28" viewBox="0 0 100 28" preserveAspectRatio="none"></svg>
-              <div class="text-center">
-                <p class="text-lg font-bold text-gray-800">${uniqueUsers}</p>
-                <p class="text-xs text-gray-400">Users</p>
-              </div>
-            </div>`
-          : `<div class="border-t border-gray-100 pt-3 text-center">
-              <p class="text-xs text-gray-400 italic">No picks recorded yet</p>
-            </div>`;
-
-        card.innerHTML = `
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-11 h-11 ${iconBgClass} rounded-xl flex items-center justify-center text-2xl">${sc.icon}</div>
-              <div>
-                <h3 class="font-semibold text-gray-800 text-sm">${sc.name}</h3>
-                <span class="text-xs font-mono text-gray-400 bg-gray-100 px-2 py-0.5 rounded">${sc.id}</span>
-              </div>
-            </div>
-            <div class="flex flex-col items-end gap-1.5">
-              ${isActive ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full ${badgeClass}">Button ${pos}</span>` : ''}
-              <label class="toggle-switch toggle-${ds}" onclick="event.stopPropagation()">
-                <input type="checkbox" ${isActive?'checked':''} ${maxReached?'disabled':''} onchange="toggleScenario('${ds}','${sc.id}')">
-                <span class="slider"></span>
-              </label>
-            </div>
-          </div>
-          ${diffBadges ? `<div class="flex gap-2 mb-2">${diffBadges}</div>` : ''}
-          <p class="text-xs text-gray-500 leading-relaxed mb-3">${sc.desc}</p>
-          <div class="flex flex-wrap gap-1 mb-3">
-            ${sc.ops.map(op => `<span class="text-xs px-2 py-0.5 rounded-full ${isActive?activeOpClass:'bg-gray-100 text-gray-500'} font-mono">${op}</span>`).join('')}
-          </div>
-          ${statsRow}`;
+card.innerHTML = `
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:40px;height:40px;background:${iconBg};border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${sc.icon}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${sc.name}</div>
+        <span style="font-size:10px;font-family:var(--mono);color:var(--text3);background:var(--surface3);padding:1px 6px;border-radius:4px;">${sc.id}</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      ${isActive ? `<span style="${posBadgeStyle}">Button ${pos}</span>` : ''}
+      <label class="toggle-switch toggle-${ds}" onclick="event.stopPropagation()">
+        <input type="checkbox" ${isActive?'checked':''} ${maxReached?'disabled':''} onchange="toggleScenario('${ds}','${sc.id}')">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+  ${diffBadges ? `<div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap;">${diffBadges}</div>` : ''}
+  <p style="font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:10px;">${sc.desc}</p>
+  <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;">
+    ${sc.ops.map(op => `<span style="font-size:10px;padding:2px 7px;border-radius:100px;font-family:var(--mono);${opStyle}">${op}</span>`).join('')}
+  </div>
+  ${statsRow}`;
 
         grid.appendChild(card);
 
@@ -685,16 +673,29 @@
     }
 
     function updateStatusBar(ds) {
-      const { prefix } = DS_CONFIG[ds];
-      const n     = state[ds].activeIds.length;
-      const total = SCENARIOS[ds].length;
-      document.getElementById(`${prefix}ActiveCountBadge`).textContent = `${n} of ${total} active`;
-      document.getElementById(`${prefix}ActiveCountBadge`).className   = `px-3 py-1 rounded-full font-semibold text-xs ${n===MAX_ACTIVE?'bg-green-100 text-green-700':'bg-yellow-100 text-yellow-700'}`;
-      const hint = document.getElementById(`${prefix}StatusHint`);
-      const btn  = document.getElementById(`${prefix}PushBtn`);
-      if (n === MAX_ACTIVE) { hint.textContent = '✓ Exactly 2 selected — ready to push.'; hint.className = 'text-green-600 text-xs font-medium'; btn.disabled = false; }
-      else { const need = MAX_ACTIVE - n; hint.textContent = `Select ${need} more scenario${need!==1?'s':''} to enable push.`; hint.className = 'text-gray-400 text-xs'; btn.disabled = true; }
-    }
+  const { prefix } = DS_CONFIG[ds];
+  const n = state[ds].activeIds.length;
+  const total = SCENARIOS[ds].length;
+  const badge = document.getElementById(`${prefix}ActiveCountBadge`);
+  badge.textContent = `${n} of ${total} active`;
+  badge.style.cssText = `font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;background:${n===MAX_ACTIVE?'rgba(52,211,153,0.15)':'rgba(251,191,36,0.15)'};color:${n===MAX_ACTIVE?'var(--green)':'var(--amber)'};`;
+  const hint = document.getElementById(`${prefix}StatusHint`);
+  const btn  = document.getElementById(`${prefix}PushBtn`);
+  if (n === MAX_ACTIVE) {
+    hint.textContent = '✓ Exactly 2 selected — ready to push.';
+    hint.style.color = 'var(--green)';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+  } else {
+    const need = MAX_ACTIVE - n;
+    hint.textContent = `Select ${need} more scenario${need!==1?'s':''} to enable push.`;
+    hint.style.color = 'var(--text3)';
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+    btn.style.cursor = 'not-allowed';
+  }
+}
 
     function updatePreview(ds) {
       const { prefix } = DS_CONFIG[ds];
@@ -703,10 +704,10 @@
       const s2 = SCENARIOS[ds].find(s => s.id === activeIds[1]);
       const b1 = document.getElementById(`${prefix}PreviewBtn1`);
       const b2 = document.getElementById(`${prefix}PreviewBtn2`);
-      if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
-      else    { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
-      if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = `preview-btn-active-${ds} px-5 py-2.5 rounded-lg text-sm transition`; }
-      else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty px-5 py-2.5 rounded-lg text-sm transition'; }
+      if (s1) { b1.textContent = `${s1.icon} ${s1.name}`; b1.className = `preview-btn-active-${ds}`; }
+else    { b1.textContent = 'Button 1'; b1.className = 'preview-btn-empty'; }
+if (s2) { b2.textContent = `${s2.icon} ${s2.name}`; b2.className = `preview-btn-active-${ds}`; }
+else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty'; }
     }
 
     function toggleScenario(ds, id) {
@@ -896,20 +897,18 @@ document.getElementById('apiStatus').textContent = 'offline';
         const unique = usage[sc.id]?.uniqueUsers || 0;
         const rankClass = idx===0?'rank-1':idx===1?'rank-2':'rank-3';
         return `
-          <div class="flex items-center gap-3">
-            <div class="rank-badge ${rankClass}">${idx+1}</div>
-            <span class="text-xl">${sc.icon}</span>
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-sm font-semibold text-gray-700">${sc.name}</span>
-                <span class="text-xs text-gray-500">${picks} picks · ${unique} users</span>
-              </div>
-              <div class="usage-bar-track">
-                <div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div>
-              </div>
-            </div>
-            <span class="text-sm font-bold" style="color:${color};min-width:36px;text-align:right">${pct}%</span>
-          </div>`;
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <div class="rank-badge">${idx+1}</div>
+    <span style="font-size:18px;">${sc.icon}</span>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+        <span style="font-size:12px;font-weight:600;color:var(--text);">${sc.name}</span>
+        <span style="font-size:11px;color:var(--text3);">${picks} picks · ${unique} users</span>
+      </div>
+      <div class="usage-bar-track"><div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+    </div>
+    <span style="font-size:12px;font-weight:700;color:${color};min-width:32px;text-align:right">${pct}%</span>
+  </div>`;
       }).join('');
     }
 
@@ -929,28 +928,26 @@ document.getElementById('apiStatus').textContent = 'offline';
             const pct = Math.round((item.totalPicks / maxPicks) * 100);
             const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':`<span class="text-gray-500 font-bold text-sm">${idx+1}</span>`;
             return `
-              <div class="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
-                <div class="w-8 text-center text-lg">${medal}</div>
-                <div class="text-xl">${sc?.icon || '🎮'}</div>
-                <div class="flex-1">
-                  <div class="flex items-center justify-between mb-1">
-                    <div>
-                      <span class="text-sm font-semibold text-gray-800">${item.name}</span>
-                      <span class="ml-2 text-xs px-2 py-0.5 rounded-full font-semibold" style="background:${color}20;color:${color}">${ds}</span>
-                    </div>
-                    <div class="text-right">
-                      <span class="text-sm font-bold text-gray-800">${item.totalPicks}</span>
-                      <span class="text-xs text-gray-400 ml-1">picks</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <div class="usage-bar-track flex-1">
-                      <div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div>
-                    </div>
-                    <span class="text-xs text-gray-400">${item.uniqueUsers} users</span>
-                  </div>
-                </div>
-              </div>`;
+  <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--surface2);margin-bottom:8px;">
+    <div style="width:28px;text-align:center;font-size:16px;">${medal}</div>
+    <div style="font-size:18px;">${sc?.icon || '🎮'}</div>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+        <div>
+          <span style="font-size:12px;font-weight:600;color:var(--text);">${item.name}</span>
+          <span style="margin-left:6px;font-size:10px;font-weight:700;padding:1px 7px;border-radius:100px;background:${color}20;color:${color};">${ds}</span>
+        </div>
+        <div>
+          <span style="font-size:12px;font-weight:700;color:var(--text);">${item.totalPicks}</span>
+          <span style="font-size:10px;color:var(--text3);margin-left:3px;">picks</span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="usage-bar-track" style="flex:1;"><div class="usage-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+        <span style="font-size:10px;color:var(--text3);">${item.uniqueUsers} users</span>
+      </div>
+    </div>
+  </div>`;
           }).join('')}
         </div>`;
     }
