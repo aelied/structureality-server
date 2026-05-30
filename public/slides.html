@@ -83,7 +83,7 @@
           .live-banner{background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
           .live-banner-icon{width:36px;height:36px;background:rgba(108,99,255,0.15);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:15px;flex-shrink:0;}
           .api-status-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
-      
+          .hidden { display: none !important; }
           /* SLIDES GRID */
           .slides-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
           .slide-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all 0.2s;}
@@ -174,12 +174,13 @@
       <div class="nav-section">Main</div>
       <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
       <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+      <a href="slides.html"            class="nav-link active"><i class="fas fa-images"></i> App Settings</a>
       <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
       <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
       <div class="nav-section">Analytics</div>
       <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
       <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
-      <a href="slides.html"            class="nav-link active"><i class="fas fa-images"></i> App Settings</a>
+      
       <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
     </nav>
     <div class="sidebar-footer">
@@ -503,7 +504,7 @@ function openCreateModal() {
   editingId = null; currentLessons = []; currentImageData = null;
   document.getElementById('modalTitle').textContent  = 'New Featured Slide';
   document.getElementById('saveLabel').textContent   = 'Create Slide';
-  document.getElementById('deleteSlideBtn').classList.add('hidden');
+  document.getElementById('deleteSlideBtn').style.display = 'none';
   document.getElementById('slideTag').value   = '';
   document.getElementById('slideTitle').value = '';
   document.getElementById('slideDesc').value  = '';
@@ -512,7 +513,7 @@ function openCreateModal() {
   resetImagePreview();
   renderLessonList();
   updatePreview();
-  document.getElementById('slideModal').classList.remove('hidden');
+  document.getElementById('slideModal').classList.add('show');
 }
 
 function openEditModal(id) {
@@ -521,7 +522,7 @@ function openEditModal(id) {
   editingId = id; currentLessons = [...(slide.lessons||[])]; currentImageData = slide.img || null;
   document.getElementById('modalTitle').textContent  = 'Edit Slide';
   document.getElementById('saveLabel').textContent   = 'Save Changes';
-  document.getElementById('deleteSlideBtn').classList.remove('hidden');
+  document.getElementById('deleteSlideBtn').style.display = 'inline-flex';
   document.getElementById('slideTag').value   = slide.tag || '';
   document.getElementById('slideTitle').value = (slide.title||'').replace(/<[^>]*>/g,'');
   document.getElementById('slideDesc').value  = slide.desc || slide.description || '';
@@ -531,12 +532,22 @@ function openEditModal(id) {
   else resetImagePreview();
   renderLessonList();
   updatePreview();
-  document.getElementById('slideModal').classList.remove('hidden');
+  document.getElementById('slideModal').classList.add('show');
 }
 
 function closeModal() {
-  document.getElementById('slideModal').classList.add('hidden');
+  document.getElementById('slideModal').classList.remove('show');
   editingId = null; currentLessons = []; currentImageData = null;
+}
+
+function openDeleteConfirm() {
+  pendingDeleteId = editingId;
+  document.getElementById('deleteModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+  document.getElementById('deleteModal').classList.remove('show');
+  pendingDeleteId = null;
 }
 
 // ── Live Preview ──────────────────────────────────────────────────
@@ -630,8 +641,7 @@ async function saveSlide() {
 }
 
 // ── Delete ────────────────────────────────────────────────────────
-function openDeleteConfirm() { pendingDeleteId = editingId; document.getElementById('deleteModal').classList.remove('hidden'); }
-function closeDeleteModal()  { document.getElementById('deleteModal').classList.add('hidden'); pendingDeleteId = null; }
+
 async function confirmDelete() {
   if (!pendingDeleteId) return;
   try {
