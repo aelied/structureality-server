@@ -620,6 +620,10 @@ const statsRow = hasData
       <span style="font-size:11px;color:var(--text3);font-style:italic;">No picks recorded yet</span>
     </div>`;
 
+    const diffBadges = sc.difficulties
+  ? sc.difficulties.map(d => `<span class="diff-badge diff-${d.toLowerCase()}"><i class="fas ${d==='Beginner'?'fa-seedling':'fa-fire'}" style="font-size:9px"></i> ${d}</span>`).join('')
+  : '';
+
 card.innerHTML = `
   <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
     <div style="display:flex;align-items:center;gap:10px;">
