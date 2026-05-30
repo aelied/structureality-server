@@ -34,6 +34,7 @@ const LESSONS_COLLECTION = "lessons";
 const QUIZZES_COLLECTION = "quizzes";
 const ADMINS_COLLECTION = "admins";
 const DELETED_USERS_COLLECTION = "deletedUsers";
+const slidesCollection = db.collection("featured_slides");
 
 
 // MongoDB Client
@@ -3965,6 +3966,92 @@ app.get('/api/leaderboard', async (req, res) => {
     } catch (error) {
         console.error('❌ Leaderboard error:', error);
         res.status(500).json({ success: false, error: 'Failed to fetch leaderboard' });
+    }
+});
+
+// GET all slides (sorted by order)
+app.get('/api/slides', async (req, res) => {
+    try {
+        const slides = await slidesCollection.find({})
+            .sort({ order: 1 })
+            .toArray();
+        res.json({ success: true, count: slides.length, slides });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch slides', details: error.message });
+    }
+});
+ 
+// GET single slide
+app.get('/api/slides/:slideId', async (req, res) => {
+    try {
+        const slide = await slidesCollection.findOne({ _id: new ObjectId(req.params.slideId) });
+        if (!slide) return res.status(404).json({ success: false, error: 'Slide not found' });
+        res.json({ success: true, slide });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to fetch slide', details: error.message });
+    }
+});
+ 
+// CREATE slide
+app.post('/api/slides', async (req, res) => {
+    try {
+        const { tag, title, desc, lessons, img, order } = req.body;
+        if (!tag || !title || !desc) {
+            return res.status(400).json({ success: false, error: 'tag, title, and desc are required' });
+        }
+        const slideData = {
+            tag:       (tag || '').toUpperCase().trim(),
+            title:     title.trim(),
+            desc:      desc.trim(),
+            lessons:   Array.isArray(lessons) ? lessons : [],
+            img:       img || '',
+            order:     parseInt(order) || 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+        const result = await slidesCollection.insertOne(slideData);
+        console.log(`✅ Slide created: ${slideData.tag} - ${slideData.title}`);
+        res.status(201).json({ success: true, message: 'Slide created', slideId: result.insertedId });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to create slide', details: error.message });
+    }
+});
+ 
+// UPDATE slide
+app.put('/api/slides/:slideId', async (req, res) => {
+    try {
+        const { tag, title, desc, lessons, img, order } = req.body;
+        const updateData = {
+            ...(tag   !== undefined && { tag:   (tag || '').toUpperCase().trim() }),
+            ...(title !== undefined && { title: title.trim() }),
+            ...(desc  !== undefined && { desc:  desc.trim() }),
+            ...(lessons !== undefined && { lessons: Array.isArray(lessons) ? lessons : [] }),
+            ...(img   !== undefined && { img }),
+            ...(order !== undefined && { order: parseInt(order) || 1 }),
+            updatedAt: new Date().toISOString()
+        };
+        const result = await slidesCollection.updateOne(
+            { _id: new ObjectId(req.params.slideId) },
+            { $set: updateData }
+        );
+        if (result.matchedCount === 0)
+            return res.status(404).json({ success: false, error: 'Slide not found' });
+        res.json({ success: true, message: 'Slide updated' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to update slide', details: error.message });
+    }
+});
+ 
+// DELETE slide
+app.delete('/api/slides/:slideId', async (req, res) => {
+    try {
+        const result = await slidesCollection.deleteOne({ _id: new ObjectId(req.params.slideId) });
+        if (result.deletedCount === 0)
+            return res.status(404).json({ success: false, error: 'Slide not found' });
+        console.log(`🗑️ Slide deleted: ${req.params.slideId}`);
+        res.json({ success: true, message: 'Slide deleted' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to delete slide', details: error.message });
     }
 });
 // ==================== START SERVER ====================

@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StructuReality – Featured Slides</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { font-family:"Poppins",sans-serif; }
+    .slide-card { transition:all .2s ease; }
+    .slide-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(99,102,241,.14); }
+    .drag-over { border-color:#6366f1 !important; background:#eef2ff !important; }
+    .lesson-tag { animation:fadeIn .15s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
+    .modal-backdrop { backdrop-filter:blur(4px); }
+    .toast { animation:slideIn .3s ease; }
+    @keyframes slideIn { from{transform:translateX(120%)} to{transform:translateX(0)} }
+    textarea { resize:vertical; min-height:80px; }
+
+    /* Preview card inside modal */
+    .mobile-preview { background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%); border-radius:.75rem; padding:1.5rem; color:white; position:relative; overflow:hidden; min-height:140px; display:flex; flex-direction:column; gap:.5rem; }
+    .mobile-preview::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 20%,rgba(99,102,241,.18) 0%,transparent 60%); pointer-events:none; }
+    .preview-tag  { font-size:.55rem; font-weight:700; letter-spacing:.1em; color:#818cf8; background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.3); padding:.3rem .65rem; border-radius:2rem; width:fit-content; text-transform:uppercase; }
+    .preview-title { font-size:.95rem; font-weight:700; line-height:1.3; }
+    .preview-title .accent { color:#818cf8; }
+    .preview-desc { font-size:.7rem; color:#94a3b8; line-height:1.5; }
+    .img-preview { object-fit:cover; border-radius:.5rem; }
+
+    /* Slide number badge */
+    .order-badge { width:1.6rem; height:1.6rem; background:#6366f1; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; flex-shrink:0; }
+
+    /* Image drop zone */
+    .drop-zone { transition:all .2s ease; }
+    .drop-zone:hover { border-color:#6366f1; background:#eef2ff; }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+<!-- Sidebar -->
+<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
+  <div class="p-6 border-b border-indigo-700">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+        <i class="fas fa-cube text-indigo-700 text-xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold">StructuReality</h1>
+        <p class="text-xs text-indigo-300">Admin Portal</p>
+      </div>
+    </div>
+  </div>
+  <nav class="mt-6 px-4">
+    <a href="index.html"    class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
+    <a href="users.html"    class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
+    <a href="quizzes.html"  class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
+    <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
+    <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
+    <a href="slides.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-images w-5"></i><span class="font-medium">Featured Slides</span></a>
+    <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-bar w-5"></i><span class="font-medium">User &amp; Scenario Analytics</span></a>
+  </nav>
+</aside>
+
+<!-- Top Nav -->
+<nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
+  <div class="px-8 py-4 flex items-center justify-between">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-800">Featured Slides</h2>
+      <p class="text-sm text-gray-500">Manage the carousel shown on the mobile home screen</p>
+    </div>
+    <div class="flex items-center space-x-3">
+      <span id="slideCount" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">0 slides</span>
+      <button onclick="openCreateModal()" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
+        <i class="fas fa-plus"></i><span>New Slide</span>
+      </button>
+      <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
+        <i class="fas fa-sign-out-alt text-gray-600"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="ml-64 mt-20 p-8">
+
+  <!-- Live Preview Banner -->
+  <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
+        <i class="fas fa-mobile-alt text-indigo-600"></i>
+      </div>
+      <div>
+        <p class="font-semibold text-indigo-800 text-sm">Live on Mobile App</p>
+        <p class="text-xs text-indigo-500">Changes appear immediately — the app fetches slides fresh on every home screen load</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-3">
+      <span id="apiStatus" class="flex items-center space-x-1.5 text-xs text-gray-400">
+        <span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span>Connecting…</span>
+      </span>
+      <button onclick="loadSlides()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition">
+        <i class="fas fa-sync-alt mr-1"></i>Refresh
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="grid grid-cols-4 gap-4 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-indigo-500">
+      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Slides</p>
+      <p class="text-2xl font-bold text-gray-800" id="statTotal">–</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
+      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">With Images</p>
+      <p class="text-2xl font-bold text-gray-800" id="statWithImg">–</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-amber-500">
+      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Avg. Lesson Bullets</p>
+      <p class="text-2xl font-bold text-gray-800" id="statAvgLessons">–</p>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500">
+      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Last Updated</p>
+      <p class="text-sm font-bold text-gray-800" id="statLastUpdated">–</p>
+    </div>
+  </div>
+
+  <!-- Slides Grid -->
+  <div id="slidesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
+
+  <!-- Empty State -->
+  <div id="emptyState" class="hidden text-center py-24">
+    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <i class="fas fa-images text-indigo-300 text-3xl"></i>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-700 mb-2">No slides yet</h3>
+    <p class="text-gray-400 text-sm mb-6">Create your first featured slide to show on the mobile home screen.</p>
+    <button onclick="openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium transition">
+      <i class="fas fa-plus mr-2"></i>Create First Slide
+    </button>
+  </div>
+
+</main>
+
+<!-- ═══════════════════ CREATE / EDIT MODAL ═══════════════════ -->
+<div id="slideModal" class="fixed inset-0 z-50 hidden">
+  <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeModal()"></div>
+  <div class="relative flex items-start justify-center min-h-screen p-6 pt-10">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden">
+
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+        <div>
+          <h3 class="text-white font-bold text-lg" id="modalTitle">New Featured Slide</h3>
+          <p class="text-indigo-200 text-xs">Appears in the carousel on the mobile home screen</p>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition">
+          <i class="fas fa-times text-white text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-5 overflow-y-auto max-h-[72vh]">
+
+        <!-- Mobile Preview -->
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+            <i class="fas fa-eye mr-1 text-indigo-400"></i>Live Preview (no image)
+          </p>
+          <div class="mobile-preview" id="livePreview">
+            <span class="preview-tag" id="prevTag">TAG</span>
+            <div class="preview-title" id="prevTitle">Slide Title</div>
+            <div class="preview-desc" id="prevDesc">Your description will appear here…</div>
+          </div>
+        </div>
+
+        <!-- Image Upload -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-image mr-1 text-indigo-500"></i>Slide Image
+            <span class="text-gray-400 font-normal ml-1">(optional — card placeholder shown if none)</span>
+          </label>
+          <div id="dropZone"
+               class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer relative"
+               onclick="document.getElementById('imgInput').click()"
+               ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+            <div id="dropPlaceholder">
+              <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 mb-2 block"></i>
+              <p class="text-sm text-gray-400">Click to upload or drag &amp; drop</p>
+              <p class="text-xs text-gray-300 mt-1">PNG, JPG, WebP — recommended 900×500 px</p>
+            </div>
+            <img id="imgPreview" class="img-preview w-full max-h-48 hidden" alt="preview"/>
+            <button id="removeImgBtn" onclick="removeImage(event)"
+                    class="hidden absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition z-10">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <input type="file" id="imgInput" accept="image/*" class="hidden" onchange="onFileSelect(event)"/>
+        </div>
+
+        <!-- OR image URL -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            <i class="fas fa-link mr-1 text-indigo-500"></i>Or paste an image URL
+          </label>
+          <input id="imgUrl" type="url" placeholder="https://example.com/slide.jpg"
+                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                 oninput="onUrlInput()"/>
+        </div>
+
+        <!-- Tag -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            <i class="fas fa-tag mr-1 text-indigo-500"></i>Tag <span class="text-red-400">*</span>
+          </label>
+          <input id="slideTag" type="text" placeholder="e.g. INTRODUCTION TO DSA"
+                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase"
+                 oninput="updatePreview()"/>
+          <p class="text-xs text-gray-400 mt-0.5">Displayed in caps above the title on the slide</p>
+        </div>
+
+        <!-- Title -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            <i class="fas fa-heading mr-1 text-indigo-500"></i>Title <span class="text-red-400">*</span>
+          </label>
+          <input id="slideTitle" type="text" placeholder="e.g. Data Structures & Algorithms"
+                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                 oninput="updatePreview()"/>
+          <p class="text-xs text-gray-400 mt-0.5">
+            Use <code class="bg-gray-100 px-1 rounded text-indigo-600">&lt;span class="accent"&gt;word&lt;/span&gt;</code> to highlight a word in purple
+          </p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            <i class="fas fa-align-left mr-1 text-indigo-500"></i>Description <span class="text-red-400">*</span>
+          </label>
+          <textarea id="slideDesc" placeholder="A concise overview shown when the user taps the slide…"
+                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                    oninput="updatePreview()"></textarea>
+        </div>
+
+        <!-- Lesson Bullets -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">
+            <i class="fas fa-list-ul mr-1 text-indigo-500"></i>Lesson Bullets
+          </label>
+          <div id="lessonList" class="space-y-2 mb-2"></div>
+          <div class="flex gap-2">
+            <input id="lessonInput" type="text" placeholder="Type a bullet point and press Enter"
+                   class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();addLesson();}"/>
+            <button onclick="addLesson()" class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">
+              Add
+            </button>
+          </div>
+          <p class="text-xs text-gray-400 mt-1">Shown as bullet points when a student taps the slide</p>
+        </div>
+
+        <!-- Display Order -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-1">
+            <i class="fas fa-sort-numeric-up mr-1 text-indigo-500"></i>Display Order
+          </label>
+          <input id="slideOrder" type="number" min="1" value="1"
+                 class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+          <p class="text-xs text-gray-400 mt-0.5">Lower numbers appear first in the carousel</p>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        <button onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium transition">Cancel</button>
+        <div class="flex space-x-2">
+          <button id="deleteSlideBtn" onclick="openDeleteConfirm()" class="hidden px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition">
+            <i class="fas fa-trash mr-1"></i>Delete
+          </button>
+          <button onclick="saveSlide()" id="saveBtn"
+                  class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition flex items-center space-x-2">
+            <i class="fas fa-save"></i><span id="saveLabel">Create Slide</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ DELETE CONFIRM ═══════════════════ -->
+<div id="deleteModal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50 modal-backdrop"></div>
+  <div class="relative flex items-center justify-center min-h-screen p-6">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative z-10">
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i class="fas fa-trash text-red-500 text-xl"></i>
+      </div>
+      <h3 class="font-bold text-gray-800 text-lg mb-2">Delete Slide?</h3>
+      <p class="text-gray-500 text-sm mb-6">This removes the slide from the mobile carousel immediately and cannot be undone.</p>
+      <div class="flex space-x-3">
+        <button onclick="closeDeleteModal()" class="flex-1 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Cancel</button>
+        <button onclick="confirmDelete()"    class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ TOAST ═══════════════════ -->
+<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+  <div class="toast bg-white border border-gray-200 shadow-xl rounded-xl px-5 py-3 flex items-center space-x-3">
+    <i id="toastIcon" class="fas fa-check-circle text-green-500 text-lg"></i>
+    <span id="toastMsg" class="text-sm font-medium text-gray-700"></span>
+  </div>
+</div>
+
+<script>
+const API_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000/api'
+  : 'https://structureality-admin.onrender.com/api';
+
+let slides          = [];
+let editingId       = null;
+let pendingDeleteId = null;
+let currentLessons  = [];
+let currentImageData = null;
+
+// ── Auth ──────────────────────────────────────────────────────────
+function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
+function checkAuth() {
+  const u = localStorage.getItem('adminUser');
+  if (!u || u === 'undefined') { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
+  try { return JSON.parse(u); } catch { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; return null; }
+}
+
+// ── API ───────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const res = await fetch(API_URL + path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: body ? JSON.stringify(body) : undefined
+  });
+  return res.json();
+}
+
+// ── Load ──────────────────────────────────────────────────────────
+async function loadSlides() {
+  setApiStatus('loading');
+  try {
+    const data = await api('GET', '/slides');
+    if (data.success) {
+      slides = data.slides || [];
+      renderGrid();
+      updateStats();
+      setApiStatus('ok');
+    } else {
+      setApiStatus('error');
+      showToast('Failed to load slides', 'error');
+    }
+  } catch (e) {
+    setApiStatus('error');
+    showToast('Cannot reach server', 'error');
+  }
+}
+
+function setApiStatus(s) {
+  const el  = document.getElementById('apiStatus');
+  const dot = el.querySelector('span:first-child');
+  const txt = el.querySelector('span:last-child');
+  if (s === 'ok')     { dot.className = 'w-2 h-2 rounded-full bg-green-400 inline-block'; txt.textContent = 'Connected'; }
+  else if (s==='error'){dot.className = 'w-2 h-2 rounded-full bg-red-400 inline-block'; txt.textContent = 'Offline'; }
+  else                 { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 inline-block animate-pulse'; txt.textContent = 'Loading…'; }
+}
+
+// ── Grid ──────────────────────────────────────────────────────────
+function renderGrid() {
+  const grid  = document.getElementById('slidesGrid');
+  const empty = document.getElementById('emptyState');
+  document.getElementById('slideCount').textContent = slides.length + ' slide' + (slides.length !== 1 ? 's' : '');
+
+  if (!slides.length) { grid.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  const sorted = [...slides].sort((a, b) => (a.order||99) - (b.order||99));
+  grid.innerHTML = sorted.map(slide => {
+    const hasImg    = !!(slide.img && slide.img.length > 10);
+    const lessons   = (slide.lessons || []).length;
+    const tag       = (slide.tag || '').toUpperCase();
+    const titleClean = (slide.title || '').replace(/<[^>]*>/g, '');
+    const desc      = slide.desc || slide.description || '';
+
+    return `
+    <div class="slide-card bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer" onclick="openEditModal('${slide._id}')">
+      <div class="relative overflow-hidden" style="height:180px;">
+        ${hasImg
+          ? `<img src="${slide.img}" alt="${esc(titleClean)}" class="w-full h-full object-cover"/>`
+          : `<div class="w-full h-full flex flex-col items-center justify-center gap-2 p-4"
+                  style="background:linear-gradient(135deg,#1e293b,#0f172a)">
+               <span class="text-xs font-bold tracking-widest text-indigo-400 uppercase">${esc(tag)}</span>
+               <span class="text-white font-bold text-sm text-center leading-snug">${esc(titleClean)}</span>
+               <span class="text-gray-400 text-xs text-center leading-relaxed line-clamp-2">${esc(desc.substring(0,80))}${desc.length>80?'…':''}</span>
+             </div>`
+        }
+        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+        <div class="absolute top-3 left-3">
+          <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">#${slide.order || '–'}</span>
+        </div>
+        ${hasImg ? '<div class="absolute top-3 right-3"><span class="bg-green-500/90 text-white text-xs px-2 py-0.5 rounded-full"><i class="fas fa-image mr-1"></i>img</span></div>' : ''}
+      </div>
+      <div class="p-5">
+        <p class="text-xs font-bold text-indigo-500 tracking-widest uppercase mb-1">${esc(tag) || '—'}</p>
+        <h3 class="font-bold text-gray-800 text-base leading-tight mb-2 line-clamp-2">${esc(titleClean) || 'Untitled'}</h3>
+        <p class="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-4">${esc(desc) || '—'}</p>
+        <div class="flex items-center justify-between">
+          <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">
+            <i class="fas fa-list-ul mr-1 text-indigo-400"></i>${lessons} bullet${lessons!==1?'s':''}
+          </span>
+          <button class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
+            <i class="fas fa-edit mr-1"></i>Edit
+          </button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent     = slides.length;
+  document.getElementById('statWithImg').textContent   = slides.filter(s => s.img && s.img.length>10).length;
+  const avg = slides.length
+    ? (slides.reduce((a,s)=>a+(s.lessons||[]).length,0)/slides.length).toFixed(1) : '–';
+  document.getElementById('statAvgLessons').textContent = avg;
+  document.getElementById('statLastUpdated').textContent = slides.length
+    ? new Date(Math.max(...slides.map(s=>new Date(s.updatedAt||s.createdAt||0)))).toLocaleDateString() : '–';
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────
+function openCreateModal() {
+  editingId = null; currentLessons = []; currentImageData = null;
+  document.getElementById('modalTitle').textContent  = 'New Featured Slide';
+  document.getElementById('saveLabel').textContent   = 'Create Slide';
+  document.getElementById('deleteSlideBtn').classList.add('hidden');
+  document.getElementById('slideTag').value   = '';
+  document.getElementById('slideTitle').value = '';
+  document.getElementById('slideDesc').value  = '';
+  document.getElementById('slideOrder').value = slides.length + 1;
+  document.getElementById('imgUrl').value     = '';
+  resetImagePreview();
+  renderLessonList();
+  updatePreview();
+  document.getElementById('slideModal').classList.remove('hidden');
+}
+
+function openEditModal(id) {
+  const slide = slides.find(s => s._id === id);
+  if (!slide) return;
+  editingId = id; currentLessons = [...(slide.lessons||[])]; currentImageData = slide.img || null;
+  document.getElementById('modalTitle').textContent  = 'Edit Slide';
+  document.getElementById('saveLabel').textContent   = 'Save Changes';
+  document.getElementById('deleteSlideBtn').classList.remove('hidden');
+  document.getElementById('slideTag').value   = slide.tag || '';
+  document.getElementById('slideTitle').value = (slide.title||'').replace(/<[^>]*>/g,'');
+  document.getElementById('slideDesc').value  = slide.desc || slide.description || '';
+  document.getElementById('slideOrder').value = slide.order || 1;
+  document.getElementById('imgUrl').value     = '';
+  if (currentImageData && currentImageData.length > 10) showImagePreview(currentImageData);
+  else resetImagePreview();
+  renderLessonList();
+  updatePreview();
+  document.getElementById('slideModal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('slideModal').classList.add('hidden');
+  editingId = null; currentLessons = []; currentImageData = null;
+}
+
+// ── Live Preview ──────────────────────────────────────────────────
+function updatePreview() {
+  const tag   = (document.getElementById('slideTag').value || 'TAG').toUpperCase();
+  const title = document.getElementById('slideTitle').value || 'Slide Title';
+  const desc  = document.getElementById('slideDesc').value  || 'Your description will appear here…';
+
+  document.getElementById('prevTag').textContent   = tag;
+  document.getElementById('prevTitle').innerHTML   = esc(title).replace(/&lt;span class=&quot;accent&quot;&gt;(.*?)&lt;\/span&gt;/g,
+    '<span class="accent">$1</span>');
+  document.getElementById('prevDesc').textContent  = desc.substring(0, 120) + (desc.length > 120 ? '…' : '');
+}
+
+// ── Image Handling ────────────────────────────────────────────────
+function onDragOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function onDragLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+function onDrop(e)      { e.preventDefault(); document.getElementById('dropZone').classList.remove('drag-over'); const f=e.dataTransfer.files[0]; if(f) readFile(f); }
+function onFileSelect(e){ if(e.target.files[0]) readFile(e.target.files[0]); }
+function readFile(file) {
+  if (!file.type.startsWith('image/')) { showToast('Please upload an image file','error'); return; }
+  const reader = new FileReader();
+  reader.onload = ev => { currentImageData=ev.target.result; showImagePreview(ev.target.result); document.getElementById('imgUrl').value=''; };
+  reader.readAsDataURL(file);
+}
+function onUrlInput() { const u=document.getElementById('imgUrl').value.trim(); if(u){currentImageData=u;showImagePreview(u);} }
+function showImagePreview(src) {
+  document.getElementById('dropPlaceholder').classList.add('hidden');
+  const img=document.getElementById('imgPreview'); img.src=src; img.classList.remove('hidden');
+  document.getElementById('removeImgBtn').classList.remove('hidden');
+}
+function resetImagePreview() {
+  document.getElementById('dropPlaceholder').classList.remove('hidden');
+  const img=document.getElementById('imgPreview'); img.classList.add('hidden'); img.src='';
+  document.getElementById('removeImgBtn').classList.add('hidden');
+  document.getElementById('imgInput').value='';
+}
+function removeImage(e) { e.stopPropagation(); currentImageData=null; resetImagePreview(); document.getElementById('imgUrl').value=''; }
+
+// ── Lessons ───────────────────────────────────────────────────────
+function addLesson() {
+  const inp = document.getElementById('lessonInput');
+  const txt = inp.value.trim();
+  if (!txt) return;
+  currentLessons.push(txt);
+  inp.value = '';
+  renderLessonList();
+}
+function removeLesson(i) { currentLessons.splice(i,1); renderLessonList(); }
+function renderLessonList() {
+  document.getElementById('lessonList').innerHTML = currentLessons.map((l,i)=>`
+    <div class="lesson-tag flex items-start space-x-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
+      <p class="flex-1 text-xs text-gray-700 leading-relaxed">${esc(l)}</p>
+      <button onclick="removeLesson(${i})" class="text-gray-300 hover:text-red-500 transition flex-shrink-0 mt-0.5">
+        <i class="fas fa-times text-xs"></i>
+      </button>
+    </div>`).join('');
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+async function saveSlide() {
+  const tag   = document.getElementById('slideTag').value.trim().toUpperCase();
+  const title = document.getElementById('slideTitle').value.trim();
+  const desc  = document.getElementById('slideDesc').value.trim();
+  const order = parseInt(document.getElementById('slideOrder').value) || 1;
+
+  if (!tag)   { showToast('Please enter a tag','error'); return; }
+  if (!title) { showToast('Please enter a title','error'); return; }
+  if (!desc)  { showToast('Please enter a description','error'); return; }
+
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving…';
+
+  const payload = { tag, title, desc, order, lessons: currentLessons, img: currentImageData || '' };
+
+  try {
+    let res;
+    if (editingId) res = await api('PUT', '/slides/' + editingId, payload);
+    else           res = await api('POST', '/slides', payload);
+
+    if (res.success) {
+      showToast(editingId ? 'Slide updated!' : 'Slide created!', 'success');
+      closeModal();
+      await loadSlides();
+    } else { showToast(res.error || 'Save failed', 'error'); }
+  } catch { showToast('Server error', 'error'); }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-save mr-2"></i><span id="saveLabel">' + (editingId ? 'Save Changes' : 'Create Slide') + '</span>';
+}
+
+// ── Delete ────────────────────────────────────────────────────────
+function openDeleteConfirm() { pendingDeleteId = editingId; document.getElementById('deleteModal').classList.remove('hidden'); }
+function closeDeleteModal()  { document.getElementById('deleteModal').classList.add('hidden'); pendingDeleteId = null; }
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  try {
+    const res = await api('DELETE', '/slides/' + pendingDeleteId);
+    if (res.success) { showToast('Slide deleted','success'); closeDeleteModal(); closeModal(); await loadSlides(); }
+    else showToast(res.error || 'Delete failed','error');
+  } catch { showToast('Server error','error'); }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type='success') {
+  clearTimeout(toastTimer);
+  const toast = document.getElementById('toast');
+  const icon  = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+  icon.className = type === 'success'
+    ? 'fas fa-check-circle text-green-500 text-lg'
+    : 'fas fa-exclamation-circle text-red-500 text-lg';
+  toast.classList.remove('hidden');
+  toastTimer = setTimeout(() => toast.classList.add('hidden'), 3500);
+}
+
+// ── Utility ───────────────────────────────────────────────────────
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const user = checkAuth();
+  if (user) loadSlides();
+});
+</script>
+</body>
+</html>
