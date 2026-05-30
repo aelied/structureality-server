@@ -1699,10 +1699,14 @@ function previewGoToPage(idx) {
         // ════════════════════════════════════════════════════════
 
         function openAddLessonModal() {
-            document.getElementById('lessonContent').value = '';
-            document.getElementById('mobilePreviewContent').innerHTML = '<p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>';
-            document.getElementById('addLessonModal').classList.add('active');
-        }
+    document.getElementById('addLessonForm').reset();
+    document.getElementById('lessonContent').value = '';
+    document.getElementById('addLessonModal').classList.add('active');
+    setTimeout(function() {
+        document.getElementById('mobilePreviewContent').innerHTML = 
+            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;text-align:center;padding:20px;">Start typing content<br>to see the preview</div>';
+    }, 50);
+}
 
         function closeAddLessonModal() {
             document.getElementById('addLessonModal').classList.remove('active');
@@ -1743,20 +1747,25 @@ function previewGoToPage(idx) {
         // ════════════════════════════════════════════════════════
 
         function editLesson(lessonId) {
-            const lesson = allLessons.find(l => l._id === lessonId);
-            if (!lesson) return;
-            document.getElementById('editLessonId').value              = lesson._id;
-            document.getElementById('editLessonTopic').value          = lesson.topicName;
-            document.getElementById('editLessonTitle').value          = lesson.title;
-            document.getElementById('editLessonDescription').value    = lesson.description;
-            document.getElementById('editLessonContent').value        = lesson.content || '';
-            document.getElementById('editLessonOrder').value          = lesson.order;
-            document.getElementById('editLessonDifficultyLevel').value= lesson.difficultyLevel || 'beginner';
-            
-            updatePreview(true);
-            document.getElementById('editLessonModal').classList.add('active');
-        }
-
+    const lesson = allLessons.find(l => l._id === lessonId);
+    if (!lesson) return;
+    
+    document.getElementById('editLessonId').value              = lesson._id;
+    document.getElementById('editLessonTopic').value          = lesson.topicName;
+    document.getElementById('editLessonTitle').value          = lesson.title;
+    document.getElementById('editLessonDescription').value    = lesson.description;
+    document.getElementById('editLessonContent').value        = lesson.content || '';
+    document.getElementById('editLessonOrder').value          = lesson.order;
+    document.getElementById('editLessonDifficultyLevel').value= lesson.difficultyLevel || 'beginner';
+    
+    // Open modal FIRST, then render preview after DOM is visible
+    document.getElementById('editLessonModal').classList.add('active');
+    
+    // Small delay so the modal is fully visible before preview renders
+    setTimeout(function() {
+        updatePreview(true);
+    }, 50);
+}
         function closeEditLessonModal() {
             document.getElementById('editLessonModal').classList.remove('active');
             document.getElementById('editLessonForm').reset();
@@ -1818,6 +1827,11 @@ function previewGoToPage(idx) {
         window.addEventListener('load', () => {
             currentUser = checkAuth();
             if (currentUser) {
+                // Live preview updates when title/topic changes
+                document.getElementById('lessonTitle')?.addEventListener('input', function(){ updatePreview(false); });
+                document.getElementById('lessonTopic')?.addEventListener('change', function(){ updatePreview(false); });
+                document.getElementById('editLessonTitle')?.addEventListener('input', function(){ updatePreview(true); });
+                document.getElementById('editLessonTopic')?.addEventListener('change', function(){ updatePreview(true); });
                 document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
                 document.getElementById('adminEmailDisplay').textContent = currentUser.email;
                 updateNavigationForRole(currentUser);
