@@ -1,1844 +1,1558 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Lessons - StructuReality Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-        rel="stylesheet" />
-    <style>
-        * {
-            font-family: "Poppins", sans-serif;
-        }
-
-        .stat-card-hover {
-            transition: all 0.3s ease;
-        }
-
-        .stat-card-hover:hover {
-            transform: translateY(-4px);
-        }
-
-        .lesson-card {
-            transition: all 0.3s ease;
-        }
-
-        .lesson-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            max-width: 1400px;
-            width: 95%;
-            max-height: 90vh;
-            overflow-y: auto;
-            display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 20px;
-        }
-
-        .modal-content.full-width {
-            grid-template-columns: 1fr;
-        }
-
-        @media (max-width: 1024px) {
-            .modal-content {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .mobile-preview {
-            background: #f5f5f5;
-            border: 12px solid #1a1a1a;
-            border-radius: 40px;
-            width: 380px;
-            height: 800px;
-            padding: 0;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 20px;
-        }
-
-        .mobile-preview-header {
-            background: #1a1a1a;
-            color: white;
-            padding: 8px;
-            text-align: center;
-            font-size: 12px;
-            border-bottom: 1px solid #333;
-        }
-
-        .mobile-preview-content {
-            flex: 1;
-            overflow-y: auto;
-            background: white;
-            padding: 12px;
-        }
-
-        .mobile-preview-content::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .mobile-preview-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        .mobile-preview-content::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 2px;
-        }
-
-        
-/* ── App-accurate preview styles ── */
-.app-lesson-modal {
-    background: white;
-    border-radius: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Lessons — StructuReality Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+<style>
+/* ═══════════════════════════════════════════════
+   TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --bg:         #0d0f14;
+  --surface:    #13161e;
+  --surface2:   #1a1e28;
+  --surface3:   #222636;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(255,255,255,0.12);
+  --accent:     #6c63ff;
+  --accent2:    #a78bfa;
+  --accent-glow:rgba(108,99,255,0.25);
+  --green:      #34d399;
+  --amber:      #fbbf24;
+  --rose:       #fb7185;
+  --sky:        #38bdf8;
+  --text:       #e8eaf2;
+  --text2:      #8b92a8;
+  --text3:      #4e5568;
+  --radius:     14px;
+  --radius-sm:  8px;
+  --sidebar-w:  240px;
+  --font:       'DM Sans', sans-serif;
+  --mono:       'DM Mono', monospace;
+  --shadow:     0 4px 24px rgba(0,0,0,0.4);
+  --shadow-glow:0 0 40px rgba(108,99,255,0.15);
 }
-.app-modal-header {
-    padding: 14px 16px 12px;
-    border-bottom: 1px solid #f3f4f6;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{height:100%;scroll-behavior:smooth;}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  font-size:14px;
+  line-height:1.6;
 }
-.app-modal-close {
-    width: 32px; height: 32px;
-    background: #f3f4f6; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; color: #6b7280; flex-shrink: 0;
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:inherit;outline:none;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+
+/* ═══════════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════════ */
+.sidebar{
+  position:fixed;top:0;left:0;height:100vh;
+  width:var(--sidebar-w);
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  z-index:100;
 }
-.app-modal-icon {
-    width: 40px; height: 40px; border-radius: 11px;
-    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
+.sidebar-logo{
+  padding:24px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
 }
-.app-modal-header-text { flex: 1; min-width: 0; }
-.app-modal-topic {
-    font-size: 9px; font-weight: 700;
-    color: #7c3aed; text-transform: uppercase;
-    letter-spacing: 0.6px; margin-bottom: 1px;
+.logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;flex-shrink:0;
+  box-shadow:0 4px 12px var(--accent-glow);
 }
-.app-modal-title {
-    font-size: 13px; font-weight: 700;
-    color: #111827; line-height: 1.2; word-break: break-word;
+.logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+.sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+.nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+.nav-link{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:var(--radius-sm);
+  color:var(--text2);font-size:13px;font-weight:500;
+  text-decoration:none;transition:all 0.2s;
+  margin-bottom:2px;
 }
-.app-modal-scroll {
-    flex: 1; overflow-y: auto;
-    padding: 12px 14px;
-    display: flex; flex-direction: column; gap: 10px;
+.nav-link i{width:16px;text-align:center;font-size:13px;}
+.nav-link:hover{background:var(--surface2);color:var(--text);}
+.nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+.nav-link.active i{color:var(--accent);}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+.user-chip{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;background:var(--surface2);
+  border-radius:var(--radius-sm);border:1px solid var(--border);
 }
-.app-modal-scroll::-webkit-scrollbar { width: 3px; }
-.app-modal-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
-.app-page-counter {
-    font-size: 10px; color: #9ca3af;
-    font-weight: 500; text-align: center; margin-bottom: 2px;
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;flex-shrink:0;
 }
-.app-content-card {
-    background: #f9fafb; border-radius: 12px;
-    padding: 12px 14px; font-size: 12px;
-    line-height: 1.65; color: #4b5563;
+.user-name{font-size:12px;font-weight:600;color:var(--text);}
+.user-role{font-size:10px;color:var(--text3);}
+
+/* ═══════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════ */
+.topbar{
+  position:fixed;top:0;left:var(--sidebar-w);right:0;
+  height:60px;background:var(--surface);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;z-index:90;gap:16px;
 }
-.app-custom-box {
-    border-radius: 12px; padding: 12px 14px; border-left: 4px solid;
+.topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 14px;border-radius:var(--radius-sm);
+  font-size:12px;font-weight:600;transition:all 0.2s;
 }
-.app-custom-box .box-title {
-    font-size: 12px; font-weight: 700; margin-bottom: 5px;
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{background:var(--surface2);color:var(--text);border-color:var(--border2);}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent),#7c6df0);
+  color:#fff;border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 2px 12px var(--accent-glow);
 }
-.app-custom-box .box-body { font-size: 11.5px; line-height: 1.6; }
-.app-image-block {
-    background: white; border-radius: 12px;
-    padding: 8px; border: 1px solid #f3f4f6; text-align: center;
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+.btn-danger{background:rgba(251,113,133,0.15);color:var(--rose);border:1px solid rgba(251,113,133,0.25);}
+.btn-danger:hover{background:rgba(251,113,133,0.25);}
+.btn-success{background:rgba(52,211,153,0.15);color:var(--green);border:1px solid rgba(52,211,153,0.25);}
+.btn-success:hover{background:rgba(52,211,153,0.25);}
+
+/* ═══════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════ */
+.main{
+  margin-left:var(--sidebar-w);
+  padding-top:60px;
+  min-height:100vh;
 }
-.app-image-block img {
-    max-width: 100%; border-radius: 8px; object-fit: contain;
+.page-content{padding:28px;}
+
+/* ═══════════════════════════════════════════════
+   STAT CARDS
+═══════════════════════════════════════════════ */
+.stats-row{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:24px;}
+.stat-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+  transition:all 0.25s;position:relative;overflow:hidden;
 }
-.app-image-caption { font-size: 10px; color: #9ca3af; margin-top: 4px; }
-.app-modal-footer {
-    padding: 10px 14px 14px;
-    display: flex; gap: 6px;
-    border-top: 1px solid #f3f4f6; flex-shrink: 0;
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+  opacity:0;transition:opacity 0.25s;
 }
-.app-nav-btn {
-    flex: 1; padding: 9px 6px; border-radius: 10px;
-    font-size: 11px; font-weight: 600;
-    text-align: center; border: none; cursor: default;
+.stat-card:hover::before{opacity:1;}
+.stat-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+.stat-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;margin-bottom:10px;
 }
-.app-nav-btn.secondary { background: #f3f4f6; color: #6b7280; }
-.app-nav-btn.primary   { background: linear-gradient(135deg, #7c3aed, #9333ea); color: white; }
-.app-nav-btn.danger    { background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; }
-.app-nav-btn.ar        { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: white; }
-.app-nav-btn.disabled  { opacity: 0.35; }
-.app-page-dots { display: flex; justify-content: center; gap: 4px; padding: 6px 0 2px; }
-.app-dot { width: 5px; height: 5px; border-radius: 50%; background: #e5e7eb; }
-.app-dot.active { background: #7c3aed; }
+.stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+.stat-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;}
 
-/* Keep existing mobile preview frame styles */
-.mobile-card { margin-bottom: 20px; margin-top: 0; padding: 12px; border-radius: 8px; background: white; border: 1px solid #e0e0e0; }
-.mobile-card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; word-break: break-word; }
-.mobile-card-content { font-size: 14px; line-height: 1.5; word-break: break-word; }
+/* ═══════════════════════════════════════════════
+   FILTER BAR
+═══════════════════════════════════════════════ */
+.filter-bar{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 18px;
+  margin-bottom:20px;flex-wrap:wrap;
+}
+.search-wrap{flex:1;min-width:200px;position:relative;}
+.search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+.search-input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);
+  padding:8px 12px 8px 34px;font-size:12px;transition:border-color 0.2s;
+}
+.search-input:focus{border-color:var(--accent);}
+.search-input::placeholder{color:var(--text3);}
+.filter-select{
+  background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:var(--radius-sm);
+  padding:8px 12px;font-size:12px;transition:border-color 0.2s;
+}
+.filter-select:focus{border-color:var(--accent);}
+.filter-select option{background:var(--surface2);}
 
-        .mobile-image {
-            width: 100%;
-            max-height: 180px;
-            object-fit: contain;
-            border-radius: 4px;
-            margin: 8px 0;
-            background: #f9f9f9;
-            border: 1px solid #e0e0e0;
-        }
+/* ═══════════════════════════════════════════════
+   LESSONS GRID
+═══════════════════════════════════════════════ */
+.lessons-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+.lesson-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+  transition:all 0.25s;position:relative;
+}
+.lesson-card:hover{border-color:rgba(108,99,255,0.35);transform:translateY(-3px);box-shadow:var(--shadow-glow);}
+.lesson-card-banner{
+  height:6px;width:100%;
+}
+.lesson-card-body{padding:18px;}
+.lesson-card-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.tag{
+  font-size:10px;font-weight:700;padding:3px 8px;
+  border-radius:100px;text-transform:uppercase;letter-spacing:0.5px;
+}
+.tag-topic{background:rgba(108,99,255,0.18);color:var(--accent2);}
+.tag-beginner{background:rgba(52,211,153,0.15);color:var(--green);}
+.tag-intermediate{background:rgba(251,191,36,0.15);color:var(--amber);}
+.tag-custom{background:rgba(167,139,250,0.15);color:#c4b5fd;}
+.tag-image{background:rgba(56,189,248,0.15);color:var(--sky);}
+.lesson-card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3;}
+.lesson-card-desc{font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.5;}
+.lesson-card-preview{
+  font-size:11px;color:var(--text3);
+  background:var(--surface2);border-radius:6px;
+  padding:8px 10px;font-family:var(--mono);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:14px;
+}
+.lesson-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.lesson-card-order{font-size:10px;color:var(--text3);}
+.lesson-card-actions{display:flex;gap:6px;}
+.icon-btn{
+  width:30px;height:30px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;transition:all 0.2s;
+}
+.icon-btn-edit{background:rgba(52,211,153,0.12);color:var(--green);}
+.icon-btn-edit:hover{background:rgba(52,211,153,0.25);}
+.icon-btn-del{background:rgba(251,113,133,0.12);color:var(--rose);}
+.icon-btn-del:hover{background:rgba(251,113,133,0.25);}
 
-        .info-box-preview {
-            padding: 12px;
-            border-radius: 8px;
-            margin: 8px 0;
-            border-left: 4px solid;
-            font-size: 13px;
-        }
+/* topic banner colors */
+.banner-arrays{background:linear-gradient(90deg,#6c63ff,#a78bfa);}
+.banner-queues{background:linear-gradient(90deg,#38bdf8,#67e8f9);}
+.banner-stacks{background:linear-gradient(90deg,#34d399,#6ee7b7);}
+.banner-linkedlists{background:linear-gradient(90deg,#c084fc,#e879f9);}
+.banner-trees{background:linear-gradient(90deg,#fbbf24,#fde68a);}
+.banner-graphs{background:linear-gradient(90deg,#fb7185,#fca5a5);}
+.banner-default{background:linear-gradient(90deg,#4e5568,#8b92a8);}
 
-        .info-box-info {
-            background-color: #E0F7FA;
-            border-color: #006064;
-            color: #006064;
-        }
+/* ═══════════════════════════════════════════════
+   MODAL BACKDROP
+═══════════════════════════════════════════════ */
+.modal-backdrop{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(8px);
+  z-index:200;
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-backdrop.open{display:flex;}
 
-        .info-box-tip {
-            background-color: #FFF9C4;
-            border-color: #F57F17;
-            color: #F57F17;
-        }
+/* ═══════════════════════════════════════════════
+   LESSON EDITOR MODAL (split layout)
+═══════════════════════════════════════════════ */
+.editor-modal{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  width:100%;max-width:1200px;
+  max-height:92vh;
+  display:grid;
+  grid-template-columns:1fr 360px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.editor-left{
+  display:flex;flex-direction:column;
+  overflow:hidden;border-right:1px solid var(--border);
+}
+.editor-header{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.editor-header h2{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.editor-close{
+  width:32px;height:32px;background:var(--surface2);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--text2);transition:all 0.2s;
+}
+.editor-close:hover{background:var(--surface3);color:var(--text);}
+.editor-body{flex:1;overflow-y:auto;padding:24px;}
+.editor-footer{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;
+}
 
-        .info-box-warning {
-            background-color: #FFEBEE;
-            border-color: #B71C1C;
-            color: #B71C1C;
-        }
+/* ═══════════════════════════════════════════════
+   FORM ELEMENTS
+═══════════════════════════════════════════════ */
+.form-group{margin-bottom:18px;}
+.form-label{
+  display:block;font-size:11px;font-weight:700;
+  color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;
+  margin-bottom:7px;
+}
+.form-input,.form-select,.form-textarea{
+  width:100%;background:var(--surface2);
+  border:1px solid var(--border2);color:var(--text);
+  border-radius:var(--radius-sm);padding:10px 13px;
+  font-size:13px;transition:border-color 0.2s;
+}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text3);}
+.form-select option{background:var(--surface2);}
+.form-textarea{resize:vertical;font-family:var(--mono);font-size:12px;line-height:1.7;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 
-        .info-box-note {
-            background-color: #F3E5F5;
-            border-color: #4A148C;
-            color: #4A148C;
-        }
+/* Section divider */
+.section-divider{
+  border:none;border-top:1px solid var(--border);
+  margin:22px 0;
+}
+.section-title{
+  font-size:11px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.9px;
+  margin-bottom:14px;
+}
 
-        .info-box-important {
-            background-color: #E8F5E9;
-            border-color: #1B5E20;
-            color: #1B5E20;
-        }
+/* ═══════════════════════════════════════════════
+   BLOCK TOOLBAR
+═══════════════════════════════════════════════ */
+.block-toolbar{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:14px;
+}
+.block-toolbar-title{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;
+}
+.block-btns{display:flex;flex-wrap:wrap;gap:6px;}
+.block-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:6px 10px;border-radius:6px;
+  font-size:11px;font-weight:600;
+  transition:all 0.18s;border:1px solid transparent;
+}
+.block-btn-text{background:rgba(139,146,168,0.15);color:var(--text2);border-color:rgba(139,146,168,0.2);}
+.block-btn-text:hover{background:rgba(139,146,168,0.28);color:var(--text);}
+.block-btn-chip{background:rgba(108,99,255,0.15);color:var(--accent2);border-color:rgba(108,99,255,0.25);}
+.block-btn-chip:hover{background:rgba(108,99,255,0.28);}
+.block-btn-custom{background:rgba(196,181,253,0.15);color:#c4b5fd;border-color:rgba(196,181,253,0.25);}
+.block-btn-custom:hover{background:rgba(196,181,253,0.25);}
+.block-btn-image{background:rgba(56,189,248,0.15);color:var(--sky);border-color:rgba(56,189,248,0.25);}
+.block-btn-image:hover{background:rgba(56,189,248,0.25);}
+.block-btn-page{background:rgba(251,191,36,0.15);color:var(--amber);border-color:rgba(251,191,36,0.25);}
+.block-btn-page:hover{background:rgba(251,191,36,0.25);}
 
-        .custom-box-config {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 12px 0;
-            background: #fafafa;
-        }
+/* Info box preset buttons */
+.block-btn-info{background:rgba(0,96,100,0.18);color:#67e8f9;border-color:rgba(0,96,100,0.3);}
+.block-btn-tip{background:rgba(245,127,23,0.15);color:var(--amber);border-color:rgba(245,127,23,0.25);}
+.block-btn-warning{background:rgba(183,28,28,0.15);color:var(--rose);border-color:rgba(183,28,28,0.25);}
 
-        .custom-box-config-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
+/* ═══════════════════════════════════════════════
+   CONTENT TEXTAREA HINT
+═══════════════════════════════════════════════ */
+.content-hint{
+  display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;
+}
+.hint-chip{
+  font-size:10px;color:var(--text3);
+  background:var(--surface2);border:1px solid var(--border);
+  padding:3px 8px;border-radius:100px;
+}
+.hint-chip code{font-family:var(--mono);font-size:9px;color:var(--accent2);}
 
-        .custom-box-config-row:last-child {
-            margin-bottom: 0;
-        }
+/* ═══════════════════════════════════════════════
+   MOBILE PREVIEW PANEL
+═══════════════════════════════════════════════ */
+.preview-panel{
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.preview-panel-header{
+  padding:16px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.preview-panel-title{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.8px;}
+.preview-page-controls{display:flex;align-items:center;gap:6px;}
+.preview-page-btn{
+  width:24px;height:24px;background:var(--surface2);
+  border:1px solid var(--border);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--text2);transition:all 0.18s;
+}
+.preview-page-btn:hover:not(:disabled){background:var(--surface3);color:var(--text);}
+.preview-page-btn:disabled{opacity:0.3;cursor:not-allowed;}
+.preview-page-indicator{font-size:10px;color:var(--text3);min-width:36px;text-align:center;}
 
-        .color-picker-group {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-        }
+.preview-device-wrap{
+  flex:1;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  padding:16px;
+}
+.device-frame{
+  width:100%;max-width:310px;
+  height:580px;
+  background:#111;
+  border-radius:36px;
+  border:3px solid #2a2a2a;
+  overflow:hidden;
+  position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6),inset 0 0 0 1px rgba(255,255,255,0.05);
+  display:flex;flex-direction:column;
+}
+.device-notch{
+  height:28px;background:#111;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.device-notch-inner{
+  width:80px;height:18px;background:#000;
+  border-radius:0 0 12px 12px;
+}
+.device-screen{
+  flex:1;background:var(--off-white,#f5f5f5);
+  overflow:hidden;display:flex;flex-direction:column;
+}
+.device-home{
+  height:20px;background:#111;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.device-home-bar{width:60px;height:3px;background:#333;border-radius:2px;}
 
-        .color-picker-group input[type="color"] {
-            width: 40px;
-            height: 32px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+/* ── App lesson modal (inside device) ── */
+.app-modal{
+  background:#fff;height:100%;
+  display:flex;flex-direction:column;
+  font-family:'DM Sans',sans-serif;
+}
+.app-modal-hdr{
+  padding:12px 14px 10px;
+  border-bottom:1px solid #f3f4f6;
+  display:flex;align-items:center;gap:9px;
+  flex-shrink:0;
+}
+.app-hdr-close{
+  width:28px;height:28px;background:#f3f4f6;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#6b7280;flex-shrink:0;
+}
+.app-hdr-icon{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#ede9fe,#ddd6fe);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.app-hdr-info{flex:1;min-width:0;}
+.app-hdr-topic{font-size:8px;font-weight:700;color:#7c3aed;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:1px;}
+.app-hdr-title{font-size:11px;font-weight:700;color:#111827;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.app-modal-scroll{
+  flex:1;overflow-y:auto;
+  padding:10px 12px;
+  display:flex;flex-direction:column;gap:8px;
+}
+.app-modal-scroll::-webkit-scrollbar{width:2px;}
+.app-page-label{font-size:9px;color:#9ca3af;text-align:center;font-weight:500;}
 
-        .color-picker-group input[type="text"] {
-            flex: 1;
-            padding: 6px 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: monospace;
-        }
+/* Content blocks inside preview */
+.app-para{
+  background:#f9fafb;border-radius:10px;
+  padding:10px 12px;font-size:10px;line-height:1.65;color:#4b5563;
+}
+.app-box{
+  border-radius:10px;padding:10px 12px;border-left:4px solid;
+}
+.app-box-title{font-size:10px;font-weight:700;margin-bottom:4px;}
+.app-box-body{font-size:9.5px;line-height:1.6;}
+.app-chip{
+  display:flex;align-items:center;gap:8px;
+  background:#fff;border:1.5px solid #e5e7eb;border-radius:10px;
+  padding:8px 10px;
+}
+.app-chip-icon{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,#7c3aed,#9333ea);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;flex-shrink:0;
+}
+.app-chip-content{flex:1;min-width:0;}
+.app-chip-title{font-size:10px;font-weight:700;color:#111827;}
+.app-chip-hint{font-size:8.5px;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.app-chip-arrow{font-size:14px;color:#a78bfa;font-weight:700;flex-shrink:0;}
+.app-image-block{
+  background:#fff;border-radius:10px;
+  border:1px solid #f3f4f6;text-align:center;
+  padding:6px;overflow:hidden;
+}
+.app-image-block img{max-width:100%;border-radius:7px;object-fit:contain;}
+.app-image-caption{font-size:8px;color:#9ca3af;margin-top:3px;}
 
-        .insert-box-btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            border: 2px solid;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-            font-size: 0.875rem;
-        }
+/* Modal footer nav */
+.app-modal-ftr{
+  padding:8px 12px 12px;
+  display:flex;gap:5px;border-top:1px solid #f3f4f6;flex-shrink:0;
+}
+.app-btn{
+  flex:1;padding:8px 4px;border-radius:8px;
+  font-size:9px;font-weight:700;text-align:center;
+}
+.app-btn-secondary{background:#f3f4f6;color:#6b7280;}
+.app-btn-primary{background:linear-gradient(135deg,#7c3aed,#9333ea);color:#fff;}
+.app-btn-danger{background:linear-gradient(135deg,#f43f5e,#e11d48);color:#fff;}
+.app-btn-ar{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;}
+.app-btn-done{background:linear-gradient(135deg,#10b981,#059669);color:#fff;}
 
-        .insert-box-btn:hover {
-            transform: scale(1.05);
-        }
+/* ═══════════════════════════════════════════════
+   CUSTOM BOX BUILDER MODAL
+═══════════════════════════════════════════════ */
+.mini-modal-backdrop{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.8);
+  backdrop-filter:blur(6px);
+  z-index:300;display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.mini-modal-backdrop.open{display:flex;}
+.mini-modal{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius);
+  width:100%;max-width:480px;
+  max-height:90vh;overflow-y:auto;
+  padding:24px;box-shadow:var(--shadow);
+}
+.mini-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:20px;
+}
+.mini-modal-title{font-size:15px;font-weight:700;color:var(--text);}
 
-        .content-builder-grid {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            gap: 0.5rem;
-        }
+/* color picker row */
+.color-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;}
+.color-group label{display:block;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.color-input-wrap{display:flex;gap:6px;align-items:center;}
+.color-input-wrap input[type=color]{
+  width:36px;height:32px;border:1px solid var(--border2);
+  border-radius:5px;background:none;cursor:pointer;padding:2px;
+}
+.color-input-wrap input[type=text]{
+  flex:1;background:var(--surface2);border:1px solid var(--border);
+  color:var(--text);border-radius:5px;padding:6px 8px;
+  font-size:11px;font-family:var(--mono);
+}
+.custom-box-live-preview{
+  border-radius:10px;padding:12px 14px;border-left:4px solid;
+  margin:16px 0;
+}
+.custom-box-live-preview .cbp-title{font-size:12px;font-weight:700;margin-bottom:4px;}
+.custom-box-live-preview .cbp-body{font-size:11px;line-height:1.6;}
 
-        @media (max-width: 768px) {
-            .content-builder-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
+/* chip builder */
+.chip-builder-preview{
+  display:flex;align-items:center;gap:10px;
+  background:#fff;border:1.5px solid #e5e7eb;
+  border-radius:10px;padding:10px 12px;margin:12px 0;
+}
+.chip-builder-icon-wrap{
+  width:32px;height:32px;border-radius:8px;
+  background:linear-gradient(135deg,#7c3aed,#9333ea);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+}
+.chip-builder-text{flex:1;}
+.chip-builder-title{font-size:12px;font-weight:700;color:#111827;}
+.chip-builder-hint{font-size:10px;color:#9ca3af;}
+.chip-builder-arrow{font-size:16px;color:#a78bfa;font-weight:700;}
 
-        /* ── Image Upload Styles ── */
-        .image-upload-zone {
-            border: 2px dashed #c7d2fe;
-            border-radius: 12px;
-            padding: 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.25s;
-            background: #f5f7ff;
-        }
+/* ═══════════════════════════════════════════════
+   IMAGE MODAL
+═══════════════════════════════════════════════ */
+.drop-zone{
+  border:2px dashed rgba(108,99,255,0.35);
+  border-radius:var(--radius);padding:24px;
+  text-align:center;cursor:pointer;
+  transition:all 0.2s;background:rgba(108,99,255,0.04);
+}
+.drop-zone:hover,.drop-zone.drag-over{
+  border-color:var(--accent);background:rgba(108,99,255,0.1);
+}
+.drop-zone i{font-size:28px;color:var(--accent);margin-bottom:8px;}
+.drop-zone p{font-size:12px;color:var(--text2);}
+.drop-zone small{font-size:10px;color:var(--text3);}
 
-        .image-upload-zone:hover,
-        .image-upload-zone.drag-over {
-            border-color: #6366f1;
-            background: #eef0ff;
-        }
+.image-height-row{display:flex;align-items:center;gap:10px;}
+.image-height-row input[type=range]{
+  flex:1;accent-color:var(--accent);
+}
+.image-height-row span{font-size:11px;font-weight:700;color:var(--accent2);min-width:44px;text-align:right;}
 
-        .image-preview-thumb {
-            width: 100%;
-            max-height: 200px;
-            object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #e5e7eb;
-            margin-top: 10px;
-        }
+.staged-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.staged-item{
+  position:relative;border-radius:8px;overflow:hidden;
+  border:2px solid var(--border);cursor:pointer;transition:border-color 0.2s;
+}
+.staged-item:hover{border-color:var(--accent);}
+.staged-item img{width:100%;height:72px;object-fit:cover;display:block;}
+.staged-item .si-remove{
+  position:absolute;top:4px;right:4px;
+  background:rgba(251,113,133,0.9);color:#fff;
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:10px;
+}
+.staged-item .si-insert{
+  position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  background:rgba(108,99,255,0.92);color:#fff;
+  border-radius:5px;padding:2px 8px;font-size:9px;white-space:nowrap;
+}
 
-        .image-gallery {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 10px;
-        }
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow);min-width:240px;max-width:320px;
+  animation:toastIn 0.3s ease both;
+  font-size:12px;font-weight:500;color:var(--text);
+}
+.toast.success{border-color:rgba(52,211,153,0.4);}
+.toast.error{border-color:rgba(251,113,133,0.4);}
+.toast i{font-size:14px;}
+.toast.success i{color:var(--green);}
+.toast.error i{color:var(--rose);}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-        .image-gallery-item {
-            position: relative;
-            border-radius: 8px;
-            overflow: hidden;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
+/* ═══════════════════════════════════════════════
+   LOADING STATE
+═══════════════════════════════════════════════ */
+.skeleton{background:linear-gradient(90deg,var(--surface2) 25%,var(--surface3) 50%,var(--surface2) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:var(--radius);}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.empty-state{
+  text-align:center;padding:60px 20px;
+  grid-column:1/-1;
+}
+.empty-state i{font-size:40px;color:var(--text3);margin-bottom:14px;display:block;}
+.empty-state p{color:var(--text2);font-size:13px;}
 
-        .image-gallery-item:hover {
-            border-color: #6366f1;
-        }
+/* Spinner */
+.spinner{
+  width:18px;height:18px;
+  border:2px solid var(--border2);border-top-color:var(--accent);
+  border-radius:50%;animation:spin 0.7s linear infinite;
+  display:inline-block;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
 
-        .image-gallery-item img {
-            width: 100%;
-            height: 80px;
-            object-fit: cover;
-        }
-
-        .image-gallery-item .remove-img-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(239,68,68,0.9);
-            color: white;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .image-gallery-item .insert-img-btn {
-            position: absolute;
-            bottom: 4px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(99,102,241,0.92);
-            color: white;
-            border-radius: 6px;
-            padding: 2px 8px;
-            font-size: 10px;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        /* Preview image rendering */
-        .preview-image-block {
-            text-align: center;
-            margin: 12px 0;
-        }
-
-        .preview-image-block img {
-            max-width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            border-radius: 10px;
-            border: 1px solid #e5e7eb;
-        }
-
-        .preview-image-block .img-caption {
-            font-size: 0.8rem;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        /* Image modal */
-        #imageModal {
-            z-index: 1100;
-        }
-
-        .spinner {
-            width: 22px; height: 22px;
-            border: 3px solid #e0e0e0;
-            border-top-color: #6366f1;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Image height slider */
-        .image-height-slider {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin: 8px 0;
-        }
-
-        .image-height-slider input[type="range"] {
-            flex: 1;
-        }
-
-        .image-height-slider span {
-            min-width: 50px;
-            text-align: right;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .form-section {
-            border-top: 1px solid #e0e0e0;
-            padding-top: 20px;
-            margin-top: 20px;
-        }
-
-        .form-section:first-child {
-            border-top: none;
-            padding-top: 0;
-            margin-top: 0;
-        }
-
-        /* Spacer element for blank lines */
-        .spacing-block {
-            height: 0;
-            margin-bottom: 8px;
-        }
-    </style>
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media(max-width:900px){
+  .editor-modal{grid-template-columns:1fr;}
+  .preview-panel{display:none;}
+  .stats-row{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:600px){
+  .stats-row{grid-template-columns:repeat(2,1fr);}
+  :root{--sidebar-w:0px;}
+  .sidebar{display:none;}
+  .topbar{left:0;}
+}
+</style>
 </head>
+<body>
 
-<body class="bg-gray-50">
-    <!-- Sidebar -->
-    <aside
-        class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-        <div class="p-6 border-b border-indigo-700">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                    <i class="fas fa-cube text-indigo-700 text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold">StructuReality</h1>
-                    <p class="text-xs text-indigo-300">Admin Portal</p>
-                </div>
-            </div>
-        </div>
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-cube"></i></div>
+    <div>
+      <div class="logo-text">StructuReality</div>
+      <div class="logo-sub">Admin Portal</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="users.html" class="nav-link"><i class="fas fa-users"></i> Users</a>
+    <a href="lessons.html" class="nav-link active"><i class="fas fa-book"></i> Lessons</a>
+    <a href="quizzes.html" class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+    <div class="nav-section">Analytics</div>
+    <a href="analytics.html" class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+    <a href="scenarios.html" class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+    <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar" id="sidebarAvatarInitial">A</div>
+      <div>
+        <div class="user-name" id="sidebarUserName">Admin</div>
+        <div class="user-role" id="sidebarUserRole">Administrator</div>
+      </div>
+    </div>
+  </div>
+</aside>
 
-        <nav class="mt-6 px-4">
-            <a href="index.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-home w-5"></i>
-                <span class="font-medium">Dashboard</span>
-            </a>
+<!-- ═══ TOPBAR ═══ -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <h1>Lessons</h1>
+    <p>Manage lesson content with live mobile preview</p>
+  </div>
+  <div class="topbar-right">
+    <button class="btn btn-ghost" onclick="loadLessons()"><i class="fas fa-sync"></i> Refresh</button>
+    <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> New Lesson</button>
+    <button class="btn btn-ghost" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+  </div>
+</nav>
 
-            <a href="users.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-users w-5"></i>
-                <span class="font-medium">Users</span>
-            </a>
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+  <div class="page-content">
 
-            <a href="lessons.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-                <i class="fas fa-book w-5"></i>
-                <span class="font-medium">Lessons</span>
-            </a>
-
-            <a href="quizzes.html"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-question-circle w-5"></i>
-                <span class="font-medium">Quizzes</span>
-            </a>
-
-            <a href="analytics.html" id="analyticsLink"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
-            </a>
-
-            <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-vr-cardboard w-5"></i>
-                <span class="font-medium">AR Scenarios</span>
-            </a>
-            <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">User & Scenario Analytics</span>
-              </a>        </nav>
-    </aside>
-
-    <!-- Navbar -->
-    <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-        <div class="px-8 py-4 flex items-center justify-between">
-            <div>
-                <h2 class="text-2xl font-bold text-gray-800">Lessons</h2>
-                <p class="text-sm text-gray-500">Manage lessons with live mobile preview & custom boxes
-                    <span id="roleIndicator" class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full"></span>
-                </p>
-            </div>
-
-            <div class="flex items-center space-x-4">
-                <button class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <i class="fas fa-bell text-gray-600"></i>
-                </button>
-                <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-                    <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-indigo-700 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-                        <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-                    </div>
-                </div>
-                <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg transition">
-                    <i class="fas fa-sign-out-alt text-gray-600"></i>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main class="ml-64 p-8 mt-20">
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-book-open text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Total Lessons</h3>
-                <p class="text-3xl font-bold text-gray-800" id="totalLessons">-</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-indigo-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Arrays</h3>
-                <p class="text-3xl font-bold text-gray-800" id="arraysCount">-</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-stream text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Queue</h3>
-                <p class="text-3xl font-bold text-gray-800" id="queueCount">-</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-layer-group text-green-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Stacks</h3>
-                <p class="text-3xl font-bold text-gray-800" id="stacksCount">-</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-link text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Linked Lists</h3>
-                <p class="text-3xl font-bold text-gray-800" id="linkedlistsCount">-</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-project-diagram text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium mb-1">Trees & Graphs</h3>
-                <p class="text-3xl font-bold text-gray-800" id="othersCount">-</p>
-            </div>
-        </div>
-
-        <!-- Search and Filters -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4 flex-1">
-                    <div class="flex-1">
-                        <div class="relative">
-                            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                            <input type="text" id="searchLessons" placeholder="Search lessons..."
-                                onkeyup="filterLessons()"
-                                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                        </div>
-                    </div>
-                    <select id="topicFilter" onchange="filterLessons()"
-                        class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                        <option value="all">All Topics</option>
-                        <option value="Arrays">Arrays</option>
-                        <option value="Queues">Queues</option>
-                        <option value="Stacks">Stacks</option>
-                        <option value="LinkedLists">Linked Lists</option>
-                        <option value="Trees">Trees</option>
-                        <option value="Graphs">Graphs</option>
-                    </select>
-                </div>
-                <div class="flex items-center space-x-3 ml-6">
-                    <button onclick="loadLessons()"
-                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                        <i class="fas fa-sync mr-2"></i>Refresh
-                    </button>
-                    <button onclick="openAddLessonModal()"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-plus mr-2"></i>New Lesson
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Lessons Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="lessonsGrid">
-            <p class="text-center text-gray-500 col-span-3 p-8">Loading lessons...</p>
-        </div>
-    </main>
-
-    <!-- ══════════════════════════════════════════════════════
-         IMAGE MANAGER MODAL
-    ══════════════════════════════════════════════════════ -->
-    <div id="imageModal" class="modal">
-        <div class="modal-content full-width" style="max-width:600px;">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-800">📷 Image Manager</h3>
-                <button onclick="closeImageModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-
-            <!-- Upload Zone -->
-            <div class="image-upload-zone" id="imageUploadZone"
-                onclick="document.getElementById('imageFileInput').click()"
-                ondragover="handleDragOver(event)"
-                ondragleave="handleDragLeave(event)"
-                ondrop="handleDrop(event)">
-                <i class="fas fa-cloud-upload-alt text-indigo-400 text-3xl mb-2"></i>
-                <p class="text-sm font-medium text-indigo-600">Click or drag & drop an image</p>
-                <p class="text-xs text-gray-400 mt-1">PNG, JPG, GIF, WebP — max 2 MB per image</p>
-                <input type="file" id="imageFileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)" />
-            </div>
-
-            <!-- Upload progress -->
-            <div id="uploadProgress" class="hidden mt-3 text-center text-sm text-indigo-600">
-                <span class="spinner"></span> Processing image…
-            </div>
-
-            <!-- OR: image URL -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-1">Or enter an image URL:</p>
-                <div class="flex gap-2">
-                    <input type="url" id="imageUrlInput" placeholder="https://example.com/image.png"
-                        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-                    <button onclick="addImageFromUrl()"
-                        class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm hover:bg-indigo-700 transition">
-                        Add URL
-                    </button>
-                </div>
-            </div>
-
-            <!-- Image height slider -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-2">Image Height (Mobile App):</p>
-                <div class="image-height-slider">
-                    <input type="range" id="imageHeightSlider" min="80" max="400" value="180" />
-                    <span id="imageHeightValue">180px</span>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">Height in mobile preview (80-400px)</p>
-            </div>
-
-            <!-- Caption input -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-1">Caption (optional):</p>
-                <input type="text" id="imageCaptionInput" placeholder="e.g. Array memory layout diagram"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
-            </div>
-
-            <!-- Alignment -->
-            <div class="mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-2">Alignment:</p>
-                <div class="flex gap-3">
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="left" class="accent-indigo-600"> Left
-                    </label>
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="center" checked class="accent-indigo-600"> Center
-                    </label>
-                    <label class="flex items-center gap-1 cursor-pointer text-sm">
-                        <input type="radio" name="imgAlign" value="right" class="accent-indigo-600"> Right
-                    </label>
-                </div>
-            </div>
-
-            <!-- Staged image gallery -->
-            <div id="stagedImagesSection" class="hidden mt-4">
-                <p class="text-sm font-semibold text-gray-700 mb-2">Staged Images — click "Insert" to add to content:</p>
-                <div class="image-gallery" id="stagedImagesGallery"></div>
-            </div>
-
-            <div class="flex justify-end mt-6 gap-2">
-                <button onclick="closeImageModal()"
-                    class="px-5 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition text-sm">
-                    Done
-                </button>
-            </div>
-        </div>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(108,99,255,0.18);color:var(--accent2)"><i class="fas fa-book-open"></i></div>
+        <div class="stat-label">Total</div>
+        <div class="stat-value" id="statTotal">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(108,99,255,0.18);color:var(--accent2)"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-label">Arrays</div>
+        <div class="stat-value" id="statArrays">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(56,189,248,0.18);color:var(--sky)"><i class="fas fa-stream"></i></div>
+        <div class="stat-label">Queues</div>
+        <div class="stat-value" id="statQueues">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(52,211,153,0.18);color:var(--green)"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-label">Stacks</div>
+        <div class="stat-value" id="statStacks">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(196,132,252,0.18);color:#c084fc"><i class="fas fa-link"></i></div>
+        <div class="stat-label">Lists</div>
+        <div class="stat-value" id="statLists">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(251,191,36,0.18);color:var(--amber)"><i class="fas fa-project-diagram"></i></div>
+        <div class="stat-label">Trees & Graphs</div>
+        <div class="stat-value" id="statOthers">—</div>
+      </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         ADD LESSON MODAL
-    ══════════════════════════════════════════════════════ -->
-    <div id="addLessonModal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6 col-span-2">
-                <h2 class="text-2xl font-bold text-gray-800">Add New Lesson</h2>
-                <button onclick="closeAddLessonModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-
-            <!-- Left side: form -->
-            <div>
-                <form id="addLessonForm" onsubmit="addLesson(event)">
-                    <div class="form-section">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Basic Info</h3>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                            <select id="lessonTopic" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <option value="">Select Topic</option>
-                                <option value="Arrays">Arrays</option>
-                                <option value="Queues">Queues</option>
-                                <option value="Stacks">Stacks</option>
-                                <option value="LinkedLists">Linked Lists</option>
-                                <option value="Trees">Trees</option>
-                                <option value="Graphs">Graphs</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
-                            <select id="lessonDifficultyLevel" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <option value="beginner">🟢 Beginner</option>
-                                <option value="intermediate">🟡 Intermediate</option>
-                            </select>
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
-                            <input type="text" id="lessonTitle" required placeholder="e.g., Introduction to Queues"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                            <textarea id="lessonDescription" required placeholder="Brief description of the lesson"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Content Builder -->
-                    <div class="form-section">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Content Builder</h3>
-
-                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                            <p class="text-sm font-medium text-gray-700 mb-3">Add Content Sections:</p>
-                            <div class="content-builder-grid mb-2">
-                                <button type="button" onclick="addContentBlock('TEXT')"
-                                    class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
-                                    📝 Text
-                                </button>
-                                <button type="button" onclick="addContentBlock('INFO')"
-                                    class="insert-box-btn info-box-info">ℹ️ Info</button>
-                                <button type="button" onclick="addContentBlock('TIP')"
-                                    class="insert-box-btn info-box-tip">💡 Tip</button>
-                                <button type="button" onclick="addContentBlock('WARNING')"
-                                    class="insert-box-btn info-box-warning">⚠️ Warning</button>
-                                <button type="button" onclick="addContentBlock('NOTE')"
-                                    class="insert-box-btn info-box-note">📝 Note</button>
-                                <button type="button" onclick="addContentBlock('IMPORTANT')"
-                                    class="insert-box-btn info-box-important">⭐ Important</button>
-                            </div>
-                            <div class="mb-2">
-                                <button type="button" onclick="openCustomBoxBuilder('add')"
-                                    class="w-full px-3 py-2 bg-purple-50 text-purple-700 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-100 transition text-sm font-medium">
-                                    🎨 Create Custom Box
-                                </button>
-                            </div>
-                            <div>
-                                <button type="button" onclick="openImageModal('add')"
-                                    class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                    🖼️ Insert Image
-                                </button>
-                            </div>
-                        </div>
-
-                        <textarea id="lessonContent" placeholder="Write your lesson content here...
-
-Add spacing by pressing Enter twice between paragraphs to create visible gaps.
-
-Like this paragraph has space above it!"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                            rows="12" oninput="updatePreview()"></textarea>
-
-                        <div class="flex gap-2 mt-2">
-                            <span class="text-xs text-gray-400 self-center">✓ Preview updates live on the right • Press Enter 2x for paragraph spacing</span>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                        <input type="number" id="lessonOrder" value="1" min="1"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                    </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeAddLessonModal()"
-                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                            Add Lesson
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Right side: mobile preview -->
-            <div class="mobile-preview">
-                <div class="mobile-preview-header">iPhone 12 • Lesson Preview</div>
-                <div class="mobile-preview-content" id="mobilePreviewContent">
-                    <p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>
-                </div>
-            </div>
-        </div>
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <i class="fas fa-search"></i>
+        <input class="search-input" type="text" id="searchInput" placeholder="Search lessons…" oninput="filterLessons()"/>
+      </div>
+      <select class="filter-select" id="topicFilter" onchange="filterLessons()">
+        <option value="all">All Topics</option>
+        <option value="Arrays">Arrays</option>
+        <option value="Queues">Queues</option>
+        <option value="Stacks">Stacks</option>
+        <option value="LinkedLists">Linked Lists</option>
+        <option value="Trees">Trees</option>
+        <option value="Graphs">Graphs</option>
+      </select>
+      <select class="filter-select" id="diffFilter" onchange="filterLessons()">
+        <option value="all">All Levels</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+      </select>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         CUSTOM BOX BUILDER MODAL
-    ══════════════════════════════════════════════════════ -->
-    <div id="customBoxModal" class="modal">
-        <div class="modal-content full-width" style="max-width:600px;">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Create Custom Box</h2>
-                <button onclick="closeCustomBoxModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
-
-            <form onsubmit="insertCustomBox(event)">
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Box Title *</label>
-                    <input type="text" id="customBoxTitle" required placeholder="e.g., Key Concept, Remember!"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Box Content *</label>
-                    <textarea id="customBoxContent" required placeholder="Content goes here..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                        rows="6"></textarea>
-                </div>
-
-                <div class="custom-box-config">
-                    <p class="text-sm font-semibold text-gray-700 mb-4">Styling</p>
-
-                    <div class="custom-box-config-row">
-                        <div>
-                            <label class="text-xs font-medium text-gray-600 block mb-2">Border Color</label>
-                            <div class="color-picker-group">
-                                <input type="color" id="customBoxBorderColor" value="#006064" />
-                                <input type="text" id="customBoxBorderColorHex" value="#006064" />
-                            </div>
-                        </div>
-                        <div>
-                            <label class="text-xs font-medium text-gray-600 block mb-2">Background Color</label>
-                            <div class="color-picker-group">
-                                <input type="color" id="customBoxBgColor" value="#E0F7FA" />
-                                <input type="text" id="customBoxBgColorHex" value="#E0F7FA" />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="custom-box-config-row">
-                        <div>
-                            <label class="text-xs font-medium text-gray-600 block mb-2">Text Color</label>
-                            <div class="color-picker-group">
-                                <input type="color" id="customBoxTextColor" value="#006064" />
-                                <input type="text" id="customBoxTextColorHex" value="#006064" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="customBoxPreview" class="mt-6 p-4 border-2 border-gray-200 rounded-lg bg-gray-50">
-                    <p class="text-xs text-gray-500 mb-2">Preview:</p>
-                    <div id="customBoxPreviewContent"></div>
-                </div>
-
-                <div class="flex justify-end space-x-3 mt-6">
-                    <button type="button" onclick="closeCustomBoxModal()"
-                        class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                        Cancel
-                    </button>
-                    <button type="submit"
-                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        Insert Custom Box
-                    </button>
-                </div>
-            </form>
-        </div>
+    <!-- Lessons grid -->
+    <div class="lessons-grid" id="lessonsGrid">
+      <div class="empty-state"><div class="spinner"></div></div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════
-         EDIT LESSON MODAL
-    ══════════════════════════════════════════════════════ -->
-    <div id="editLessonModal" class="modal">
-        <div class="modal-content">
-            <div class="flex justify-between items-center mb-6 col-span-2">
-                <h2 class="text-2xl font-bold text-gray-800">Edit Lesson</h2>
-                <button onclick="closeEditLessonModal()" class="text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-times text-2xl"></i>
-                </button>
-            </div>
+  </div>
+</main>
 
-            <!-- Left side: form -->
-            <div>
-                <form id="editLessonForm" onsubmit="updateLesson(event)">
-                    <input type="hidden" id="editLessonId">
+<!-- ════════════════════════════════════════════
+     ADD / EDIT MODAL
+════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="editorModal">
+  <div class="editor-modal">
 
-                    <div class="form-section">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Basic Info</h3>
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                            <select id="editLessonTopic" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <option value="">Select Topic</option>
-                                <option value="Arrays">Arrays</option>
-                                <option value="Queues">Queues</option>
-                                <option value="Stacks">Stacks</option>
-                                <option value="LinkedLists">Linked Lists</option>
-                                <option value="Trees">Trees</option>
-                                <option value="Graphs">Graphs</option>
-                            </select>
-                        </div>
+    <!-- LEFT: form -->
+    <div class="editor-left">
+      <div class="editor-header">
+        <h2 id="editorTitle">Add Lesson</h2>
+        <button class="editor-close" onclick="closeEditor()">✕</button>
+      </div>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Difficulty Level *</label>
-                            <select id="editLessonDifficultyLevel" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                                <option value="beginner">🟢 Beginner</option>
-                                <option value="intermediate">🟡 Intermediate</option>
-                            </select>
-                        </div>
+      <div class="editor-body">
+        <input type="hidden" id="editorLessonId"/>
 
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Lesson Title *</label>
-                            <input type="text" id="editLessonTitle" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                            <textarea id="editLessonDescription" required
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                rows="3"></textarea>
-                        </div>
-                    </div>
-
-                    <div class="form-section">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-4">Content</h3>
-                        <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                            <p class="text-sm font-medium text-gray-700 mb-3">Insert Special Content:</p>
-                            <div class="content-builder-grid mb-2">
-                                <button type="button" onclick="insertInfoBox('INFO', true)"
-                                    class="insert-box-btn info-box-info">ℹ️ Info</button>
-                                <button type="button" onclick="insertInfoBox('TIP', true)"
-                                    class="insert-box-btn info-box-tip">💡 Tip</button>
-                                <button type="button" onclick="insertInfoBox('WARNING', true)"
-                                    class="insert-box-btn info-box-warning">⚠️ Warning</button>
-                                <button type="button" onclick="insertInfoBox('NOTE', true)"
-                                    class="insert-box-btn info-box-note">📝 Note</button>
-                                <button type="button" onclick="insertInfoBox('IMPORTANT', true)"
-                                    class="insert-box-btn info-box-important">⭐ Important</button>
-                            </div>
-                            <div class="mb-2">
-                                <button type="button" onclick="openCustomBoxBuilder('edit')"
-                                    class="w-full px-3 py-2 bg-purple-50 text-purple-700 border-2 border-dashed border-purple-300 rounded-lg hover:bg-purple-100 transition text-sm font-medium">
-                                    🎨 Create Custom Box
-                                </button>
-                            </div>
-                            <div>
-                                <button type="button" onclick="openImageModal('edit')"
-                                    class="w-full px-3 py-2 bg-indigo-50 text-indigo-700 border-2 border-dashed border-indigo-300 rounded-lg hover:bg-indigo-100 transition text-sm font-medium">
-                                    🖼️ Insert Image
-                                </button>
-                            </div>
-                        </div>
-
-                        <textarea id="editLessonContent"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none font-mono text-sm"
-                            rows="12" oninput="updatePreview(true)"></textarea>
-                    </div>
-
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
-                        <input type="number" id="editLessonOrder" value="1" min="1"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
-                    </div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" onclick="closeEditLessonModal()"
-                            class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                            Update Lesson
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Right side: mobile preview -->
-            <div class="mobile-preview">
-                <div class="mobile-preview-header">iPhone 12 • Lesson Preview</div>
-                <div class="mobile-preview-content" id="editMobilePreviewContent">
-                    <p class="text-gray-400 text-center text-sm mt-4">Content preview appears here...</p>
-                </div>
-            </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Topic *</label>
+            <select class="form-select" id="editorTopic" onchange="previewRefresh()" required>
+              <option value="">Select Topic</option>
+              <option value="Arrays">Arrays</option>
+              <option value="Queues">Queues</option>
+              <option value="Stacks">Stacks</option>
+              <option value="LinkedLists">Linked Lists</option>
+              <option value="Trees">Trees</option>
+              <option value="Graphs">Graphs</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Difficulty *</label>
+            <select class="form-select" id="editorDifficulty" required>
+              <option value="beginner">🟢 Beginner</option>
+              <option value="intermediate">🟡 Intermediate</option>
+            </select>
+          </div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Lesson Title *</label>
+          <input class="form-input" type="text" id="editorLessonTitle" placeholder="e.g. Introduction to Arrays" required oninput="previewRefresh()"/>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description *</label>
+          <textarea class="form-textarea" id="editorDescription" rows="2" placeholder="Short description shown on the lesson card" required></textarea>
+        </div>
+
+        <hr class="section-divider"/>
+        <div class="section-title">Content Builder</div>
+
+        <!-- Block toolbar -->
+        <div class="block-toolbar">
+          <div class="block-toolbar-title">Insert Block</div>
+          <div class="block-btns">
+            <button type="button" class="block-btn block-btn-text" onclick="insertBlock('TEXT')">📝 Text</button>
+            <button type="button" class="block-btn block-btn-chip" onclick="openChipBuilder()">🔷 Chip / Info</button>
+            <button type="button" class="block-btn block-btn-custom" onclick="openBoxBuilder()">🎨 Custom Box</button>
+            <button type="button" class="block-btn block-btn-image" onclick="openImageModal()">🖼️ Image</button>
+            <button type="button" class="block-btn block-btn-page" onclick="insertBlock('PAGE_BREAK')">📄 Page Break</button>
+            <button type="button" class="block-btn block-btn-info" onclick="insertBlock('INFO')">ℹ️ Info</button>
+            <button type="button" class="block-btn block-btn-tip" onclick="insertBlock('TIP')">💡 Tip</button>
+            <button type="button" class="block-btn block-btn-warning" onclick="insertBlock('WARNING')">⚠️ Warning</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Raw Content</label>
+          <textarea class="form-textarea" id="editorContent" rows="14"
+            placeholder="Start typing or use the Insert Block buttons above…"
+            oninput="previewRefresh()"></textarea>
+          <div class="content-hint">
+            <span class="hint-chip">Double-enter for new paragraph</span>
+            <span class="hint-chip"><code><<<PAGE_BREAK>>></code> splits pages</span>
+            <span class="hint-chip"><code>[CHIP icon="🎯" title="…" hint="…" modalTitle="…" modalBody="…"]</code></span>
+            <span class="hint-chip"><code>[CUSTOMBOX border="…" bg="…" text="…" title="…"]…[/CUSTOMBOX]</code></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Display Order</label>
+          <input class="form-input" type="number" id="editorOrder" value="1" min="1" style="max-width:100px;"/>
+        </div>
+      </div>
+
+      <div class="editor-footer">
+        <button class="btn btn-ghost" onclick="closeEditor()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveLesson()"><i class="fas fa-save"></i> <span id="saveBtnLabel">Save Lesson</span></button>
+      </div>
     </div>
 
-    <!-- ══════════════════════════════════════════════════════════════
-         JAVASCRIPT
-    ══════════════════════════════════════════════════════════════ -->
-    <script>
-        const API_URL = window.location.hostname === 'localhost'
-            ? 'http://localhost:3000/api'
-            : 'https://structureality-admin.onrender.com/api';
-
-        let allLessons = [];
-        let currentUser = null;
-        let imageModalTarget = 'add';
-        let stagedImages = [];
-        let customBoxTarget = 'add';
-        let currentImageHeight = 180;
-
-        // Color sync helper
-        function syncColorPickers(colorInputId, hexInputId) {
-            const colorInput = document.getElementById(colorInputId);
-            const hexInput = document.getElementById(hexInputId);
-            if (!colorInput || !hexInput) return;
-            
-            colorInput.addEventListener('input', () => {
-                hexInput.value = colorInput.value.toUpperCase();
-                updateCustomBoxPreview();
-            });
-            hexInput.addEventListener('change', () => {
-                if (/^#[0-9A-F]{6}$/i.test(hexInput.value)) {
-                    colorInput.value = hexInput.value;
-                    updateCustomBoxPreview();
-                }
-            });
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  AUTH
-        // ════════════════════════════════════════════════════════
-        function logout() {
-            localStorage.removeItem('adminUser');
-            window.location.href = 'login.html';
-        }
-
-        function checkAuth() {
-            const adminUser = localStorage.getItem('adminUser');
-            if (!adminUser || adminUser === 'undefined') {
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-            try {
-                const user = JSON.parse(adminUser);
-                if (!user.role) user.role = 'admin';
-                return user;
-            } catch (e) {
-                localStorage.removeItem('adminUser');
-                window.location.href = 'login.html';
-                return null;
-            }
-        }
-
-        function isInstructor(user) { return user && user.role === 'instructor'; }
-        function isAdmin(user)      { return user && (user.role === 'admin' || !user.role); }
-
-        function updateNavigationForRole(user) {
-            const ri = document.getElementById('roleIndicator');
-            if (!ri) return;
-            if (isInstructor(user)) {
-                ri.textContent = '👨‍🏫 Instructor View';
-                ri.className = 'ml-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold';
-            } else {
-                ri.textContent = '👑 Admin View';
-                ri.className = 'ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full font-semibold';
-            }
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  IMAGE MODAL
-        // ════════════════════════════════════════════════════════
-
-        function openImageModal(target) {
-            imageModalTarget = target;
-            stagedImages = [];
-            currentImageHeight = 180;
-            renderStagedGallery();
-            document.getElementById('imageUrlInput').value = '';
-            document.getElementById('imageCaptionInput').value = '';
-            document.getElementById('imageHeightSlider').value = 180;
-            document.getElementById('imageHeightValue').textContent = '180px';
-            document.querySelector('input[name="imgAlign"][value="center"]').checked = true;
-            document.getElementById('uploadProgress').classList.add('hidden');
-            document.getElementById('imageModal').classList.add('active');
-        }
-
-        function closeImageModal() {
-            document.getElementById('imageModal').classList.remove('active');
-        }
-
-        document.getElementById('imageHeightSlider')?.addEventListener('input', (e) => {
-            currentImageHeight = parseInt(e.target.value);
-            document.getElementById('imageHeightValue').textContent = currentImageHeight + 'px';
-        });
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            document.getElementById('imageUploadZone').classList.add('drag-over');
-        }
-        function handleDragLeave(e) {
-            document.getElementById('imageUploadZone').classList.remove('drag-over');
-        }
-        function handleDrop(e) {
-            e.preventDefault();
-            document.getElementById('imageUploadZone').classList.remove('drag-over');
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) processImageFile(file);
-        }
-
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) processImageFile(file);
-            event.target.value = '';
-        }
-
-        function processImageFile(file) {
-            if (file.size > 2 * 1024 * 1024) {
-                alert('⚠️ Image is larger than 2 MB. Please compress it first.');
-                return;
-            }
-
-            const progress = document.getElementById('uploadProgress');
-            progress.classList.remove('hidden');
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                progress.classList.add('hidden');
-                const caption  = document.getElementById('imageCaptionInput').value.trim();
-                const align    = document.querySelector('input[name="imgAlign"]:checked').value;
-                stageImage(e.target.result, caption, align);
-            };
-            reader.onerror = function() {
-                progress.classList.add('hidden');
-                alert('❌ Failed to read image file.');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function addImageFromUrl() {
-            const url = document.getElementById('imageUrlInput').value.trim();
-            if (!url) { alert('Please enter an image URL.'); return; }
-            if (!/^https?:\/\/.+/i.test(url)) { alert('Please enter a valid http/https URL.'); return; }
-            const caption = document.getElementById('imageCaptionInput').value.trim();
-            const align   = document.querySelector('input[name="imgAlign"]:checked').value;
-            stageImage(url, caption, align);
-            document.getElementById('imageUrlInput').value = '';
-        }
-
-        function stageImage(src, caption, align) {
-            stagedImages.push({ src, caption: caption || '', align: align || 'center', height: currentImageHeight });
-            renderStagedGallery();
-        }
-
-        function renderStagedGallery() {
-            const section = document.getElementById('stagedImagesSection');
-            const gallery = document.getElementById('stagedImagesGallery');
-
-            if (stagedImages.length === 0) {
-                section.classList.add('hidden');
-                return;
-            }
-            section.classList.remove('hidden');
-
-            gallery.innerHTML = '';
-            stagedImages.forEach((img, idx) => {
-                const item = document.createElement('div');
-                item.className = 'image-gallery-item';
-                item.innerHTML = `
-                    <img src="${img.src}" alt="${img.caption || 'image'}" />
-                    <div class="remove-img-btn" onclick="removeStagedImage(${idx})" title="Remove">✕</div>
-                    <div class="insert-img-btn" onclick="insertStagedImage(${idx})">Insert ↓</div>
-                `;
-                gallery.appendChild(item);
-            });
-        }
-
-        function removeStagedImage(idx) {
-            stagedImages.splice(idx, 1);
-            renderStagedGallery();
-        }
-
-        function insertStagedImage(idx) {
-            const img = stagedImages[idx];
-            const textareaId = imageModalTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
-            const textarea   = document.getElementById(textareaId);
-
-            const token = `\n\n[IMAGE src="${img.src}" caption="${img.caption}" align="${img.align}" height="${img.height}"]\n\n`;
-            const pos   = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
-            textarea.focus();
-            textarea.setSelectionRange(pos + token.length, pos + token.length);
-
-            updatePreview(imageModalTarget === 'edit');
-            closeImageModal();
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  CUSTOM BOX MODAL
-        // ════════════════════════════════════════════════════════
-
-        function openCustomBoxBuilder(target) {
-            customBoxTarget = target;
-            document.getElementById('customBoxTitle').value = '';
-            document.getElementById('customBoxContent').value = '';
-            document.getElementById('customBoxBorderColor').value = '#006064';
-            document.getElementById('customBoxBorderColorHex').value = '#006064';
-            document.getElementById('customBoxBgColor').value = '#E0F7FA';
-            document.getElementById('customBoxBgColorHex').value = '#E0F7FA';
-            document.getElementById('customBoxTextColor').value = '#006064';
-            document.getElementById('customBoxTextColorHex').value = '#006064';
-            
-            syncColorPickers('customBoxBorderColor', 'customBoxBorderColorHex');
-            syncColorPickers('customBoxBgColor', 'customBoxBgColorHex');
-            syncColorPickers('customBoxTextColor', 'customBoxTextColorHex');
-            
-            updateCustomBoxPreview();
-            document.getElementById('customBoxModal').classList.add('active');
-        }
-
-        function closeCustomBoxModal() {
-            document.getElementById('customBoxModal').classList.remove('active');
-        }
-
-        function updateCustomBoxPreview() {
-            const title = document.getElementById('customBoxTitle').value || 'Box Title';
-            const content = document.getElementById('customBoxContent').value || 'Box content';
-            const borderColor = document.getElementById('customBoxBorderColor').value;
-            const bgColor = document.getElementById('customBoxBgColor').value;
-            const textColor = document.getElementById('customBoxTextColor').value;
-
-            const preview = document.getElementById('customBoxPreviewContent');
-            preview.innerHTML = `
-                <div style="padding: 12px; border-radius: 8px; border-left: 4px solid ${borderColor}; background-color: ${bgColor}; color: ${textColor};">
-                    <strong>${title}</strong><br><br>
-                    ${content}
+    <!-- RIGHT: mobile preview -->
+    <div class="preview-panel">
+      <div class="preview-panel-header">
+        <span class="preview-panel-title">📱 Live Preview</span>
+        <div class="preview-page-controls">
+          <button class="preview-page-btn" id="prevPageBtn" onclick="previewPage(-1)" disabled>‹</button>
+          <span class="preview-page-indicator" id="pageIndicator">1 / 1</span>
+          <button class="preview-page-btn" id="nextPageBtn" onclick="previewPage(+1)" disabled>›</button>
+        </div>
+      </div>
+      <div class="preview-device-wrap">
+        <div class="device-frame">
+          <div class="device-notch"><div class="device-notch-inner"></div></div>
+          <div class="device-screen" id="deviceScreen">
+            <div class="app-modal" id="appModalPreview">
+              <div class="app-modal-hdr">
+                <div class="app-hdr-close">✕</div>
+                <div class="app-hdr-icon">📚</div>
+                <div class="app-hdr-info">
+                  <div class="app-hdr-topic" id="previewTopic">TOPIC</div>
+                  <div class="app-hdr-title" id="previewTitle">Lesson Title</div>
                 </div>
-            `;
-        }
+              </div>
+              <div class="app-modal-scroll" id="previewScroll">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:11px;text-align:center;">
+                  Start adding content<br>to see the preview
+                </div>
+              </div>
+              <div class="app-modal-ftr" id="previewFooter">
+                <div class="app-btn app-btn-secondary" style="opacity:.35;">← Prev</div>
+                <div class="app-btn app-btn-primary">Next Page</div>
+              </div>
+            </div>
+          </div>
+          <div class="device-home"><div class="device-home-bar"></div></div>
+        </div>
+      </div>
+    </div>
 
-        function insertCustomBox(event) {
-            event.preventDefault();
-            const title = document.getElementById('customBoxTitle').value;
-            const content = document.getElementById('customBoxContent').value;
-            const borderColor = document.getElementById('customBoxBorderColorHex').value;
-            const bgColor = document.getElementById('customBoxBgColorHex').value;
-            const textColor = document.getElementById('customBoxTextColorHex').value;
+  </div>
+</div>
 
-            const textareaId = customBoxTarget === 'edit' ? 'editLessonContent' : 'lessonContent';
-            const textarea = document.getElementById(textareaId);
+<!-- ════════════════════════════════════════════
+     CUSTOM BOX BUILDER MINI-MODAL
+════════════════════════════════════════════ -->
+<div class="mini-modal-backdrop" id="boxModal">
+  <div class="mini-modal">
+    <div class="mini-modal-header">
+      <span class="mini-modal-title">🎨 Custom Box</span>
+      <button class="editor-close" onclick="closeBoxModal()">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Box Title *</label>
+      <input class="form-input" type="text" id="boxTitle" placeholder="e.g. Key Concept" oninput="updateBoxPreview()"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Box Content *</label>
+      <textarea class="form-textarea" id="boxContent" rows="5" placeholder="Content here…" oninput="updateBoxPreview()"></textarea>
+    </div>
+    <div class="color-row">
+      <div class="color-group">
+        <label>Border</label>
+        <div class="color-input-wrap">
+          <input type="color" id="boxBorderColor" value="#7C3AED" oninput="syncHex('boxBorderColor','boxBorderHex');updateBoxPreview()"/>
+          <input type="text" id="boxBorderHex" value="#7C3AED" oninput="syncColor('boxBorderColor','boxBorderHex');updateBoxPreview()"/>
+        </div>
+      </div>
+      <div class="color-group">
+        <label>Background</label>
+        <div class="color-input-wrap">
+          <input type="color" id="boxBgColor" value="#EDE9FE" oninput="syncHex('boxBgColor','boxBgHex');updateBoxPreview()"/>
+          <input type="text" id="boxBgHex" value="#EDE9FE" oninput="syncColor('boxBgColor','boxBgHex');updateBoxPreview()"/>
+        </div>
+      </div>
+      <div class="color-group">
+        <label>Text</label>
+        <div class="color-input-wrap">
+          <input type="color" id="boxTextColor" value="#4C1D95" oninput="syncHex('boxTextColor','boxTextHex');updateBoxPreview()"/>
+          <input type="text" id="boxTextHex" value="#4C1D95" oninput="syncColor('boxTextColor','boxTextHex');updateBoxPreview()"/>
+        </div>
+      </div>
+    </div>
+    <div class="custom-box-live-preview" id="boxLivePreview" style="border-color:#7C3AED;background:#EDE9FE;color:#4C1D95;">
+      <div class="cbp-title" id="boxPrevTitle">Box Title</div>
+      <div class="cbp-body" id="boxPrevBody">Content preview…</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeBoxModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="insertBox()">Insert Box</button>
+    </div>
+  </div>
+</div>
 
-            const token = `\n\n[CUSTOMBOX border="${borderColor}" bg="${bgColor}" text="${textColor}" title="${title}"]${content}[/CUSTOMBOX]\n\n`;
-            const pos = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + token + textarea.value.substring(pos);
-            textarea.focus();
+<!-- ════════════════════════════════════════════
+     CHIP BUILDER MINI-MODAL
+════════════════════════════════════════════ -->
+<div class="mini-modal-backdrop" id="chipModal">
+  <div class="mini-modal">
+    <div class="mini-modal-header">
+      <span class="mini-modal-title">🔷 Chip / Info Tile</span>
+      <button class="editor-close" onclick="closeChipModal()">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Icon (emoji) *</label>
+        <input class="form-input" type="text" id="chipIcon" value="🎯" maxlength="4" oninput="updateChipPreview()"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Title *</label>
+        <input class="form-input" type="text" id="chipTitle" placeholder="Chip title" oninput="updateChipPreview()"/>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Hint (subtitle shown on card)</label>
+      <input class="form-input" type="text" id="chipHint" placeholder="Brief hint text" oninput="updateChipPreview()"/>
+    </div>
+    <hr class="section-divider"/>
+    <div class="form-group">
+      <label class="form-label">Modal Title (shown when tapped)</label>
+      <input class="form-input" type="text" id="chipModalTitle" placeholder="Expanded title"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Modal Body (full explanation)</label>
+      <textarea class="form-textarea" id="chipModalBody" rows="4" placeholder="Full explanation shown in the info bottom sheet…"></textarea>
+    </div>
+    <!-- Live chip preview -->
+    <div class="chip-builder-preview" id="chipLivePreview">
+      <div class="chip-builder-icon-wrap" id="chipPrevIcon">🎯</div>
+      <div class="chip-builder-text">
+        <div class="chip-builder-title" id="chipPrevTitle">Chip Title</div>
+        <div class="chip-builder-hint" id="chipPrevHint">Brief hint text</div>
+      </div>
+      <div class="chip-builder-arrow">›</div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeChipModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="insertChip()">Insert Chip</button>
+    </div>
+  </div>
+</div>
 
-            updatePreview(customBoxTarget === 'edit');
-            closeCustomBoxModal();
-        }
+<!-- ════════════════════════════════════════════
+     IMAGE MINI-MODAL
+════════════════════════════════════════════ -->
+<div class="mini-modal-backdrop" id="imageModal">
+  <div class="mini-modal">
+    <div class="mini-modal-header">
+      <span class="mini-modal-title">🖼️ Insert Image</span>
+      <button class="editor-close" onclick="closeImageModal()">✕</button>
+    </div>
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('imgFileInput').click()"
+      ondragover="dzOver(event)" ondragleave="dzLeave(event)" ondrop="dzDrop(event)">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>Click or drag & drop an image</p>
+      <small>PNG, JPG, GIF, WebP — max 2 MB</small>
+      <input type="file" id="imgFileInput" accept="image/*" class="hidden" onchange="handleImgFile(event)" style="display:none"/>
+    </div>
+    <div id="imgUploadProgress" style="display:none;text-align:center;margin-top:10px;font-size:12px;color:var(--accent2);">
+      <span class="spinner"></span> Processing…
+    </div>
+    <div class="form-group" style="margin-top:12px;">
+      <label class="form-label">Or Image URL</label>
+      <div style="display:flex;gap:6px;">
+        <input class="form-input" type="url" id="imgUrlInput" placeholder="https://…"/>
+        <button class="btn btn-ghost" onclick="addImgFromUrl()" style="white-space:nowrap;">Add URL</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Height in App</label>
+      <div class="image-height-row">
+        <input type="range" id="imgHeightSlider" min="80" max="400" value="180" oninput="document.getElementById('imgHeightLabel').textContent=this.value+'px'"/>
+        <span id="imgHeightLabel">180px</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Caption (optional)</label>
+      <input class="form-input" type="text" id="imgCaption" placeholder="Image description"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Alignment</label>
+      <div style="display:flex;gap:12px;">
+        <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text2);">
+          <input type="radio" name="imgAlign" value="left" style="accent-color:var(--accent);"/> Left
+        </label>
+        <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text2);">
+          <input type="radio" name="imgAlign" value="center" checked style="accent-color:var(--accent);"/> Center
+        </label>
+        <label style="font-size:12px;cursor:pointer;display:flex;align-items:center;gap:5px;color:var(--text2);">
+          <input type="radio" name="imgAlign" value="right" style="accent-color:var(--accent);"/> Right
+        </label>
+      </div>
+    </div>
+    <div id="stagedSection" style="display:none;margin-top:8px;">
+      <p style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;">Staged — click Insert ↓</p>
+      <div class="staged-gallery" id="stagedGallery"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+      <button class="btn btn-ghost" onclick="closeImageModal()">Done</button>
+    </div>
+  </div>
+</div>
 
-        // ════════════════════════════════════════════════════════
-        //  PREVIEW & RENDERING (FIXED FOR PARAGRAPH SPACING)
-        // ════════════════════════════════════════════════════════
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
 
-        function updatePreview(isEdit = false) {
-            const contentId = isEdit ? 'editLessonContent' : 'lessonContent';
-            const previewId = isEdit ? 'editMobilePreviewContent' : 'mobilePreviewContent';
-            const content = document.getElementById(contentId).value;
-            const preview = document.getElementById(previewId);
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+const API_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:3000/api'
+  : 'https://structureality-admin.onrender.com/api';
 
-            renderMobilePreview(content, preview);
-        }
+let allLessons = [];
+let currentUser = null;
+let stagedImages = [];
+let currentImgHeight = 180;
+// Preview state
+let previewPages = [];
+let previewPageIdx = 0;
 
-        function renderMobilePreview(content, previewElement) {
-    previewElement.innerHTML = '';
-    previewElement.style.padding = '0';
-    previewElement.style.background = '#f9fafb';
+// ═══════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════
+function checkAuth() {
+  const raw = localStorage.getItem('adminUser');
+  if (!raw || raw === 'undefined') { localStorage.removeItem('adminUser'); window.location.href='login.html'; return null; }
+  try {
+    const u = JSON.parse(raw);
+    if (!u.role) u.role = 'admin';
+    return u;
+  } catch(e) { localStorage.removeItem('adminUser'); window.location.href='login.html'; return null; }
+}
+function logout() { localStorage.removeItem('adminUser'); window.location.href='login.html'; }
 
-    // Split content into pages
-    var pages = [];
-    if (content.indexOf('<<<PAGE_BREAK>>>') >= 0) {
-        pages = content.split('<<<PAGE_BREAK>>>').map(function(p){ return p.trim(); }).filter(Boolean);
+// ═══════════════════════════════════════════
+//  LOAD LESSONS
+// ═══════════════════════════════════════════
+async function loadLessons() {
+  document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const r = await fetch(`${API_URL}/lessons`);
+    const d = await r.json();
+    if (d.success) { allLessons = d.lessons||[]; updateStats(); displayLessons(allLessons); }
+    else showToast('Failed to load lessons','error');
+  } catch(e) {
+    document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><i class="fas fa-wifi-slash"></i><p>Cannot reach the server</p></div>';
+  }
+}
+
+function updateStats() {
+  let arr=0,q=0,st=0,ll=0,ot=0;
+  allLessons.forEach(l=>{
+    const t=l.topicName;
+    if(t==='Arrays') arr++;
+    else if(t==='Queue'||t==='Queues') q++;
+    else if(t==='Stacks') st++;
+    else if(t==='LinkedLists'||t==='Linked Lists') ll++;
+    else ot++;
+  });
+  document.getElementById('statTotal').textContent  = allLessons.length;
+  document.getElementById('statArrays').textContent = arr;
+  document.getElementById('statQueues').textContent  = q;
+  document.getElementById('statStacks').textContent  = st;
+  document.getElementById('statLists').textContent   = ll;
+  document.getElementById('statOthers').textContent  = ot;
+}
+
+function getBannerClass(topic) {
+  const map={'Arrays':'arrays','Queues':'queues','Queue':'queues','Stacks':'stacks','LinkedLists':'linkedlists','Linked Lists':'linkedlists','Trees':'trees','Graphs':'graphs'};
+  return 'banner-'+(map[topic]||'default');
+}
+
+function displayLessons(lessons) {
+  const g = document.getElementById('lessonsGrid');
+  if(!lessons.length){
+    g.innerHTML='<div class="empty-state"><i class="fas fa-book-open"></i><p>No lessons found. Create your first lesson!</p></div>';
+    return;
+  }
+  g.innerHTML = lessons.map(l=>{
+    const clean=(l.content||'').replace(/\[IMAGE[^\]]+\]/gi,'[image]').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]/gi,'[box]').replace(/\[CHIP[^\]]+\]/gi,'[chip]');
+    const preview=clean.substring(0,70)+(clean.length>70?'…':'');
+    const hasBox= /\[CUSTOMBOX/i.test(l.content||'');
+    const hasChip=/\[CHIP/i.test(l.content||'');
+    const imgCnt=((l.content||'').match(/\[IMAGE/gi)||[]).length;
+    const diff=l.difficultyLevel||'beginner';
+    return `
+    <div class="lesson-card">
+      <div class="lesson-card-banner ${getBannerClass(l.topicName)}"></div>
+      <div class="lesson-card-body">
+        <div class="lesson-card-tags">
+          <span class="tag tag-topic">${l.topicName}</span>
+          <span class="tag ${diff==='beginner'?'tag-beginner':'tag-intermediate'}">${diff==='beginner'?'Beginner':'Intermediate'}</span>
+          ${hasBox?'<span class="tag tag-custom">Custom Box</span>':''}
+          ${hasChip?'<span class="tag tag-image">Chip</span>':''}
+          ${imgCnt>0?`<span class="tag tag-image">🖼 ${imgCnt}</span>`:''}
+        </div>
+        <div class="lesson-card-title">${escHtml(l.title)}</div>
+        <div class="lesson-card-desc">${escHtml(l.description)}</div>
+        <div class="lesson-card-preview">${escHtml(preview)||'No content yet'}</div>
+        <div class="lesson-card-footer">
+          <span class="lesson-card-order"># ${l.order}</span>
+          <div class="lesson-card-actions">
+            <button class="icon-btn icon-btn-edit" onclick="openEditModal('${l._id}')" title="Edit"><i class="fas fa-edit"></i></button>
+            <button class="icon-btn icon-btn-del" onclick="deleteLesson('${l._id}')" title="Delete"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterLessons() {
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const t=document.getElementById('topicFilter').value;
+  const d=document.getElementById('diffFilter').value;
+  displayLessons(allLessons.filter(l=>{
+    const ms=l.title.toLowerCase().includes(q)||l.description.toLowerCase().includes(q);
+    const mt=t==='all'||l.topicName===t;
+    const md=d==='all'||(l.difficultyLevel||'beginner')===d;
+    return ms&&mt&&md;
+  }));
+}
+
+// ═══════════════════════════════════════════
+//  EDITOR OPEN / CLOSE
+// ═══════════════════════════════════════════
+function openAddModal() {
+  document.getElementById('editorTitle').textContent='Add Lesson';
+  document.getElementById('saveBtnLabel').textContent='Add Lesson';
+  document.getElementById('editorLessonId').value='';
+  document.getElementById('editorTopic').value='';
+  document.getElementById('editorDifficulty').value='beginner';
+  document.getElementById('editorLessonTitle').value='';
+  document.getElementById('editorDescription').value='';
+  document.getElementById('editorContent').value='';
+  document.getElementById('editorOrder').value='1';
+  previewPages=[];previewPageIdx=0;
+  document.getElementById('editorModal').classList.add('open');
+  previewRefresh();
+}
+
+function openEditModal(id) {
+  const l=allLessons.find(x=>x._id===id);
+  if(!l)return;
+  document.getElementById('editorTitle').textContent='Edit Lesson';
+  document.getElementById('saveBtnLabel').textContent='Save Changes';
+  document.getElementById('editorLessonId').value=l._id;
+  document.getElementById('editorTopic').value=l.topicName;
+  document.getElementById('editorDifficulty').value=l.difficultyLevel||'beginner';
+  document.getElementById('editorLessonTitle').value=l.title;
+  document.getElementById('editorDescription').value=l.description;
+  document.getElementById('editorContent').value=l.content||'';
+  document.getElementById('editorOrder').value=l.order||1;
+  document.getElementById('editorModal').classList.add('open');
+  previewRefresh();
+}
+
+function closeEditor() {
+  document.getElementById('editorModal').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════
+//  SAVE
+// ═══════════════════════════════════════════
+async function saveLesson() {
+  const id    = document.getElementById('editorLessonId').value;
+  const topic = document.getElementById('editorTopic').value;
+  const title = document.getElementById('editorLessonTitle').value.trim();
+  const desc  = document.getElementById('editorDescription').value.trim();
+  if(!topic||!title||!desc){ showToast('Please fill in all required fields','error'); return; }
+
+  const payload = {
+    topicName:       topic,
+    title,
+    description:     desc,
+    content:         document.getElementById('editorContent').value,
+    order:           parseInt(document.getElementById('editorOrder').value)||1,
+    difficultyLevel: document.getElementById('editorDifficulty').value
+  };
+
+  try {
+    const url    = id ? `${API_URL}/lessons/${id}` : `${API_URL}/lessons`;
+    const method = id ? 'PUT' : 'POST';
+    const r      = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d      = await r.json();
+    if(d.success){ showToast(id?'Lesson updated!':'Lesson added!','success'); closeEditor(); loadLessons(); }
+    else showToast(d.error||'Save failed','error');
+  } catch(e){ showToast('Network error: '+e.message,'error'); }
+}
+
+async function deleteLesson(id) {
+  if(!confirm('Delete this lesson?')) return;
+  try {
+    const r = await fetch(`${API_URL}/lessons/${id}`,{method:'DELETE'});
+    const d = await r.json();
+    if(d.success){ showToast('Lesson deleted','success'); loadLessons(); }
+    else showToast(d.error||'Delete failed','error');
+  } catch(e){ showToast('Network error','error'); }
+}
+
+// ═══════════════════════════════════════════
+//  INSERT BLOCK HELPERS
+// ═══════════════════════════════════════════
+function insertAtCursor(text) {
+  const ta = document.getElementById('editorContent');
+  const pos = ta.selectionStart;
+  ta.value = ta.value.substring(0,pos) + text + ta.value.substring(pos);
+  ta.focus();
+  ta.setSelectionRange(pos+text.length, pos+text.length);
+  previewRefresh();
+}
+
+function insertBlock(type) {
+  const templates = {
+    TEXT:       '\n\nYour paragraph content here.\n\n',
+    PAGE_BREAK: '\n\n<<<PAGE_BREAK>>>\n\n',
+    INFO:       '\n\n[INFO]\nYour info content here.\n\n',
+    TIP:        '\n\n[TIP]\nYour tip content here.\n\n',
+    WARNING:    '\n\n[WARNING]\nYour warning content here.\n\n',
+    NOTE:       '\n\n[NOTE]\nYour note content here.\n\n',
+  };
+  insertAtCursor(templates[type]||'');
+}
+
+// ═══════════════════════════════════════════
+//  CUSTOM BOX BUILDER
+// ═══════════════════════════════════════════
+function openBoxBuilder() { document.getElementById('boxModal').classList.add('open'); updateBoxPreview(); }
+function closeBoxModal()  { document.getElementById('boxModal').classList.remove('open'); }
+function syncHex(colorId,hexId)  { document.getElementById(hexId).value = document.getElementById(colorId).value.toUpperCase(); }
+function syncColor(colorId,hexId){ const v=document.getElementById(hexId).value; if(/^#[0-9A-F]{6}$/i.test(v)) document.getElementById(colorId).value=v; }
+function updateBoxPreview() {
+  const t  = document.getElementById('boxTitle').value||'Box Title';
+  const b  = document.getElementById('boxContent').value||'Content…';
+  const bc = document.getElementById('boxBorderHex').value;
+  const bg = document.getElementById('boxBgHex').value;
+  const tc = document.getElementById('boxTextHex').value;
+  const p  = document.getElementById('boxLivePreview');
+  p.style.borderColor=bc; p.style.backgroundColor=bg; p.style.color=tc;
+  document.getElementById('boxPrevTitle').textContent=t;
+  document.getElementById('boxPrevBody').textContent=b;
+}
+function insertBox() {
+  const t  = document.getElementById('boxTitle').value.trim();
+  const b  = document.getElementById('boxContent').value.trim();
+  if(!t||!b){ showToast('Title and content required','error'); return; }
+  const bc = document.getElementById('boxBorderHex').value;
+  const bg = document.getElementById('boxBgHex').value;
+  const tc = document.getElementById('boxTextHex').value;
+  insertAtCursor(`\n\n[CUSTOMBOX border="${bc}" bg="${bg}" text="${tc}" title="${t}"]${b}[/CUSTOMBOX]\n\n`);
+  closeBoxModal();
+}
+
+// ═══════════════════════════════════════════
+//  CHIP BUILDER
+// ═══════════════════════════════════════════
+function openChipBuilder() { document.getElementById('chipModal').classList.add('open'); updateChipPreview(); }
+function closeChipModal()  { document.getElementById('chipModal').classList.remove('open'); }
+function updateChipPreview() {
+  document.getElementById('chipPrevIcon').textContent  = document.getElementById('chipIcon').value||'🎯';
+  document.getElementById('chipPrevTitle').textContent = document.getElementById('chipTitle').value||'Chip Title';
+  document.getElementById('chipPrevHint').textContent  = document.getElementById('chipHint').value||'Brief hint text';
+}
+function insertChip() {
+  const icon  = document.getElementById('chipIcon').value||'🎯';
+  const title = document.getElementById('chipTitle').value.trim();
+  const hint  = document.getElementById('chipHint').value.trim();
+  const mt    = document.getElementById('chipModalTitle').value.trim();
+  const mb    = document.getElementById('chipModalBody').value.trim();
+  if(!title){ showToast('Chip title required','error'); return; }
+  insertAtCursor(`\n\n[CHIP icon="${icon}" title="${title}" hint="${hint}" modalTitle="${mt||title}" modalBody="${mb}"]\n\n`);
+  closeChipModal();
+}
+
+// ═══════════════════════════════════════════
+//  IMAGE MODAL
+// ═══════════════════════════════════════════
+function openImageModal() { stagedImages=[]; renderStagedGallery(); document.getElementById('imgUrlInput').value=''; document.getElementById('imgCaption').value=''; document.getElementById('imgHeightSlider').value=180; document.getElementById('imgHeightLabel').textContent='180px'; document.getElementById('imageModal').classList.add('open'); }
+function closeImageModal(){ document.getElementById('imageModal').classList.remove('open'); }
+function dzOver(e)  { e.preventDefault(); document.getElementById('dropZone').classList.add('drag-over'); }
+function dzLeave(e) { document.getElementById('dropZone').classList.remove('drag-over'); }
+function dzDrop(e)  { e.preventDefault(); dzLeave(e); const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('image/')) processImg(f); }
+function handleImgFile(e){ const f=e.target.files[0]; if(f) processImg(f); e.target.value=''; }
+function processImg(file) {
+  if(file.size>2*1024*1024){ showToast('Image exceeds 2 MB','error'); return; }
+  const prog=document.getElementById('imgUploadProgress'); prog.style.display='block';
+  const rd=new FileReader();
+  rd.onload=e=>{ prog.style.display='none'; stageImg(e.target.result,document.getElementById('imgCaption').value.trim(),document.querySelector('input[name="imgAlign"]:checked').value,parseInt(document.getElementById('imgHeightSlider').value)); };
+  rd.onerror=()=>{ prog.style.display='none'; showToast('Failed to read image','error'); };
+  rd.readAsDataURL(file);
+}
+function addImgFromUrl(){ const u=document.getElementById('imgUrlInput').value.trim(); if(!u||!/^https?:\/\//i.test(u)){showToast('Enter a valid URL','error');return;} stageImg(u,document.getElementById('imgCaption').value.trim(),document.querySelector('input[name="imgAlign"]:checked').value,parseInt(document.getElementById('imgHeightSlider').value)); document.getElementById('imgUrlInput').value=''; }
+function stageImg(src,caption,align,height){ stagedImages.push({src,caption:caption||'',align:align||'center',height:height||180}); renderStagedGallery(); }
+function renderStagedGallery(){
+  const sec=document.getElementById('stagedSection'), gal=document.getElementById('stagedGallery');
+  if(!stagedImages.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  gal.innerHTML=stagedImages.map((img,i)=>`
+    <div class="staged-item">
+      <img src="${img.src}" alt="${img.caption||'img'}"/>
+      <div class="si-remove" onclick="removeStagedImg(${i})">✕</div>
+      <div class="si-insert" onclick="insertStagedImg(${i})">Insert ↓</div>
+    </div>`).join('');
+}
+function removeStagedImg(i){ stagedImages.splice(i,1); renderStagedGallery(); }
+function insertStagedImg(i){
+  const img=stagedImages[i];
+  insertAtCursor(`\n\n[IMAGE src="${img.src}" caption="${img.caption}" align="${img.align}" height="${img.height}"]\n\n`);
+  closeImageModal();
+}
+
+// ═══════════════════════════════════════════
+//  PREVIEW ENGINE
+// ═══════════════════════════════════════════
+function previewRefresh() {
+  // Update header
+  document.getElementById('previewTopic').textContent  = document.getElementById('editorTopic').value || 'TOPIC';
+  document.getElementById('previewTitle').textContent  = document.getElementById('editorLessonTitle').value || 'Lesson Title';
+
+  const raw = document.getElementById('editorContent').value;
+  previewPages = buildPages(raw);
+  previewPageIdx = Math.min(previewPageIdx, Math.max(previewPages.length-1,0));
+  renderPreviewPage();
+  updatePageNav();
+}
+
+function buildPages(content) {
+  if(!content.trim()) return [''];
+  if(content.includes('<<<PAGE_BREAK>>>')) {
+    return content.split('<<<PAGE_BREAK>>>').map(p=>p.trim()).filter(Boolean);
+  }
+  // auto-split: one special block per page
+  const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[CHIP[^\]]+\]|\[IMAGE[^\]]+\]|\[(?:INFO|TIP|WARNING|NOTE|IMPORTANT)\][^\[]*)/gi);
+  let pages=[], curr='', hasSpecial=false;
+  parts.forEach(part=>{
+    if(!part||!part.trim()) return;
+    const trimmed=part.trim();
+    const isSpecial=/^\[(?:CUSTOMBOX|CHIP|IMAGE|INFO|TIP|WARNING|NOTE|IMPORTANT)/i.test(trimmed);
+    if(isSpecial && hasSpecial && curr.trim()) {
+      pages.push(curr.trim());
+      curr=trimmed+'\n\n';
+      hasSpecial=true;
     } else {
-        var parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
-        var currentPage = '', pageHasBox = false;
-        parts.forEach(function(part) {
-            if (!part || !part.trim()) return;
-            var trimmed = part.trim();
-            var isSpecial = /^\[CUSTOMBOX/i.test(trimmed) || /^\[IMAGE/i.test(trimmed) ||
-                            /^\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]/i.test(trimmed);
-            if (isSpecial && pageHasBox && currentPage.length > 0) {
-                pages.push(currentPage.trim());
-                currentPage = trimmed + '\n\n';
-                pageHasBox = true;
-            } else {
-                if (currentPage.length > 0) currentPage += '\n\n';
-                currentPage += trimmed;
-                if (isSpecial) pageHasBox = true;
-            }
-        });
-        if (currentPage.trim()) pages.push(currentPage.trim());
+      curr += (curr?'\n\n':'')+trimmed;
+      if(isSpecial) hasSpecial=true;
     }
-    if (pages.length === 0) pages = [''];
-
-    var totalPages = pages.length;
-    // Store for navigation
-    window._previewPages  = pages;
-    window._previewEl     = previewElement;
-    window._previewTarget = null; // will be set by addLesson/editLesson context
-    renderPreviewPage(0, pages, totalPages, previewElement);
+  });
+  if(curr.trim()) pages.push(curr.trim());
+  return pages.length ? pages : [''];
 }
 
-function renderPreviewPage(pageIdx, pages, totalPages, previewElement) {
-    previewElement.innerHTML = '';
+function renderPreviewPage() {
+  const scroll = document.getElementById('previewScroll');
+  const footer = document.getElementById('previewFooter');
+  const pageContent = previewPages[previewPageIdx] || '';
+  const totalPages = previewPages.length;
+  const isFirst = previewPageIdx===0;
+  const isLast  = previewPageIdx===totalPages-1;
 
-    var modal = document.createElement('div');
-    modal.className = 'app-lesson-modal';
+  scroll.innerHTML='';
 
-    // Header
-    var header = document.createElement('div');
-    header.className = 'app-modal-header';
-    // Detect which modal is open to grab title/topic
-    var isEdit = document.getElementById('editLessonModal').classList.contains('active');
-    var topic = isEdit
-        ? (document.getElementById('editLessonTopic').value || 'Topic')
-        : (document.getElementById('lessonTopic').value || 'Topic');
-    var title = isEdit
-        ? (document.getElementById('editLessonTitle').value || 'Lesson Title')
-        : (document.getElementById('lessonTitle').value || 'Lesson Title');
+  if(!pageContent.trim()){
+    scroll.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:11px;text-align:center;padding:12px;">Start adding content<br>to see the preview</div>';
+    footer.innerHTML='<div class="app-btn app-btn-secondary" style="opacity:.35;">← Prev</div><div class="app-btn app-btn-primary">Next Page</div>';
+    return;
+  }
 
-    header.innerHTML =
-        '<div class="app-modal-close">✕</div>' +
-        '<div class="app-modal-icon">📚</div>' +
-        '<div class="app-modal-header-text">' +
-            '<div class="app-modal-topic">' + topic + '</div>' +
-            '<div class="app-modal-title">' + title + '</div>' +
-        '</div>';
-    modal.appendChild(header);
+  // Page counter
+  if(totalPages>1){
+    const counter=document.createElement('div');
+    counter.className='app-page-label';
+    counter.textContent=`Page ${previewPageIdx+1} of ${totalPages}`;
+    scroll.appendChild(counter);
+  }
 
-    // Scroll area
-    var scroll = document.createElement('div');
-    scroll.className = 'app-modal-scroll';
+  // Parse blocks
+  const blockParts = pageContent.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[CHIP[^\]]+\]|\[IMAGE[^\]]+\]|\[(?:INFO|TIP|WARNING|NOTE|IMPORTANT)\][^\[]*)/gi);
 
-    if (totalPages > 1) {
-        var counter = document.createElement('div');
-        counter.className = 'app-page-counter';
-        counter.textContent = 'Page ' + (pageIdx + 1) + ' of ' + totalPages;
-        scroll.appendChild(counter);
+  blockParts.forEach(part=>{
+    if(!part||!part.trim()) return;
+    const trimmed=part.trim();
+    let el=null;
+
+    // CUSTOMBOX
+    const cbM = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]*)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+    if(cbM){ el=document.createElement('div'); el.className='app-box'; el.style.cssText=`border-color:${cbM[1]};background:${cbM[2]};color:${cbM[3]};`; el.innerHTML=`<div class="app-box-title">${escHtml(cbM[4])}</div><div class="app-box-body">${escHtml(cbM[5].trim()).replace(/\n/g,'<br>')}</div>`; scroll.appendChild(el); return; }
+
+    // CHIP
+    const chipM = trimmed.match(/^\[CHIP\s+icon="([^"]*)"\s+title="([^"]*)"\s+hint="([^"]*)"\s+modalTitle="([^"]*)"\s+modalBody="([^"]*)"\]$/i);
+    if(chipM){ el=document.createElement('div'); el.className='app-chip'; el.innerHTML=`<div class="app-chip-icon">${chipM[1]}</div><div class="app-chip-content"><div class="app-chip-title">${escHtml(chipM[2])}</div><div class="app-chip-hint">${escHtml(chipM[3])}</div></div><div class="app-chip-arrow">›</div>`; scroll.appendChild(el); return; }
+
+    // IMAGE
+    const imgM = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
+    if(imgM){ const h=imgM[4]?Math.min(parseInt(imgM[4]),140)+'px':'100px'; el=document.createElement('div'); el.className='app-image-block'; el.innerHTML=`<img src="${imgM[1]}" style="max-height:${h};width:100%;object-fit:contain;" alt="${imgM[2]||''}" />${imgM[2]?`<div class="app-image-caption">${escHtml(imgM[2])}</div>`:''}`; scroll.appendChild(el); return; }
+
+    // INFO / TIP / WARNING / NOTE / IMPORTANT
+    const infoM = trimmed.match(/^\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]([\s\S]*)$/i);
+    if(infoM){
+      const typeMap={INFO:{border:'#006064',bg:'#E0F7FA',text:'#006064',icon:'ℹ️'},TIP:{border:'#F57F17',bg:'#FFF9C4',text:'#E65100',icon:'💡'},WARNING:{border:'#B71C1C',bg:'#FFEBEE',text:'#B71C1C',icon:'⚠️'},NOTE:{border:'#4A148C',bg:'#F3E5F5',text:'#4A148C',icon:'📝'},IMPORTANT:{border:'#1B5E20',bg:'#E8F5E9',text:'#1B5E20',icon:'⭐'}};
+      const c=typeMap[infoM[1].toUpperCase()]||typeMap.INFO;
+      el=document.createElement('div'); el.className='app-box';
+      el.style.cssText=`border-color:${c.border};background:${c.bg};color:${c.text};`;
+      el.innerHTML=`<div class="app-box-title">${c.icon} ${infoM[1].charAt(0)+infoM[1].slice(1).toLowerCase()}</div><div class="app-box-body">${escHtml(infoM[2].trim()).replace(/\n/g,'<br>')}</div>`;
+      scroll.appendChild(el); return;
     }
 
-    // Render blocks for this page
-    var pageContent = pages[pageIdx] || '';
-    var blockParts  = pageContent.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
-
-    blockParts.forEach(function(part) {
-        if (!part || !part.trim()) return;
-        var trimmed = part.trim();
-        var el = null;
-
-        // CUSTOMBOX
-        var cbMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]*)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
-        if (cbMatch) {
-            el = document.createElement('div');
-            el.className = 'app-custom-box';
-            el.style.borderColor     = cbMatch[1];
-            el.style.backgroundColor = cbMatch[2];
-            el.style.color           = cbMatch[3];
-            el.innerHTML = '<div class="box-title">' + cbMatch[4] + '</div>' +
-                           '<div class="box-body">' + cbMatch[5].trim().replace(/\n/g,'<br>') + '</div>';
-            scroll.appendChild(el);
-            return;
-        }
-
-        // IMAGE
-        var imgMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
-        if (imgMatch) {
-            el = document.createElement('div');
-            el.className = 'app-image-block';
-            var imgH = imgMatch[4] ? Math.min(parseInt(imgMatch[4]), 160) + 'px' : '120px';
-            el.innerHTML = '<img src="' + imgMatch[1] + '" style="height:' + imgH + ';" alt="' + (imgMatch[2]||'') + '" />' +
-                (imgMatch[2] ? '<div class="app-image-caption">' + imgMatch[2] + '</div>' : '');
-            scroll.appendChild(el);
-            return;
-        }
-
-        // INFO/TIP/WARNING/NOTE/IMPORTANT
-        var infoMatch = trimmed.match(/^\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]([\s\S]*?)$/i);
-        if (infoMatch) {
-            var typeColors = {
-                INFO:      { border:'#006064', bg:'#E0F7FA', text:'#006064', icon:'ℹ️' },
-                TIP:       { border:'#F57F17', bg:'#FFF9C4', text:'#F57F17', icon:'💡' },
-                WARNING:   { border:'#B71C1C', bg:'#FFEBEE', text:'#B71C1C', icon:'⚠️' },
-                NOTE:      { border:'#4A148C', bg:'#F3E5F5', text:'#4A148C', icon:'📝' },
-                IMPORTANT: { border:'#1B5E20', bg:'#E8F5E9', text:'#1B5E20', icon:'⭐' }
-            };
-            var t = infoMatch[1].toUpperCase(), c = typeColors[t] || typeColors['INFO'];
-            el = document.createElement('div');
-            el.className = 'app-custom-box';
-            el.style.borderColor     = c.border;
-            el.style.backgroundColor = c.bg;
-            el.style.color           = c.text;
-            el.innerHTML = '<div class="box-title">' + c.icon + ' ' + (t.charAt(0) + t.slice(1).toLowerCase()) + '</div>' +
-                           '<div class="box-body">' + infoMatch[2].trim().replace(/\n/g,'<br>') + '</div>';
-            scroll.appendChild(el);
-            return;
-        }
-
-        // Plain text paragraphs
-        trimmed.split(/\n\n+/).forEach(function(para) {
-            if (!para.trim()) return;
-            var p = document.createElement('div');
-            p.className = 'app-content-card';
-            p.innerHTML = para.trim().replace(/\n/g,'<br>');
-            scroll.appendChild(p);
-        });
+    // Plain paragraphs
+    trimmed.split(/\n\n+/).forEach(para=>{
+      if(!para.trim()) return;
+      const p=document.createElement('div'); p.className='app-para';
+      p.innerHTML=escHtml(para.trim()).replace(/\n/g,'<br>');
+      scroll.appendChild(p);
     });
+  });
 
-    modal.appendChild(scroll);
-
-    // Page dots
-    if (totalPages > 1) {
-        var dots = document.createElement('div');
-        dots.className = 'app-page-dots';
-        for (var i = 0; i < totalPages; i++) {
-            var dot = document.createElement('div');
-            dot.className = 'app-dot' + (i === pageIdx ? ' active' : '');
-            dots.appendChild(dot);
-        }
-        modal.appendChild(dots);
-    }
-
-    // Footer
-    var footer = document.createElement('div');
-    footer.className = 'app-modal-footer';
-    var isFirst = pageIdx === 0;
-    var isLast  = pageIdx === totalPages - 1;
-
-    var prevBtn = '<button class="app-nav-btn secondary' + (isFirst ? ' disabled' : '') + '" ' +
-        (isFirst ? 'disabled' : 'onclick="previewGoToPage(' + (pageIdx-1) + ')"') + '>← Prev</button>';
-
-    var rightBtns = isLast
-        ? '<button class="app-nav-btn danger">Code</button>' +
-          '<button class="app-nav-btn ar">Try AR</button>' +
-          '<button class="app-nav-btn primary">✓ Done</button>'
-        : '<button class="app-nav-btn primary" onclick="previewGoToPage(' + (pageIdx+1) + ')">Next Page</button>';
-
-    footer.innerHTML = prevBtn + rightBtns;
-    modal.appendChild(footer);
-    previewElement.appendChild(modal);
+  // Footer
+  const prevDisabled = isFirst ? ' style="opacity:.35;"' : '';
+  if(isLast){
+    footer.innerHTML = `<div class="app-btn app-btn-secondary"${prevDisabled}>← Prev</div><div class="app-btn app-btn-danger">Code</div><div class="app-btn app-btn-ar">Try AR</div><div class="app-btn app-btn-done">✓ Done</div>`;
+  } else {
+    footer.innerHTML = `<div class="app-btn app-btn-secondary"${prevDisabled}>← Prev</div><div class="app-btn app-btn-primary">Next Page</div>`;
+  }
 }
 
-function previewGoToPage(idx) {
-    if (!window._previewPages || idx < 0 || idx >= window._previewPages.length) return;
-    renderPreviewPage(idx, window._previewPages, window._previewPages.length, window._previewEl);
+function updatePageNav(){
+  const total=previewPages.length;
+  document.getElementById('pageIndicator').textContent=`${previewPageIdx+1} / ${total}`;
+  document.getElementById('prevPageBtn').disabled=previewPageIdx===0;
+  document.getElementById('nextPageBtn').disabled=previewPageIdx>=total-1;
 }
 
-        // ════════════════════════════════════════════════════════
-        //  CONTENT BUILDER
-        // ════════════════════════════════════════════════════════
-
-        function addContentBlock(type) {
-            const template = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
-            const textarea = document.getElementById('lessonContent');
-            const pos = textarea.selectionStart;
-            textarea.value = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
-            textarea.focus();
-            updatePreview();
-        }
-
-        function insertInfoBox(type, isEdit = false) {
-            const textareaId = isEdit ? 'editLessonContent' : 'lessonContent';
-            const textarea   = document.getElementById(textareaId);
-            const pos        = textarea.selectionStart;
-            const template   = `\n\n[${type}]\nYour ${type.toLowerCase()} content here.\n\n`;
-            textarea.value   = textarea.value.substring(0, pos) + template + textarea.value.substring(pos);
-            textarea.focus();
-            updatePreview(isEdit);
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  LOAD / DISPLAY LESSONS
-        // ════════════════════════════════════════════════════════
-
-        async function loadLessons() {
-            try {
-                const response = await fetch(`${API_URL}/lessons`);
-                const data = await response.json();
-                if (data.success) {
-                    allLessons = data.lessons || [];
-                    updateStats();
-                    displayLessons(allLessons);
-                }
-            } catch (error) {
-                console.error('❌ Fetch Error:', error);
-                document.getElementById('lessonsGrid').innerHTML =
-                    '<p class="text-center text-red-500 col-span-3 p-8">Failed to load lessons</p>';
-            }
-        }
-
-        function updateStats() {
-            const counts = { total: allLessons.length, Arrays: 0, Queue: 0, Stacks: 0, LinkedLists: 0, others: 0 };
-            allLessons.forEach(lesson => {
-                const t = lesson.topicName;
-                if (t === 'Arrays')                     counts.Arrays++;
-                else if (t === 'Queue' || t === 'Queues') counts.Queue++;
-                else if (t === 'Stacks')                counts.Stacks++;
-                else if (t === 'LinkedLists' || t === 'Linked Lists') counts.LinkedLists++;
-                else                                    counts.others++;
-            });
-            document.getElementById('totalLessons').textContent    = counts.total;
-            document.getElementById('arraysCount').textContent     = counts.Arrays;
-            document.getElementById('queueCount').textContent      = counts.Queue;
-            document.getElementById('stacksCount').textContent     = counts.Stacks;
-            document.getElementById('linkedlistsCount').textContent= counts.LinkedLists;
-            document.getElementById('othersCount').textContent     = counts.others;
-        }
-
-        function displayLessons(lessons) {
-            const container = document.getElementById('lessonsGrid');
-            if (lessons.length === 0) {
-                container.innerHTML = '<p class="text-center text-gray-500 col-span-3 p-8">No lessons found. Add your first lesson!</p>';
-                return;
-            }
-
-            const topicColors = {
-                'Arrays':       { gradient: 'from-indigo-500 to-indigo-600', icon: 'fa-layer-group', badge: 'indigo' },
-                'Queue':        { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',      badge: 'blue'   },
-                'Queues':       { gradient: 'from-blue-500 to-blue-600',     icon: 'fa-stream',      badge: 'blue'   },
-                'Stacks':       { gradient: 'from-green-500 to-green-600',   icon: 'fa-layer-group', badge: 'green'  },
-                'LinkedLists':  { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',        badge: 'purple' },
-                'Linked Lists': { gradient: 'from-purple-500 to-purple-600', icon: 'fa-link',        badge: 'purple' },
-                'Trees':        { gradient: 'from-yellow-500 to-yellow-600', icon: 'fa-project-diagram', badge: 'yellow'},
-                'Graphs':       { gradient: 'from-red-500 to-red-600',       icon: 'fa-sitemap',     badge: 'red'    }
-            };
-
-            let html = '';
-            lessons.forEach(lesson => {
-                const color = topicColors[lesson.topicName] || { gradient: 'from-gray-400 to-gray-500', icon: 'fa-book', badge: 'gray' };
-
-                const cleanContent = (lesson.content || '').replace(/\[IMAGE[^\]]+\]/gi, '[image]').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]/gi, '[box]');
-                const contentPreview = cleanContent.substring(0, 80) + (cleanContent.length > 80 ? '…' : '');
-
-                const hasCustomBoxes = lesson.content && /\[CUSTOMBOX/i.test(lesson.content);
-                const hasImages       = lesson.content && /\[IMAGE/i.test(lesson.content);
-                const imageCount      = hasImages ? (lesson.content.match(/\[IMAGE/gi) || []).length : 0;
-
-                const diffBadge = lesson.difficultyLevel === 'intermediate'
-                    ? '<span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">🟡 Intermediate</span>'
-                    : '<span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">🟢 Beginner</span>';
-
-                html += `
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 lesson-card overflow-hidden">
-                    <div class="bg-gradient-to-r ${color.gradient} h-32 flex items-center justify-center">
-                        <i class="fas ${color.icon} text-white text-4xl"></i>
-                    </div>
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3 flex-wrap gap-1">
-                            <span class="px-3 py-1 bg-${color.badge}-100 text-${color.badge}-700 rounded-full text-xs font-semibold">
-                                ${lesson.topicName}
-                            </span>
-                            <div class="flex gap-1 flex-wrap">
-                                ${diffBadge}
-                                ${hasCustomBoxes ? '<span class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">🎨 Custom</span>' : ''}
-                                ${hasImages ? `<span class="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded">🖼️ ${imageCount} img</span>` : ''}
-                            </div>
-                        </div>
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${lesson.title}</h3>
-                        <p class="text-sm text-gray-600 mb-2">${lesson.description}</p>
-                        <p class="text-xs text-gray-400 mb-4"><i class="fas fa-file-alt mr-1"></i>${contentPreview || 'No content added yet'}</p>
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-2">
-                                <button onclick="editLesson('${lesson._id}')" class="text-green-600 hover:text-green-700" title="Edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button onclick="deleteLesson('${lesson._id}')" class="text-red-600 hover:text-red-700" title="Delete">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <span class="text-xs text-gray-500">Order: ${lesson.order}</span>
-                        </div>
-                    </div>
-                </div>`;
-            });
-
-            container.innerHTML = html;
-        }
-
-        function filterLessons() {
-            const searchTerm  = document.getElementById('searchLessons').value.toLowerCase();
-            const topicFilter = document.getElementById('topicFilter').value;
-            const filtered = allLessons.filter(lesson => {
-                const matchesSearch = lesson.title.toLowerCase().includes(searchTerm) ||
-                                      lesson.description.toLowerCase().includes(searchTerm);
-                const matchesTopic  = topicFilter === 'all' || lesson.topicName === topicFilter;
-                return matchesSearch && matchesTopic;
-            });
-            displayLessons(filtered);
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  ADD LESSON
-        // ════════════════════════════════════════════════════════
-
-        function openAddLessonModal() {
-    document.getElementById('addLessonForm').reset();
-    document.getElementById('lessonContent').value = '';
-    document.getElementById('addLessonModal').classList.add('active');
-    setTimeout(function() {
-        document.getElementById('mobilePreviewContent').innerHTML = 
-            '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#9ca3af;font-size:13px;text-align:center;padding:20px;">Start typing content<br>to see the preview</div>';
-    }, 50);
+function previewPage(dir){
+  const np=previewPageIdx+dir;
+  if(np<0||np>=previewPages.length) return;
+  previewPageIdx=np;
+  renderPreviewPage();
+  updatePageNav();
 }
 
-        function closeAddLessonModal() {
-            document.getElementById('addLessonModal').classList.remove('active');
-            document.getElementById('addLessonForm').reset();
-        }
-
-        async function addLesson(event) {
-            event.preventDefault();
-            const lessonData = {
-                topicName:       document.getElementById('lessonTopic').value,
-                title:           document.getElementById('lessonTitle').value,
-                description:     document.getElementById('lessonDescription').value,
-                content:         document.getElementById('lessonContent').value,
-                order:           parseInt(document.getElementById('lessonOrder').value),
-                difficultyLevel: document.getElementById('lessonDifficultyLevel').value
-            };
-            try {
-                const response = await fetch(`${API_URL}/lessons`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(lessonData)
-                });
-                const data = await response.json();
-                if (data.success) {
-                    alert('✅ Lesson added successfully!');
-                    closeAddLessonModal();
-                    loadLessons();
-                } else {
-                    alert('Failed to add lesson: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error adding lesson: ' + error.message);
-            }
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  EDIT LESSON
-        // ════════════════════════════════════════════════════════
-
-        function editLesson(lessonId) {
-    const lesson = allLessons.find(l => l._id === lessonId);
-    if (!lesson) return;
-    
-    document.getElementById('editLessonId').value              = lesson._id;
-    document.getElementById('editLessonTopic').value          = lesson.topicName;
-    document.getElementById('editLessonTitle').value          = lesson.title;
-    document.getElementById('editLessonDescription').value    = lesson.description;
-    document.getElementById('editLessonContent').value        = lesson.content || '';
-    document.getElementById('editLessonOrder').value          = lesson.order;
-    document.getElementById('editLessonDifficultyLevel').value= lesson.difficultyLevel || 'beginner';
-    
-    // Open modal FIRST, then render preview after DOM is visible
-    document.getElementById('editLessonModal').classList.add('active');
-    
-    // Small delay so the modal is fully visible before preview renders
-    setTimeout(function() {
-        updatePreview(true);
-    }, 50);
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+function showToast(msg,type='success'){
+  const c=document.getElementById('toastContainer');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="fas ${type==='success'?'fa-check-circle':'fa-exclamation-circle'}"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(6px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); },3000);
 }
-        function closeEditLessonModal() {
-            document.getElementById('editLessonModal').classList.remove('active');
-            document.getElementById('editLessonForm').reset();
-        }
 
-        async function updateLesson(event) {
-            event.preventDefault();
-            const lessonId   = document.getElementById('editLessonId').value;
-            const lessonData = {
-                topicName:       document.getElementById('editLessonTopic').value,
-                title:           document.getElementById('editLessonTitle').value,
-                description:     document.getElementById('editLessonDescription').value,
-                content:         document.getElementById('editLessonContent').value,
-                order:           parseInt(document.getElementById('editLessonOrder').value),
-                difficultyLevel: document.getElementById('editLessonDifficultyLevel').value
-            };
-            try {
-                const response = await fetch(`${API_URL}/lessons/${lessonId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(lessonData)
-                });
-                const data = await response.json();
-                if (data.success) {
-                    alert('✅ Lesson updated successfully!');
-                    closeEditLessonModal();
-                    loadLessons();
-                } else {
-                    alert('Failed to update lesson: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error updating lesson: ' + error.message);
-            }
-        }
+// ═══════════════════════════════════════════
+//  UTIL
+// ═══════════════════════════════════════════
+function escHtml(s){ if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-        // ════════════════════════════════════════════════════════
-        //  DELETE
-        // ════════════════════════════════════════════════════════
-
-        async function deleteLesson(lessonId) {
-            if (!confirm('Are you sure you want to delete this lesson?')) return;
-            try {
-                const response = await fetch(`${API_URL}/lessons/${lessonId}`, { method: 'DELETE' });
-                const data     = await response.json();
-                if (data.success) {
-                    alert('✅ Lesson deleted successfully');
-                    loadLessons();
-                } else {
-                    alert('Failed to delete lesson: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error deleting lesson: ' + error.message);
-            }
-        }
-
-        // ════════════════════════════════════════════════════════
-        //  INIT
-        // ════════════════════════════════════════════════════════
-        window.addEventListener('load', () => {
-            currentUser = checkAuth();
-            if (currentUser) {
-                // Live preview updates when title/topic changes
-                document.getElementById('lessonTitle')?.addEventListener('input', function(){ updatePreview(false); });
-                document.getElementById('lessonTopic')?.addEventListener('change', function(){ updatePreview(false); });
-                document.getElementById('editLessonTitle')?.addEventListener('input', function(){ updatePreview(true); });
-                document.getElementById('editLessonTopic')?.addEventListener('change', function(){ updatePreview(true); });
-                document.getElementById('adminUserDisplay').textContent = currentUser.name || currentUser.username;
-                document.getElementById('adminEmailDisplay').textContent = currentUser.email;
-                updateNavigationForRole(currentUser);
-                loadLessons();
-            }
-        });
-    </script>
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+window.addEventListener('load',()=>{
+  currentUser = checkAuth();
+  if(!currentUser) return;
+  document.getElementById('sidebarUserName').textContent  = currentUser.name||currentUser.username||'Admin';
+  document.getElementById('sidebarAvatarInitial').textContent = (currentUser.name||currentUser.username||'A')[0].toUpperCase();
+  document.getElementById('sidebarUserRole').textContent  = currentUser.role==='instructor' ? 'Instructor' : 'Administrator';
+  loadLessons();
+});
+</script>
 </body>
-
 </html>
