@@ -52,6 +52,7 @@ let lessonsCollection;
 let adminsCollection;
 let quizzesCollection;
 let deletedUsersCollection;
+let slidesCollection;
 
 
 // Store reset tokens temporarily (in production, use Redis or database)
@@ -68,6 +69,8 @@ async function connectDB() {
         quizzesCollection = db.collection(QUIZZES_COLLECTION); 
         
         deletedUsersCollection = db.collection(DELETED_USERS_COLLECTION);
+        slidesCollection = db.collection("featured_slides");
+await slidesCollection.createIndex({ order: 1 });
 await deletedUsersCollection.createIndex({ username: 1 });
 await deletedUsersCollection.createIndex({ deletedAt: 1 });// ✅ ADD THIS LINE
 
