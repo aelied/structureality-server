@@ -34,7 +34,7 @@ const LESSONS_COLLECTION = "lessons";
 const QUIZZES_COLLECTION = "quizzes";
 const ADMINS_COLLECTION = "admins";
 const DELETED_USERS_COLLECTION = "deletedUsers";
-const slidesCollection = db.collection("featured_slides");
+
 
 
 // MongoDB Client
