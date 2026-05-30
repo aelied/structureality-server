@@ -3878,6 +3878,33 @@ setInterval(async () => {
         console.error('❌ Auto-purge error:', err.message);
     }
 }, 6 * 60 * 60 * 1000);
+
+// ==================== AVAILABILITY CHECK ====================
+app.post('/api/check-availability', async (req, res) => {
+    try {
+        const { username, email } = req.body;
+
+        if (!username || !email) {
+            return res.status(400).json({ success: false, error: 'Username and email are required' });
+        }
+
+        const existingUsername = await usersCollection.findOne({ username: username });
+        if (existingUsername) {
+            return res.status(409).json({ success: false, error: 'username already exists' });
+        }
+
+        const existingEmail = await usersCollection.findOne({ email: email });
+        if (existingEmail) {
+            return res.status(409).json({ success: false, error: 'email already registered' });
+        }
+
+        res.json({ success: true, message: 'Username and email are available' });
+
+    } catch (error) {
+        console.error('❌ check-availability error:', error);
+        res.status(500).json({ success: false, error: 'Server error', details: error.message });
+    }
+});
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
