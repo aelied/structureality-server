@@ -3905,6 +3905,68 @@ app.post('/api/check-availability', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error', details: error.message });
     }
 });
+
+// ==================== XP LEADERBOARD ====================
+app.get('/api/leaderboard', async (req, res) => {
+    try {
+        const limit  = parseInt(req.query.limit)  || 20;
+        const period = req.query.period || 'all'; // all | week | month
+
+        const users = await usersCollection.find({})
+            .project({ password: 0 })
+            .toArray();
+
+        const now = Date.now();
+        const cutoff = period === 'week'  ? now - 7  * 86400000
+                     : period === 'month' ? now - 30 * 86400000
+                     : 0;
+
+        const ranked = users.map(user => {
+            let lessons    = 0;
+            let quizzes    = 0;
+            let codeLabs   = 0;
+
+            if (user.progress) {
+                Object.entries(user.progress).forEach(([, topic]) => {
+                    // Period filter — skip topics not accessed in window
+                    if (cutoff > 0 && topic.lastAccessed) {
+                        if (new Date(topic.lastAccessed).getTime() < cutoff) return;
+                    }
+                    lessons += topic.lessonsCompleted || 0;
+
+                    Object.values(topic.lessonQuizScores || {}).forEach(s => {
+                        if (s > 0) quizzes++;
+                    });
+                    Object.values(topic.codeOperationStats || {}).forEach(c => {
+                        if ((c.successes || 0) > 0) codeLabs++;
+                    });
+                });
+            }
+
+            const xp      = (lessons * 50) + ((quizzes + codeLabs) * 100);
+            const streak  = user.streak || 0;
+
+            return {
+                username:   user.username,
+                name:       user.name || user.username,
+                xp,
+                lessons,
+                challenges: quizzes + codeLabs,
+                streak,
+                completedTopics: user.completedTopics || 0,
+            };
+        });
+
+        ranked.sort((a, b) => b.xp - a.xp);
+
+        const top = ranked.slice(0, limit).map((u, i) => ({ ...u, rank: i + 1 }));
+
+        res.json({ success: true, period, count: top.length, leaderboard: top });
+    } catch (error) {
+        console.error('❌ Leaderboard error:', error);
+        res.status(500).json({ success: false, error: 'Failed to fetch leaderboard' });
+    }
+});
 // ==================== START SERVER ====================
 connectDB().then(() => {
     app.listen(PORT, () => {
