@@ -1462,8 +1462,7 @@ function renderPreviewPage() {
   }
 
   // Parse blocks
-  const blockParts = pageContent.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[CHIP[^\]]+\]|\[IMAGE[^\]]+\]|\[(?:INFO|TIP|WARNING|NOTE|IMPORTANT)\][^\[]*)/gi);
-
+  const blockParts = pageContent.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[CHIP[\s\S]*?\]|\[IMAGE[^\]]+\]|\[(?:INFO|TIP|WARNING|NOTE|IMPORTANT)\][^\[]*)/gi);
   blockParts.forEach(part=>{
     if(!part||!part.trim()) return;
     const trimmed=part.trim();
@@ -1474,8 +1473,8 @@ function renderPreviewPage() {
     if(cbM){ el=document.createElement('div'); el.className='app-box'; el.style.cssText=`border-color:${cbM[1]};background:${cbM[2]};color:${cbM[3]};`; el.innerHTML=`<div class="app-box-title">${escHtml(cbM[4])}</div><div class="app-box-body">${escHtml(cbM[5].trim()).replace(/\n/g,'<br>')}</div>`; scroll.appendChild(el); return; }
 
     // CHIP
-    const chipM = trimmed.match(/^\[CHIP\s+icon="([^"]*)"\s+title="([^"]*)"\s+hint="([^"]*)"\s+modalTitle="([^"]*)"\s+modalBody="([^"]*)"\]$/i);
-    if(chipM){ el=document.createElement('div'); el.className='app-chip'; el.innerHTML=`<div class="app-chip-icon">${chipM[1]}</div><div class="app-chip-content"><div class="app-chip-title">${escHtml(chipM[2])}</div><div class="app-chip-hint">${escHtml(chipM[3])}</div></div><div class="app-chip-arrow">›</div>`; scroll.appendChild(el); return; }
+    const chipM = trimmed.match(/^\[CHIP\s+icon="([^"]*)"\s+title="([^"]*)"\s+hint="([^"]*)"\s+modalTitle="([^"]*)"\s+modalBody="([^"]*)"[\s\S]*?\]$/i);
+        if(chipM){ el=document.createElement('div'); el.className='app-chip'; el.innerHTML=`<div class="app-chip-icon">${chipM[1]}</div><div class="app-chip-content"><div class="app-chip-title">${escHtml(chipM[2])}</div><div class="app-chip-hint">${escHtml(chipM[3])}</div></div><div class="app-chip-arrow">›</div>`; scroll.appendChild(el); return; }
 
     // IMAGE
     const imgM = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
