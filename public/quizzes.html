@@ -1,283 +1,370 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quizzes - StructuReality Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <style>
-        * { font-family: "Poppins", sans-serif; }
-        .stat-card-hover { transition: all 0.3s ease; }
-        .stat-card-hover:hover { transform: translateY(-4px); }
-        .quiz-card { transition: all 0.3s ease; }
-        .quiz-card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
-        .modal.active { display: flex; align-items: center; justify-content: center; }
-        .modal-content { background-color: white; padding: 30px; border-radius: 15px; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; }
-        .answer-option { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .answer-option input[type="text"] { flex: 1; }
-        .answer-option input[type="radio"] { width: 20px; height: 20px; cursor: pointer; }
-        .question-section { background-color: #f9fafb; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #6366f1; }
-        .question-header { display: flex; items-center: justify-between; margin-bottom: 15px; }
-        .lesson-row.has-quiz  { border-left: 4px solid #22c55e; }
-        .lesson-row.no-quiz   { border-left: 4px solid #f59e0b; }
-        .spinner { display: inline-block; width:20px; height:20px; border:3px solid #e0e0e0; border-top-color:#6366f1; border-radius:50%; animation: spin .7s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .questions-list { max-height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; }
-        .question-item { padding: 12px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-        .question-item:last-child { border-bottom: none; }
-        .question-item:hover { background-color: #f3f4f6; }
-    </style>
-</head>
-<body class="bg-gray-50">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Quizzes — StructuReality Admin</title>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+        <style>
+          :root {
+            --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+            --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+            --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+            --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+            --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+            --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+            --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+            --shadow-glow:0 0 40px rgba(108,99,255,0.15);
+          }
+          [data-theme="light"] {
+            --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+            --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+            --text:#111827; --text2:#374151; --text3:#6b7280;
+          }
+          *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+          html{height:100%;}
+          body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+          button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+          input,select,textarea{font-family:inherit;outline:none;}
+          ::-webkit-scrollbar{width:5px;height:5px;}
+          ::-webkit-scrollbar-track{background:var(--surface);}
+          ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+      
+          /* SIDEBAR */
+          .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+          .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+          .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+          .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+          .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+          .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+          .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+          .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+          .nav-link i{width:16px;text-align:center;font-size:13px;}
+          .nav-link:hover{background:var(--surface2);color:var(--text);}
+          .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+          .nav-link.active i{color:var(--accent);}
+          .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+          .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+          .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+          .user-name{font-size:12px;font-weight:600;color:var(--text);}
+          .user-role{font-size:10px;color:var(--text3);}
+      
+          /* TOPBAR */
+          .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+          .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+          .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+          .topbar-right{display:flex;align-items:center;gap:8px;}
+          .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;}
+          .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+          .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+          .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+          .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+      
+          /* MAIN */
+          .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+          .page-content{padding:28px;}
+      
+          /* STAT CARDS */
+          .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+          .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all 0.25s;position:relative;overflow:hidden;}
+          .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.25s;}
+          .stat-card:hover::before{opacity:1;}
+          .stat-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+          .stat-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px;}
+          .stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+          .stat-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+      
+          /* FILTER BAR */
+          .filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+          .search-wrap{flex:1;min-width:200px;position:relative;}
+          .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+          .search-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px 8px 34px;font-size:12px;transition:border-color 0.2s;}
+          .search-input:focus{border-color:var(--accent);}
+          .search-input::placeholder{color:var(--text3);}
+          .filter-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px;font-size:12px;transition:border-color 0.2s;}
+          .filter-select:focus{border-color:var(--accent);}
+          .filter-select option{background:var(--surface2);}
+      
+          /* COVERAGE GRID */
+          .topic-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;overflow:hidden;}
+          .topic-block-header{padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);}
+          .topic-icon-wrap{width:36px;height:36px;background:var(--surface2);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+          .topic-tag{font-size:10px;font-weight:700;padding:3px 10px;border-radius:100px;text-transform:uppercase;letter-spacing:0.5px;}
+          .coverage-bar-bg{width:140px;height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;}
+          .coverage-bar-fill{height:100%;border-radius:3px;transition:width 0.4s;}
+      
+          /* LESSON ROWS */
+          .lesson-row{padding:14px 20px;border-top:1px solid var(--border);transition:background 0.15s;}
+          .lesson-row:hover{background:var(--surface2);}
+          .lesson-row.has-quiz{border-left:3px solid var(--green);}
+          .lesson-row.no-quiz{border-left:3px solid var(--amber);}
+          .lesson-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+          .lesson-num.has{background:rgba(52,211,153,0.15);color:var(--green);}
+          .lesson-num.no{background:rgba(251,191,36,0.15);color:var(--amber);}
+          .quiz-status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;}
+          .quiz-status-has{background:rgba(52,211,153,0.15);color:var(--green);}
+          .quiz-status-no{background:rgba(251,191,36,0.15);color:var(--amber);}
+      
+          /* QUIZ QUESTION CARDS inside lesson row */
+          .quiz-questions-wrap{margin:10px 0 4px 36px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
+          .quiz-q-item{padding-bottom:10px;border-bottom:1px solid var(--border);}
+          .quiz-q-item:last-child{padding-bottom:0;border-bottom:none;}
+          .answer-opt{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:10px;margin-top:3px;}
+          .answer-opt.correct{background:rgba(52,211,153,0.12);color:var(--green);border:1px solid rgba(52,211,153,0.2);}
+          .answer-opt.wrong{background:var(--surface3);color:var(--text3);border:1px solid var(--border);}
+      
+          /* MODALS */
+          .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+          .modal-backdrop.active{display:flex;}
+          .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;box-shadow:var(--shadow);overflow:hidden;}
+          .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+          .modal-title{font-size:15px;font-weight:700;color:var(--text);}
+          .modal-close{width:30px;height:30px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.2s;}
+          .modal-close:hover{background:var(--surface3);color:var(--text);}
+          .modal-body{padding:24px;overflow-y:auto;max-height:75vh;}
+          .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+      
+          /* FORM */
+          .form-group{margin-bottom:16px;}
+          .form-label{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;}
+          .form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;transition:border-color 0.2s;}
+          .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);}
+          .form-input::placeholder,.form-textarea::placeholder{color:var(--text3);}
+          .form-select option{background:var(--surface2);}
+          .form-textarea{resize:vertical;font-size:12px;line-height:1.6;}
+          .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+      
+          /* QUESTION SECTION inside modal */
+          .question-section{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;margin-bottom:14px;border-left:3px solid var(--accent);}
+          .question-section-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px;}
+          .answer-option{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+          .answer-option input[type="radio"]{width:16px;height:16px;cursor:pointer;accent-color:var(--accent);}
+          .add-more-btn{width:100%;padding:10px;background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius-sm);color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-bottom:16px;}
+          .add-more-btn:hover{border-color:var(--accent);color:var(--accent2);}
+          .btn-submit{padding:9px 20px;background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 2px 10px var(--accent-glow);}
+          .btn-submit:hover{transform:translateY(-1px);}
+          .btn-cancel{padding:9px 20px;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+          .btn-cancel:hover{background:var(--surface2);}
+          .btn-remove-q{color:var(--rose);background:rgba(251,113,133,0.1);border:1px solid rgba(251,113,133,0.2);padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+          .btn-remove-q:hover{background:rgba(251,113,133,0.2);}
+      
+          /* SPINNER */
+          .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+          @keyframes spin{to{transform:rotate(360deg);}}
+      
+          /* TOPIC COLOR MAPS */
+          .topic-arrays   {--tc:#6c63ff;}
+          .topic-queue    {--tc:#38bdf8;}
+          .topic-stacks   {--tc:#34d399;}
+          .topic-linkedlists{--tc:#c084fc;}
+          .topic-trees    {--tc:#fbbf24;}
+          .topic-graphs   {--tc:#fb7185;}
+          .topic-default  {--tc:#6a7389;}
+      
+          @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+          @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}}
+        </style>
+      </head>
+
+      <body>
 
 <!-- SIDEBAR -->
-<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <i class="fas fa-cube text-indigo-700 text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold">StructuReality</h1>
-                <p class="text-xs text-indigo-300">Admin Portal</p>
-            </div>
-        </div>
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon"><i class="fas fa-cube"></i></div>
+    <div>
+      <div class="logo-text">StructuReality</div>
+      <div class="logo-sub">Admin Portal</div>
     </div>
-    <nav class="mt-6 px-4">
-        <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-        <a href="users.html"    class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-        <a href="quizzes.html"  class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-        <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-        <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
-        <a href="slides.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-images w-5"></i>
-        <span class="font-medium">App Settings</span>
-    </a>
-        <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-            <i class="fas fa-chart-line w-5"></i>
-            <span class="font-medium">User & Scenario Analytics</span>
-          </a>
-    </nav>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+    <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+    <a href="quizzes.html"  class="nav-link active"><i class="fas fa-question-circle"></i> Quizzes</a>
+    <div class="nav-section">Analytics</div>
+    <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+    <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+    <a href="slides.html"            class="nav-link"><i class="fas fa-images"></i> App Settings</a>
+    <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="user-avatar" id="sidebarAvatar">A</div>
+      <div>
+        <div class="user-name" id="sidebarUserName">Admin</div>
+        <div class="user-role" id="sidebarUserRole">Administrator</div>
+      </div>
+    </div>
+  </div>
 </aside>
 
-<!-- NAVBAR -->
-<nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Quiz Management</h2>
-            <p class="text-sm text-gray-500">Multiple questions per lesson quiz — organize and manage comprehensive assessments</p>
-        </div>
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" onclick="window.location.href='profile.html'">
-                <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user text-indigo-700 text-sm"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-                    <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-                </div>
-            </div>
-            <button onclick="logout()" title="Logout" class="p-2 hover:bg-gray-100 rounded-lg">
-                <i class="fas fa-sign-out-alt text-gray-600"></i>
-            </button>
-        </div>
+<nav class="topbar">
+    <div class="topbar-left">
+      <h1>Quiz Management</h1>
+      <p>Multiple questions per lesson — organize and manage assessments</p>
     </div>
-</nav>
+    <div class="topbar-right">
+      <button onclick="loadAll()" class="btn btn-ghost"><i class="fas fa-sync"></i> Refresh</button>
+      <button onclick="openAddModal()" class="btn btn-primary"><i class="fas fa-plus"></i> New Quiz</button>
+      <button onclick="toggleTheme()" class="btn btn-ghost" id="themeBtn">☀️</button>
+      <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </nav>
 
 <!-- MAIN -->
-<main class="ml-64 p-8 mt-20">
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6 stat-card-hover border border-gray-100">
-            <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-3">
-                <i class="fas fa-book text-indigo-600 text-xl"></i>
-            </div>
-            <h3 class="text-gray-500 text-sm font-medium mb-1">Total Lessons</h3>
-            <p class="text-3xl font-bold text-gray-800" id="statTotalLessons">-</p>
+<main class="main">
+    <div class="page-content">
+  
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.18);color:var(--accent2);"><i class="fas fa-book"></i></div>
+          <div class="stat-label">Total Lessons</div>
+          <div class="stat-value" id="statTotalLessons">—</div>
         </div>
-        <div class="bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
-            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-3">
-                <i class="fas fa-question-circle text-white text-xl"></i>
-            </div>
-            <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Total Questions</h3>
-            <p class="text-3xl font-bold" id="statTotalQuestions">-</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.18);color:var(--accent2);"><i class="fas fa-question-circle"></i></div>
+          <div class="stat-label">Total Questions</div>
+          <div class="stat-value" id="statTotalQuestions">—</div>
         </div>
-        <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
-            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-3">
-                <i class="fas fa-check-circle text-white text-xl"></i>
-            </div>
-            <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Lessons Covered</h3>
-            <p class="text-3xl font-bold" id="statCovered">-</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(52,211,153,0.18);color:var(--green);"><i class="fas fa-check-circle"></i></div>
+          <div class="stat-label">Lessons Covered</div>
+          <div class="stat-value" id="statCovered">—</div>
         </div>
-        <div class="bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-sm p-6 stat-card-hover text-white">
-            <div class="w-12 h-12 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mb-3">
-                <i class="fas fa-exclamation-circle text-white text-xl"></i>
-            </div>
-            <h3 class="text-white text-opacity-90 text-sm font-medium mb-1">Missing Quizzes</h3>
-            <p class="text-3xl font-bold" id="statMissing">-</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(251,191,36,0.18);color:var(--amber);"><i class="fas fa-exclamation-circle"></i></div>
+          <div class="stat-label">Missing Quizzes</div>
+          <div class="stat-value" id="statMissing">—</div>
         </div>
+      </div>
+  
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" class="search-input" placeholder="Search lessons or questions…" oninput="renderAll()"/>
+        </div>
+        <select id="topicFilter" class="filter-select" onchange="renderAll()">
+          <option value="all">All Topics</option>
+          <option value="Arrays">Arrays</option>
+          <option value="Queue">Queue</option>
+          <option value="Stacks">Stacks</option>
+          <option value="LinkedLists">Linked Lists</option>
+          <option value="Trees">Trees</option>
+          <option value="Graphs">Graphs</option>
+        </select>
+        <select id="coverageFilter" class="filter-select" onchange="renderAll()">
+          <option value="all">All Status</option>
+          <option value="has">Has Quiz</option>
+          <option value="missing">Missing Quiz</option>
+        </select>
+      </div>
+  
+      <!-- Coverage grid -->
+      <div id="coverageGrid">
+        <div style="display:flex;align-items:center;justify-content:center;padding:60px;color:var(--text3);">
+          <span class="spinner" style="margin-right:10px;"></span> Loading lessons &amp; quizzes…
+        </div>
+      </div>
+  
     </div>
+  </main>
 
-    <!-- Filters -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <div class="flex items-center gap-4 flex-1 flex-wrap">
-                <div class="relative flex-1 min-w-[200px]">
-                    <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" placeholder="Search lessons or questions…" oninput="renderAll()"
-                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                </div>
-                <select id="topicFilter" onchange="renderAll()"
-                    class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="all">All Topics</option>
-                    <option value="Arrays">Arrays</option>
-                    <option value="Queue">Queue</option>
-                    <option value="Stacks">Stacks</option>
-                    <option value="LinkedLists">Linked Lists</option>
-                    <option value="Trees">Trees</option>
-                    <option value="Graphs">Graphs</option>
-                </select>
-                <select id="coverageFilter" onchange="renderAll()"
-                    class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <option value="all">All Status</option>
-                    <option value="has">Has Quiz</option>
-                    <option value="missing">Missing Quiz</option>
-                </select>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="loadAll()"
-                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
-                    <i class="fas fa-sync mr-2"></i>Refresh
-                </button>
-                <button onclick="openAddModal()"
-                    class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                    <i class="fas fa-plus mr-2"></i>New Quiz
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Coverage grid -->
-    <div id="coverageGrid">
-        <div class="flex items-center justify-center p-16 text-gray-400">
-            <span class="spinner mr-3"></span> Loading lessons &amp; quizzes…
-        </div>
-    </div>
-</main>
-
-<!-- ADD QUIZ MODAL (Multiple questions per quiz) -->
-<div id="addModal" class="modal">
-    <div class="modal-content">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Add Quiz for Lesson</h2>
-            <button onclick="closeAddModal()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-        </div>
+<!-- ADD QUIZ MODAL -->
+<div id="addModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:760px;">
+      <div class="modal-header">
+        <span class="modal-title">Add Quiz for Lesson</span>
+        <button class="modal-close" onclick="closeAddModal()">✕</button>
+      </div>
+      <div class="modal-body">
         <form id="addForm" onsubmit="submitAdd(event)">
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Topic *</label>
-                <select id="addTopic" required onchange="populateLessonPicker('addLesson','addTopic')"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <option value="">Select topic…</option>
-                    <option value="Arrays">Arrays</option>
-                    <option value="Queue">Queue</option>
-                    <option value="Stacks">Stacks</option>
-                    <option value="LinkedLists">Linked Lists</option>
-                    <option value="Trees">Trees</option>
-                    <option value="Graphs">Graphs</option>
-                </select>
+          <div class="form-row" style="margin-bottom:16px;">
+            <div class="form-group">
+              <label class="form-label">Topic *</label>
+              <select id="addTopic" class="form-select" required onchange="populateLessonPicker('addLesson','addTopic')">
+                <option value="">Select topic…</option>
+                <option value="Arrays">Arrays</option>
+                <option value="Queue">Queue</option>
+                <option value="Stacks">Stacks</option>
+                <option value="LinkedLists">Linked Lists</option>
+                <option value="Trees">Trees</option>
+                <option value="Graphs">Graphs</option>
+              </select>
             </div>
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Lesson *</label>
-                <select id="addLesson" required
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    <option value="">— select a topic first —</option>
-                </select>
-                <p class="text-xs text-gray-400 mt-1">Each lesson can have multiple questions in one quiz.</p>
+            <div class="form-group">
+              <label class="form-label">Lesson *</label>
+              <select id="addLesson" class="form-select" required>
+                <option value="">— select a topic first —</option>
+              </select>
+              <p style="font-size:10px;color:var(--text3);margin-top:4px;">Each lesson can have multiple questions in one quiz.</p>
             </div>
-
-            <!-- Questions Container -->
-            <div id="questionsContainer" class="mb-6">
-                <!-- First question starts here -->
-                <div class="question-section" data-question-index="0">
-                    <div class="flex justify-between items-center mb-3">
-                        <h3 class="font-semibold text-gray-800 text-lg">Question 1</h3>
-                        <button type="button" onclick="removeQuestion(0)" class="text-red-500 hover:text-red-700 hidden" id="removeBtn0">
-                            <i class="fas fa-trash"></i> Remove
-                        </button>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
-                        <textarea placeholder="Enter the quiz question…" rows="2"
-                            class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
-                        <div class="addAnswers">
-                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                            <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
-                        <textarea placeholder="Explain why the answer is correct…" rows="2"
-                            class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-                    </div>
+          </div>
+  
+          <div id="questionsContainer">
+            <div class="question-section" data-question-index="0">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <span class="question-section-title">Question 1</span>
+                <button type="button" onclick="removeQuestion(0)" class="btn-remove-q hidden" id="removeBtn0"><i class="fas fa-trash" style="margin-right:4px;"></i>Remove</button>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Question Text *</label>
+                <textarea class="addQuestion form-textarea" rows="2" placeholder="Enter the quiz question…" required></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Answer Options — tick the correct one *</label>
+                <div class="addAnswers">
+                  <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required/><input type="text" placeholder="Option A" required class="form-input"/></div>
+                  <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1"/><input type="text" placeholder="Option B" required class="form-input"/></div>
+                  <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2"/><input type="text" placeholder="Option C" required class="form-input"/></div>
+                  <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3"/><input type="text" placeholder="Option D" required class="form-input"/></div>
                 </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Explanation *</label>
+                <textarea class="addExplanation form-textarea" rows="2" placeholder="Explain why the answer is correct…" required></textarea>
+              </div>
             </div>
-
-            <button type="button" onclick="addQuestion()" class="w-full mb-6 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border-2 border-dashed border-gray-300">
-                <i class="fas fa-plus mr-2"></i> Add Another Question
-            </button>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="closeAddModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Create Quiz</button>
-            </div>
+          </div>
+  
+          <button type="button" onclick="addQuestion()" class="add-more-btn"><i class="fas fa-plus" style="margin-right:6px;"></i>Add Another Question</button>
+  
+          <div class="modal-footer" style="padding:0;border:none;">
+            <button type="button" onclick="closeAddModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-submit">Create Quiz</button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
-
-<!-- EDIT QUIZ MODAL -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-gray-800">Edit Quiz</h2>
-            <button onclick="closeEditModal()" class="text-gray-500 hover:text-gray-700">
-                <i class="fas fa-times text-2xl"></i>
-            </button>
-        </div>
+  </div>
+  
+  <!-- EDIT QUIZ MODAL -->
+  <div id="editModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:760px;">
+      <div class="modal-header">
+        <span class="modal-title">Edit Quiz</span>
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+      </div>
+      <div class="modal-body">
         <form id="editForm" onsubmit="submitEdit(event)">
-            <input type="hidden" id="editId" />
-            <!-- Stores lessonTitle + topicName for new questions added during edit -->
-            <input type="hidden" id="editLessonTitle" />
-            <input type="hidden" id="editTopicName" />
-            
-            <!-- Questions will be dynamically populated here -->
-            <div id="editQuestionsContainer"></div>
-
-            <button type="button" onclick="addEditQuestion()" class="w-full mb-6 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition border-2 border-dashed border-gray-300">
-                <i class="fas fa-plus mr-2"></i> Add Another Question
-            </button>
-
-            <div class="flex justify-end gap-3">
-                <button type="button" onclick="closeEditModal()" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancel</button>
-                <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Update Quiz</button>
-            </div>
+          <input type="hidden" id="editId"/>
+          <input type="hidden" id="editLessonTitle"/>
+          <input type="hidden" id="editTopicName"/>
+          <div id="editQuestionsContainer"></div>
+          <button type="button" onclick="addEditQuestion()" class="add-more-btn"><i class="fas fa-plus" style="margin-right:6px;"></i>Add Another Question</button>
+          <div class="modal-footer" style="padding:0;border:none;">
+            <button type="button" onclick="closeEditModal()" class="btn-cancel">Cancel</button>
+            <button type="submit" class="btn-submit">Update Quiz</button>
+          </div>
         </form>
+      </div>
     </div>
-</div>
+  </div>
 
 <script>
 const API = window.location.hostname === 'localhost'
@@ -354,13 +441,13 @@ function renderAll() {
     });
 
     const palette = {
-        Arrays:      { bg: 'bg-indigo-50', border: 'border-indigo-200', iconColor: 'text-indigo-600', tag: 'bg-indigo-100 text-indigo-700', icon: 'fa-layer-group' },
-        Queue:       { bg: 'bg-blue-50',   border: 'border-blue-200',   iconColor: 'text-blue-600',   tag: 'bg-blue-100 text-blue-700',     icon: 'fa-stream'       },
-        Stacks:      { bg: 'bg-green-50',  border: 'border-green-200',  iconColor: 'text-green-600',  tag: 'bg-green-100 text-green-700',   icon: 'fa-layer-group'  },
-        LinkedLists: { bg: 'bg-purple-50', border: 'border-purple-200', iconColor: 'text-purple-600', tag: 'bg-purple-100 text-purple-700', icon: 'fa-link'         },
-        Trees:       { bg: 'bg-yellow-50', border: 'border-yellow-200', iconColor: 'text-yellow-600', tag: 'bg-yellow-100 text-yellow-700', icon: 'fa-project-diagram' },
-        Graphs:      { bg: 'bg-red-50',    border: 'border-red-200',    iconColor: 'text-red-600',    tag: 'bg-red-100 text-red-700',       icon: 'fa-sitemap'      },
-    };
+  Arrays:      { tc:'#6c63ff', icon:'fa-layer-group' },
+  Queue:       { tc:'#38bdf8', icon:'fa-stream'      },
+  Stacks:      { tc:'#34d399', icon:'fa-layer-group' },
+  LinkedLists: { tc:'#c084fc', icon:'fa-link'        },
+  Trees:       { tc:'#fbbf24', icon:'fa-project-diagram' },
+  Graphs:      { tc:'#fb7185', icon:'fa-sitemap'     },
+};
 
     let html = '';
     let anyVisible = false;
@@ -368,8 +455,7 @@ function renderAll() {
     for (const [topic, topicLessons] of Object.entries(byTopic)) {
         if (topicF !== 'all' && topic !== topicF) continue;
 
-        const c = palette[topic] || { bg: 'bg-gray-50', border: 'border-gray-200', iconColor: 'text-gray-600', tag: 'bg-gray-100 text-gray-700', icon: 'fa-book' };
-
+        
         const filtered = topicLessons.filter(l => {
             const quizzesForLesson = quizByLesson[l.title] || [];
             const hasQuiz = quizzesForLesson.length > 0;
@@ -390,94 +476,89 @@ function renderAll() {
 
         const covered = filtered.filter(l => (quizByLesson[l.title] || []).length > 0).length;
         const pct     = filtered.length ? Math.round(covered / filtered.length * 100) : 0;
+        const c = palette[topic] || { tc:'#6a7389', icon:'fa-book' };
 
-        html += `
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-8 overflow-hidden">
-            <div class="px-6 py-4 flex items-center justify-between ${c.bg} border-b ${c.border}">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                        <i class="fas ${c.icon} ${c.iconColor} text-lg"></i>
-                    </div>
-                    <div>
-                        <span class="px-3 py-1 rounded-full text-xs font-bold ${c.tag}">${topic}</span>
-                        <p class="text-xs text-gray-500 mt-1">${covered} / ${filtered.length} lessons have quizzes</p>
-                    </div>
+html += `
+<div class="topic-block">
+  <div class="topic-block-header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="topic-icon-wrap" style="background:${c.tc}18;">
+        <i class="fas ${c.icon}" style="color:${c.tc};font-size:14px;"></i>
+      </div>
+      <div>
+        <span class="topic-tag" style="background:${c.tc}20;color:${c.tc};">${topic}</span>
+        <p style="font-size:10px;color:var(--text3);margin-top:3px;">${covered} / ${filtered.length} lessons have quizzes</p>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="coverage-bar-bg">
+        <div class="coverage-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':c.tc};"></div>
+      </div>
+      <span style="font-size:12px;font-weight:700;color:var(--text2);min-width:36px;">${pct}%</span>
+      <button onclick="openAddModal('${topic}')" class="btn btn-primary" style="padding:6px 12px;font-size:11px;">
+        <i class="fas fa-plus"></i> Add Quiz
+      </button>
+    </div>
+  </div>
+  <div>`;
+
+    filtered.forEach((lesson, idx) => {
+          const quizzesForLesson = quizByLesson[lesson.title] || [];
+          const hasQuiz = quizzesForLesson.length > 0;
+          const escapedTitle = lesson.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+          const questionCount = quizzesForLesson.length;
+
+          html += `
+          <div class="lesson-row ${hasQuiz?'has-quiz':'no-quiz'}">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div class="lesson-num ${hasQuiz?'has':'no'}">${idx+1}</div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:var(--text);">${lesson.title}</div>
+                  <div style="font-size:11px;color:var(--text3);">${lesson.description||''}</div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <div class="w-36 bg-white rounded-full h-2 shadow-inner">
-                        <div class="h-2 rounded-full ${pct === 100 ? 'bg-green-500' : 'bg-indigo-500'} transition-all" style="width:${pct}%"></div>
-                    </div>
-                    <span class="text-sm font-semibold text-gray-700">${pct}%</span>
-                    <button onclick="openAddModal('${topic}')"
-                        class="ml-2 px-3 py-1 bg-indigo-600 text-white text-xs rounded-lg hover:bg-indigo-700 transition">
-                        <i class="fas fa-plus mr-1"></i>Add Quiz
-                    </button>
-                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                ${hasQuiz
+                  ? `<span class="quiz-status-badge quiz-status-has">✓ ${questionCount} Q${questionCount!==1?'s':''}</span>`
+                  : `<span class="quiz-status-badge quiz-status-no">⚠ No quiz</span>`
+                }
+                <button onclick="openAddModal('${topic}','${escapedTitle}')"
+                  class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
+                  ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
+                </button>
+              </div>
             </div>
 
-            <div class="divide-y divide-gray-100">`;
-
-        filtered.forEach((lesson, idx) => {
-            const quizzesForLesson = quizByLesson[lesson.title] || [];
-            const hasQuiz = quizzesForLesson.length > 0;
-            const escapedTitle = lesson.title.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-            const questionCount = quizzesForLesson.length;
-
-            html += `
-            <div class="lesson-row ${hasQuiz ? 'has-quiz' : 'no-quiz'} px-6 py-4 hover:bg-gray-50 transition">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <span class="w-7 h-7 flex items-center justify-center rounded-full text-xs font-bold
-                            ${hasQuiz ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                            ${idx + 1}
-                        </span>
-                        <div>
-                            <p class="font-semibold text-gray-800 text-sm">${lesson.title}</p>
-                            <p class="text-xs text-gray-400">${lesson.description || ''}</p>
-                        </div>
+            ${hasQuiz ? `
+            <div class="quiz-questions-wrap">
+              ${quizzesForLesson.map((quiz, qIdx) => `
+              <div class="quiz-q-item">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                  <div style="flex:1;">
+                    <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;"><strong>Q${qIdx+1}:</strong> ${quiz.questionText}</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px;">
+                      ${(quiz.answerOptions||[]).map((opt,oi)=>`
+                      <div class="answer-opt ${oi===quiz.correctAnswerIndex?'correct':'wrong'}">
+                        <span style="font-weight:700;font-size:10px;">${String.fromCharCode(65+oi)}.</span>
+                        <span>${opt}</span>
+                        ${oi===quiz.correctAnswerIndex?'<i class="fas fa-check" style="margin-left:auto;font-size:9px;"></i>':''}
+                      </div>`).join('')}
                     </div>
-                    <div class="flex items-center gap-2">
-                        ${hasQuiz
-                            ? `<span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">✓ ${questionCount} Q${questionCount !== 1 ? 's' : ''}</span>`
-                            : `<span class="px-2 py-1 bg-amber-100 text-amber-700 text-xs rounded-full font-semibold">⚠ No quiz</span>`
-                        }
-                        <button onclick="openAddModal('${topic}','${escapedTitle}')"
-                            class="px-3 py-1 text-xs ${hasQuiz ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'} rounded-lg transition">
-                            ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
-                        </button>
-                    </div>
+                    <p style="font-size:10px;color:var(--text3);font-style:italic;">💡 ${quiz.explanation||''}</p>
+                  </div>
+                  <div style="display:flex;gap:6px;flex-shrink:0;">
+                    <button onclick="openEditModal('${quiz._id}')" style="width:28px;height:28px;background:rgba(108,99,255,0.12);color:var(--accent2);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;">
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteQuestion('${quiz._id}')" style="width:28px;height:28px;background:rgba(251,113,133,0.12);color:var(--rose);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
                 </div>
-
-                ${hasQuiz ? `
-                <div class="ml-10 mt-3 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    ${quizzesForLesson.map((quiz, qIdx) => `
-                    <div class="quiz-card mb-4 pb-4 border-b border-gray-200 last:border-b-0 last:mb-0 last:pb-0">
-                        <div class="flex items-start justify-between gap-3">
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-800 mb-2"><strong>Q${qIdx + 1}:</strong> ${quiz.questionText}</p>
-                                <div class="grid grid-cols-2 gap-1 mb-2">
-                                    ${(quiz.answerOptions || []).map((opt, oi) => `
-                                    <div class="flex items-center gap-1 px-2 py-1 rounded text-xs
-                                        ${oi === quiz.correctAnswerIndex ? 'bg-green-50 text-green-700 font-semibold border border-green-200' : 'bg-white text-gray-500 border border-gray-100'}">
-                                        ${String.fromCharCode(65 + oi)}. ${opt}
-                                        ${oi === quiz.correctAnswerIndex ? '<i class="fas fa-check text-green-500 ml-auto text-xs"></i>' : ''}
-                                    </div>`).join('')}
-                                </div>
-                                <p class="text-xs text-gray-400 italic">💡 ${quiz.explanation || ''}</p>
-                            </div>
-                            <div class="flex gap-2 shrink-0">
-                                <button onclick="openEditModal('${quiz._id}')" title="Edit" class="text-indigo-500 hover:text-indigo-700">
-                                    <i class="fas fa-edit text-sm"></i>
-                                </button>
-                                <button onclick="deleteQuestion('${quiz._id}')" title="Delete Question" class="text-red-500 hover:text-red-700">
-                                    <i class="fas fa-trash text-sm"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    `).join('')}
-                </div>` : ''}
-            </div>`;
+              </div>`).join('')}
+            </div>` : ''}
+          </div>`;
         });
 
         html += `</div></div>`;
@@ -910,11 +991,22 @@ async function deleteQuestion(id) {
 window.addEventListener('load', () => {
     const user = checkAuth();
     if (user) {
-        document.getElementById('adminUserDisplay').textContent  = user.name || user.username;
-        document.getElementById('adminEmailDisplay').textContent = user.email;
+        const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+document.getElementById('sidebarUserName').textContent = user.name || user.username;
+document.getElementById('sidebarAvatar').textContent   = (user.name || user.username || 'A')[0].toUpperCase();
+document.getElementById('sidebarUserRole').textContent = user.role === 'instructor' ? 'Instructor' : 'Administrator';
         loadAll();
     }
 });
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
 </script>
 </body>
 </html>

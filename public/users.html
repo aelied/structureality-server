@@ -1,497 +1,479 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Users - StructuReality Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    * { font-family: "Poppins", sans-serif; }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
-      display: flex; align-items: center; gap: 10px;
-      transform: translateY(80px); opacity: 0;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      z-index: 999; max-width: 340px; pointer-events: none;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-    .loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.3); z-index: 200;
-      align-items: center; justify-content: center; backdrop-filter: blur(3px);
-    }
-    .loading-overlay.show { display: flex; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .user-row { transition: background 0.15s; }
-    .user-row:hover { background: #f9fafb; }
-    .progress-bar-track { height: 6px; background: #e5e7eb; border-radius: 99px; overflow: hidden; }
-    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.5s ease; }
-    .quiz-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
-    .quiz-excellent { background: #dcfce7; color: #15803d; }
-    .quiz-good { background: #fef3c7; color: #b45309; }
-    .quiz-fair { background: #fed7aa; color: #92400e; }
-    .quiz-poor { background: #fecaca; color: #b91c1c; }
-    .modal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.4); z-index: 300;
-      align-items: center; justify-content: center;
-    }
-    .modal.show { display: flex; }
-    .modal-content {
-      background: white; border-radius: 16px; width: 90%;
-      max-width: 900px; max-height: 90vh; overflow-y: auto;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-      animation: modalSlide 0.3s ease;
-    }
-    @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .tab-btn { padding: 10px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: #6b7280; }
-    .tab-btn.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
-
-    /* ── Page-level tab bar ──────────────────────────────────── */
-    .page-tab { padding: 10px 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
-    .page-tab.active { color: #6366f1; border-bottom: 2px solid #6366f1; }
-
-    /* ── Delete modal ──────────────────────────────────────────── */
-    #deleteModal {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.55); z-index: 400;
-      align-items: center; justify-content: center;
-      backdrop-filter: blur(4px);
-    }
-    #deleteModal.show { display: flex; }
-    .delete-modal-content {
-      background: white; border-radius: 20px; width: 90%;
-      max-width: 460px; overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
-      animation: deleteModalIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1);
-    }
-    @keyframes deleteModalIn {
-      from { transform: scale(0.85) translateY(20px); opacity: 0; }
-      to   { transform: scale(1) translateY(0); opacity: 1; }
-    }
-    .delete-modal-header {
-      background: linear-gradient(135deg, #fee2e2, #fecaca);
-      padding: 28px 28px 20px; text-align: center;
-      border-bottom: 1px solid #fca5a5;
-    }
-    .delete-icon-wrap {
-      width: 64px; height: 64px; border-radius: 50%;
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 14px;
-      box-shadow: 0 8px 24px rgba(239,68,68,0.35);
-    }
-    .delete-modal-body { padding: 24px 28px 28px; }
-    .delete-confirm-input {
-      width: 100%; padding: 12px 14px;
-      border: 2px solid #e5e7eb; border-radius: 10px;
-      font-size: 14px; font-family: 'Courier New', monospace; font-weight: 700;
-      letter-spacing: 1px; text-align: center; outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s; color: #1f2937;
-      box-sizing: border-box;
-    }
-    .delete-confirm-input:focus { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
-    .delete-confirm-input.match { border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
-    .delete-confirm-input.no-match { border-color: #ef4444; }
-    .btn-delete-confirm {
-      width: 100%; padding: 13px;
-      background: linear-gradient(135deg, #ef4444, #b91c1c);
-      color: white; border: none; border-radius: 10px;
-      font-size: 14px; font-weight: 700; cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 4px 14px rgba(239,68,68,0.4); letter-spacing: 0.5px;
-    }
-    .btn-delete-confirm:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
-    .btn-delete-confirm:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(239,68,68,0.45); }
-    .btn-delete-confirm:not(:disabled):active { transform: translateY(0); }
-    .btn-delete-cancel {
-      width: 100%; padding: 11px; background: transparent; color: #6b7280;
-      border: 2px solid #e5e7eb; border-radius: 10px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; margin-top: 10px;
-    }
-    .btn-delete-cancel:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
-    .confirm-hint { font-size: 11.5px; color: #9ca3af; text-align: center; margin-top: 10px; letter-spacing: 0.2px; }
-    .confirm-hint code { font-family: 'Courier New', monospace; font-weight: 700; color: #ef4444; background: #fef2f2; padding: 1px 6px; border-radius: 4px; }
-    @keyframes shake { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
-    .shake { animation: shake 0.4s ease; }
-    .btn-delete-user {
-      padding: 7px 12px; background: #fef2f2; color: #ef4444;
-      border: 1.5px solid #fca5a5; border-radius: 8px;
-      font-size: 11px; font-weight: 600; cursor: pointer;
-      transition: all 0.2s; margin-left: 6px;
-    }
-    .btn-delete-user:hover { background: #ef4444; color: white; border-color: #ef4444; box-shadow: 0 2px 8px rgba(239,68,68,0.3); }
-    .checklist-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 12px; color: #dc2626; }
-    .checklist-item i { color: #f87171; width: 14px; flex-shrink: 0; }
-    .cascade-badge { display: inline-flex; align-items: center; gap: 4px; background: #fef2f2; border: 1px solid #fca5a5; color: #b91c1c; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
-
-    /* ── Add Admin modal ─────────────────────────────────────── */
-    #addAdminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-    #addAdminModal.show { display: flex; }
-    .add-admin-content { background: white; border-radius: 20px; width: 90%; max-width: 480px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation: addAdminIn 0.35s cubic-bezier(0.34, 1.36, 0.64, 1); }
-    @keyframes addAdminIn { from { transform: scale(0.88) translateY(24px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
-    .add-admin-header { background: linear-gradient(135deg, #eef2ff, #e0e7ff); padding: 28px 28px 20px; text-align: center; border-bottom: 1px solid #c7d2fe; }
-    .add-admin-icon-wrap { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #4338ca); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; box-shadow: 0 8px 24px rgba(99,102,241,0.35); }
-    .add-admin-body { padding: 24px 28px 28px; }
-    .form-field { margin-bottom: 16px; }
-    .form-field label { display: block; font-size: 11px; font-weight: 700; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.6px; }
-    .form-field input, .form-field select { width: 100%; padding: 11px 14px; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 13px; font-family: 'Poppins', sans-serif; outline: none; transition: border-color 0.2s, box-shadow 0.2s; color: #1f2937; box-sizing: border-box; }
-    .form-field input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,0.15); }
-    .form-field input.field-error { border-color: #ef4444; }
-    .field-error-msg { font-size: 11px; color: #ef4444; margin-top: 4px; display: none; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .btn-add-admin-submit { width: 100%; padding: 13px; background: linear-gradient(135deg, #6366f1, #4338ca); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(99,102,241,0.4); letter-spacing: 0.5px; }
-    .btn-add-admin-submit:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
-    .btn-add-admin-submit:not(:disabled):hover { opacity: 0.9; transform: translateY(-1px); }
-    .btn-add-admin-submit:not(:disabled):active { transform: translateY(0); }
-    .btn-add-admin-cancel { width: 100%; padding: 11px; background: transparent; color: #6b7280; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
-    .btn-add-admin-cancel:hover { background: #f9fafb; border-color: #d1d5db; color: #374151; }
-    .password-toggle { position: relative; }
-    .password-toggle input { padding-right: 44px; }
-    .toggle-eye { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #9ca3af; font-size: 14px; transition: color 0.2s; }
-    .toggle-eye:hover { color: #6366f1; }
-
-    /* ── Deleted users tab ────────────────────────────────────── */
-    .countdown-ring { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
-    .days-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
-    .days-critical { background: #fef2f2; color: #b91c1c; border: 1px solid #fca5a5; }
-    .days-warning  { background: #fefce8; color: #a16207; border: 1px solid #fde047; }
-    .days-ok       { background: #f0fdf4; color: #15803d; border: 1px solid #86efac; }
-    .appeal-badge  { display: inline-block; padding: 3px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-    .appeal-none    { background: #f3f4f6; color: #6b7280; }
-    .appeal-pending { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
-    .appeal-approved { background: #dcfce7; color: #15803d; }
-    .appeal-rejected { background: #fef2f2; color: #b91c1c; }
-
-    /* ── Appeal detail modal ──────────────────────────────────── */
-    #appealModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 400; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-    #appealModal.show { display: flex; }
-    .appeal-modal-content { background: white; border-radius: 20px; width: 90%; max-width: 500px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.25); animation: addAdminIn 0.3s ease; }
-
-    /* ── Permanent delete modal ───────────────────────────────── */
-    #permDeleteModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-    #permDeleteModal.show { display: flex; }
-    .perm-delete-content { background: white; border-radius: 20px; width: 90%; max-width: 440px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.3); animation: deleteModalIn 0.3s ease; }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users — StructuReality Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+      :root {
+        --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+        --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+        --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+        --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+        --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+        --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+        --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+        --shadow:0 4px 24px rgba(0,0,0,0.4);
+        --shadow-glow:0 0 40px rgba(108,99,255,0.15);
+      }
+      [data-theme="light"] {
+        --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+        --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+        --text:#111827; --text2:#374151; --text3:#6b7280;
+      }
+      *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+      html{height:100%;scroll-behavior:smooth;}
+      body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+      button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+      input,select,textarea{font-family:inherit;outline:none;}
+      ::-webkit-scrollbar{width:5px;height:5px;}
+      ::-webkit-scrollbar-track{background:var(--surface);}
+      ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+  
+      /* SIDEBAR */
+      .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+      .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+      .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+      .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+      .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+      .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+      .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+      .nav-link i{width:16px;text-align:center;font-size:13px;}
+      .nav-link:hover{background:var(--surface2);color:var(--text);}
+      .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+      .nav-link.active i{color:var(--accent);}
+      .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+      .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+      .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+      .user-name{font-size:12px;font-weight:600;color:var(--text);}
+      .user-role{font-size:10px;color:var(--text3);}
+  
+      /* TOPBAR */
+      .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+      .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+      .topbar-right{display:flex;align-items:center;gap:8px;}
+      .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;}
+      .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+      .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+      .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+      .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+      .btn-danger-sm{background:rgba(251,113,133,0.12);color:var(--rose);border:1px solid rgba(251,113,133,0.25);padding:6px 11px;border-radius:var(--radius-sm);font-size:11px;font-weight:600;transition:all 0.2s;}
+      .btn-danger-sm:hover{background:rgba(251,113,133,0.25);}
+  
+      /* MAIN */
+      .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+      .page-content{padding:28px;}
+  
+      /* PAGE TABS */
+      .page-tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:5px;margin-bottom:20px;width:fit-content;}
+      .page-tab{padding:7px 16px;font-size:12px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;color:var(--text3);background:transparent;border:none;}
+      .page-tab.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+  
+      /* FILTER BAR */
+      .filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+      .search-wrap{flex:1;min-width:200px;position:relative;}
+      .search-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;}
+      .search-input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);padding:8px 12px 8px 34px;font-size:12px;transition:border-color 0.2s;}
+      .search-input:focus{border-color:var(--accent);}
+      .search-input::placeholder{color:var(--text3);}
+  
+      /* PANEL */
+      .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+  
+      /* TABLE */
+      .data-table{width:100%;border-collapse:collapse;}
+      .data-table thead{background:var(--surface2);}
+      .data-table th{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;padding:12px 20px;text-align:left;}
+      .data-table td{padding:14px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--text2);vertical-align:middle;}
+      .data-table tr:hover td{background:var(--surface2);}
+      .u-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+      .u-name{font-size:12px;font-weight:600;color:var(--text);}
+      .u-sub{font-size:10px;color:var(--text3);}
+  
+      /* BADGES */
+      .badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;}
+      .badge-active{background:rgba(52,211,153,0.15);color:var(--green);}
+      .badge-idle{background:rgba(107,114,128,0.15);color:var(--text3);}
+      .badge-streak{background:rgba(251,191,36,0.15);color:var(--amber);}
+      .badge-topic{background:rgba(56,189,248,0.15);color:var(--sky);}
+      .badge-quiz{background:rgba(52,211,153,0.15);color:var(--green);}
+  
+      /* PROGRESS */
+      .progress-bar-wrap{display:flex;align-items:center;gap:8px;}
+      .progress-bar-bg{flex:1;height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+      .progress-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+      .progress-pct{font-size:10px;color:var(--text3);min-width:28px;text-align:right;}
+  
+      /* INFO BANNER */
+      .info-banner{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--amber);}
+  
+      /* DAYS BADGE */
+      .days-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;}
+      .days-critical{background:rgba(251,113,133,0.15);color:var(--rose);}
+      .days-warning{background:rgba(251,191,36,0.15);color:var(--amber);}
+      .days-ok{background:rgba(52,211,153,0.15);color:var(--green);}
+  
+      /* APPEAL BADGE */
+      .appeal-badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:10px;font-weight:700;}
+      .appeal-none{background:var(--surface3);color:var(--text3);}
+      .appeal-pending{background:rgba(251,191,36,0.15);color:var(--amber);border:1px solid rgba(251,191,36,0.3);}
+      .appeal-approved{background:rgba(52,211,153,0.15);color:var(--green);}
+      .appeal-rejected{background:rgba(251,113,133,0.15);color:var(--rose);}
+  
+      /* PAGINATION */
+      .pag-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);}
+      .pag-btns{display:flex;align-items:center;gap:4px;}
+      .pag-btn{width:28px;height:28px;border-radius:var(--radius-sm);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+      .pag-btn:hover:not(:disabled){background:var(--surface2);color:var(--text);}
+      .pag-btn.active{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border-color:transparent;}
+      .pag-btn:disabled{opacity:0.3;cursor:not-allowed;}
+  
+      /* MODALS */
+      .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+      .modal-backdrop.show{display:flex;}
+      .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;box-shadow:var(--shadow);overflow:hidden;}
+      .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+      .modal-title{font-size:15px;font-weight:700;color:var(--text);}
+      .modal-close{width:30px;height:30px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.2s;}
+      .modal-close:hover{background:var(--surface3);color:var(--text);}
+      .modal-body{padding:24px;overflow-y:auto;}
+      .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
+  
+      /* MODAL TABS */
+      .modal-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 24px;background:var(--surface2);}
+      .modal-tab{padding:10px 16px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;background:transparent;border-top:none;border-left:none;border-right:none;}
+      .modal-tab.active{color:var(--accent2);border-bottom-color:var(--accent);}
+  
+      /* DELETE MODAL */
+      .delete-modal-header{padding:28px 28px 20px;text-align:center;background:rgba(251,113,133,0.06);border-bottom:1px solid rgba(251,113,133,0.15);}
+      .delete-icon-wrap{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--rose),#e11d48);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 6px 20px rgba(251,113,133,0.3);}
+      .delete-confirm-input{width:100%;padding:11px 14px;border:2px solid var(--border2);border-radius:10px;font-size:13px;font-family:var(--mono);font-weight:700;letter-spacing:1px;text-align:center;background:var(--surface2);color:var(--text);transition:border-color 0.2s;}
+      .delete-confirm-input:focus{border-color:var(--rose);outline:none;}
+      .delete-confirm-input.match{border-color:var(--green);}
+      .delete-confirm-input.no-match{border-color:var(--rose);}
+      .confirm-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:8px;}
+      .confirm-hint code{font-family:var(--mono);font-weight:700;color:var(--rose);background:rgba(251,113,133,0.1);padding:1px 6px;border-radius:4px;}
+      .btn-confirm-delete{width:100%;padding:12px;background:linear-gradient(135deg,var(--rose),#e11d48);color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px rgba(251,113,133,0.3);}
+      .btn-confirm-delete:disabled{opacity:0.35;cursor:not-allowed;box-shadow:none;}
+      .btn-cancel{width:100%;padding:10px;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;margin-top:8px;}
+      .btn-cancel:hover{background:var(--surface2);}
+      @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-6px);}40%{transform:translateX(6px);}60%{transform:translateX(-4px);}80%{transform:translateX(4px);}}
+      .shake{animation:shake 0.4s ease;}
+  
+      /* ADD ADMIN MODAL */
+      .add-admin-header{padding:28px 28px 20px;text-align:center;background:rgba(108,99,255,0.06);border-bottom:1px solid rgba(108,99,255,0.15);}
+      .add-admin-icon-wrap{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#4338ca);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 6px 20px var(--accent-glow);}
+      .form-field{margin-bottom:14px;}
+      .form-field label{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+      .form-field input,.form-field select{width:100%;padding:10px 13px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-size:13px;transition:border-color 0.2s;}
+      .form-field input:focus{border-color:var(--accent);}
+      .form-field input.field-error{border-color:var(--rose);}
+      .field-error-msg{font-size:11px;color:var(--rose);margin-top:4px;display:none;}
+      .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+      .pw-wrap{position:relative;}
+      .pw-wrap input{padding-right:38px;}
+      .pw-toggle{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;}
+      .btn-submit-admin{width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#4338ca);color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:all 0.2s;box-shadow:0 4px 14px var(--accent-glow);}
+      .btn-submit-admin:disabled{opacity:0.4;cursor:not-allowed;}
+  
+      /* APPEAL MODAL */
+      .appeal-msg-box{background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:var(--radius-sm);padding:12px 14px;font-size:12px;color:var(--text2);line-height:1.6;}
+  
+      /* PERM DELETE */
+      .perm-delete-header{padding:28px;text-align:center;background:rgba(127,29,29,0.15);border-bottom:1px solid rgba(127,29,29,0.3);}
+  
+      /* ANALYTICS MODAL */
+      .quiz-score-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;}
+      .score-excellent{background:rgba(52,211,153,0.12);color:var(--green);padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+      .score-good{background:rgba(251,191,36,0.12);color:var(--amber);padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+      .score-fair{background:rgba(251,146,60,0.12);color:#fb923c;padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+      .score-poor{background:rgba(251,113,133,0.12);color:var(--rose);padding:3px 8px;border-radius:100px;font-size:10px;font-weight:700;}
+      .per-lesson-score{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;color:#fff;}
+  
+      /* STATUS BAR */
+      .api-status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
+  
+      /* TOAST */
+      .toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+      .toast{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);min-width:240px;max-width:320px;animation:toastIn 0.3s ease both;font-size:12px;font-weight:500;color:var(--text);}
+      .toast.success{border-color:rgba(52,211,153,0.4);}
+      .toast.error{border-color:rgba(251,113,133,0.4);}
+      .toast.info{border-color:rgba(108,99,255,0.4);}
+      .toast i.success{color:var(--green);}
+      .toast i.error{color:var(--rose);}
+      .toast i.info{color:var(--accent2);}
+      @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  
+      /* SPINNER / LOADING */
+      .spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
+      .loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+      .loading-overlay.show{display:flex;}
+      .loading-spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+      @keyframes spin{to{transform:rotate(360deg);}}
+  
+      @media(max-width:900px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}}
+    </style>
+  </head>
 <body class="bg-gray-100">
 
   <!-- Sidebar -->
-  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-cube text-indigo-700 text-xl"></i>
-        </div>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fas fa-cube"></i></div>
+      <div>
+        <div class="logo-text">StructuReality</div>
+        <div class="logo-sub">Admin Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="users.html"    class="nav-link active"><i class="fas fa-users"></i> Users</a>
+      <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+      <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+      <div class="nav-section">Analytics</div>
+      <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+      <a href="slides.html"            class="nav-link"><i class="fas fa-images"></i> App Settings</a>
+      <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
         <div>
-          <h1 class="text-xl font-bold">StructuReality</h1>
-          <p class="text-xs text-indigo-300">Admin Portal</p>
+          <div class="user-name" id="sidebarUserName">Admin</div>
+          <div class="user-role" id="sidebarUserRole">Administrator</div>
         </div>
       </div>
     </div>
-    <nav class="mt-6 px-4">
-      <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-      <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-      <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
-      <a href="slides.html"
-      class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-      <i class="fas fa-images w-5"></i>
-      <span class="font-medium">App Settings</span>
-  </a>
-      <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chart-line w-5"></i><span class="font-medium">User &amp; Scenario Analytics</span>
-      </a>
-    </nav>
   </aside>
 
-  <!-- Top nav -->
-  <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-800">Users</h2>
-        <p class="text-sm text-gray-500">Manage and analyze user progress</p>
+  <nav class="topbar">
+    <div class="topbar-left">
+      <h1>Users</h1>
+      <p>Manage and analyze user progress</p>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status-chip">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;" id="apiDot"></span>
+        <span id="apiStatus">connecting…</span>
       </div>
-      <div class="flex items-center space-x-3">
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
-          <span class="text-gray-500">API:</span>
-          <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
-        </div>
-        <button onclick="openAddAdminModal()"
-          class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition text-sm font-semibold shadow-sm">
-          <i class="fas fa-user-shield"></i> Add Admin
-        </button>
-        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer">
-          <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-indigo-700 text-sm"></i>
-          </div>
-          <div>
-            <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-            <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
-          </div>
-        </div>
-        <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
-          <i class="fas fa-sign-out-alt text-gray-600"></i>
-        </button>
-      </div>
+      <button onclick="openAddAdminModal()" class="btn btn-primary"><i class="fas fa-user-shield"></i> Add Admin</button>
+      <button onclick="toggleTheme()" class="btn btn-ghost" id="themeBtn">☀️</button>
+      <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </nav>
 
-  <main class="ml-64 mt-20 p-8">
-
-    <!-- Page-level tab bar -->
-    <div class="flex gap-0 border-b border-gray-200 mb-6 bg-white rounded-t-xl px-4 pt-2">
-      <button class="page-tab active" id="pgTabActive"  onclick="switchPageTab('active')">
-        <i class="fas fa-users mr-2"></i>Active Users <span id="activeCount" class="ml-1 text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full font-bold"></span>
-      </button>
-      <button class="page-tab" id="pgTabDeleted" onclick="switchPageTab('deleted')">
-        <i class="fas fa-user-slash mr-2 text-red-500"></i>Deleted Users <span id="deletedCount" class="ml-1 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold"></span>
-      </button>
-    </div>
-
-    <!-- ══ ACTIVE USERS PANEL ══════════════════════════════════════ -->
-    <div id="panelActive">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-        <div class="flex items-center gap-3 flex-wrap">
-          <div class="relative flex-1 min-w-64">
-            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" id="searchInput" placeholder="Search username, email, or name…"
-              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              oninput="filterUsers()" />
-          </div>
-          <button onclick="loadUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 transition text-sm font-semibold">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
-        </div>
+  <main class="main">
+    <div class="page-content">
+  
+      <!-- Page tabs -->
+      <div class="page-tabs">
+        <button class="page-tab active" id="pgTabActive" onclick="switchPageTab('active')">
+          <i class="fas fa-users" style="margin-right:6px;"></i>Active Users
+          <span id="activeCount" style="margin-left:6px;font-size:10px;background:rgba(108,99,255,0.2);color:var(--accent2);padding:1px 7px;border-radius:100px;"></span>
+        </button>
+        <button class="page-tab" id="pgTabDeleted" onclick="switchPageTab('deleted')">
+          <i class="fas fa-user-slash" style="margin-right:6px;color:var(--rose);"></i>Deleted Users
+          <span id="deletedCount" style="margin-left:6px;font-size:10px;background:rgba(251,113,133,0.15);color:var(--rose);padding:1px 7px;border-radius:100px;"></span>
+        </button>
       </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden" id="activeTableWrap">
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50 border-b border-gray-100">
+  
+      <!-- ACTIVE USERS PANEL -->
+      <div id="panelActive">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search username, email, or name…" oninput="filterUsers()"/>
+          </div>
+          <button onclick="loadUsers()" class="btn btn-ghost"><i class="fas fa-sync-alt"></i> Refresh</button>
+        </div>
+  
+        <div class="panel" id="activeTableWrap">
+          <table class="data-table">
+            <thead>
               <tr>
-                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">User</th>
-                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Email</th>
-                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Joined</th>
-                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Activity</th>
-                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider">Action</th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Joined</th>
+                <th style="text-align:center;">Activity</th>
+                <th style="text-align:center;">Action</th>
               </tr>
             </thead>
-            <tbody id="usersTableBody" class="divide-y divide-gray-100">
-              <tr class="text-center py-8"><td colspan="5" class="py-8 text-gray-400 text-sm">Loading users…</td></tr>
+            <tbody id="usersTableBody">
+              <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text3);">Loading users…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-    </div>
-
-    <!-- ══ DELETED USERS PANEL ════════════════════════════════════ -->
-    <div id="panelDeleted" class="hidden">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-6">
-        <div class="flex items-center gap-3 flex-wrap">
-          <div class="relative flex-1 min-w-64">
-            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
-            <input type="text" id="searchDeletedInput" placeholder="Search deleted users…"
-              class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300"
-              oninput="filterDeletedUsers()" />
+  
+      <!-- DELETED USERS PANEL -->
+      <div id="panelDeleted" class="hidden">
+        <div class="filter-bar">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchDeletedInput" class="search-input" placeholder="Search deleted users…" oninput="filterDeletedUsers()"/>
           </div>
-          <button onclick="loadDeletedUsers()" class="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition text-sm font-semibold">
-            <i class="fas fa-sync-alt"></i> Refresh
-          </button>
+          <button onclick="loadDeletedUsers()" class="btn btn-ghost"><i class="fas fa-sync-alt"></i> Refresh</button>
         </div>
-      </div>
-
-      <!-- Info banner -->
-      <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-5 text-sm text-amber-800">
-        <i class="fas fa-clock mt-0.5 flex-shrink-0"></i>
-        <div>
-          <span class="font-semibold">30-Day Restore Window.</span>
-          Deleted accounts are kept for 30 days. During this time admins can restore them if an appeal is submitted.
-          After 30 days the account is permanently purged automatically (pending appeals are exempt).
+  
+        <div class="info-banner">
+          <i class="fas fa-clock" style="flex-shrink:0;margin-top:1px;"></i>
+          <div><strong>30-Day Restore Window.</strong> Deleted accounts are kept for 30 days. Admins can restore them if an appeal is submitted. After 30 days the account is permanently purged (pending appeals are exempt).</div>
         </div>
-      </div>
-
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-red-50 border-b border-red-100">
+  
+        <div class="panel">
+          <table class="data-table">
+            <thead>
               <tr>
-                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">User</th>
-                <th class="text-left px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Deleted</th>
-                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Time Left</th>
-                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Appeal</th>
-                <th class="text-center px-6 py-4 text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                <th>User</th>
+                <th>Deleted</th>
+                <th style="text-align:center;">Time Left</th>
+                <th style="text-align:center;">Appeal</th>
+                <th style="text-align:center;">Actions</th>
               </tr>
             </thead>
-            <tbody id="deletedTableBody" class="divide-y divide-gray-100">
-              <tr><td colspan="5" class="py-8 text-center text-gray-400 text-sm">Loading…</td></tr>
+            <tbody id="deletedTableBody">
+              <tr><td colspan="5" style="text-align:center;padding:32px;color:var(--text3);">Loading…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
+  
     </div>
   </main>
 
-  <!-- ══ USER ANALYTICS MODAL ══════════════════════════════════════ -->
-  <div id="userModal" class="modal">
-    <div class="modal-content">
-      <div class="flex items-center justify-between p-6 border-b border-gray-100">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-lg" id="modalUserAvatar">?</div>
-          <div>
-            <h2 class="text-xl font-bold text-gray-800" id="modalUserName">—</h2>
-            <p class="text-sm text-gray-500" id="modalUserEmail">—</p>
-          </div>
+  <!-- USER ANALYTICS MODAL -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal-box" style="max-width:860px;max-height:90vh;display:flex;flex-direction:column;">
+    <div class="modal-header">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="u-avatar" style="width:40px;height:40px;font-size:14px;" id="modalUserAvatar">?</div>
+        <div>
+          <div class="modal-title" id="modalUserName">—</div>
+          <div style="font-size:11px;color:var(--text3);" id="modalUserEmail">—</div>
         </div>
-        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-2xl">
-          <i class="fas fa-times"></i>
-        </button>
       </div>
-      <div class="flex gap-0 border-b border-gray-100 px-6 bg-gray-50">
-        <button class="tab-btn active" id="tabQuizPerf"      onclick="switchModalTab('quiz')"><i class="fas fa-chart-bar mr-2"></i>Quiz Performance</button>
-        <button class="tab-btn"        id="tabScenarioUsage" onclick="switchModalTab('scenario')"><i class="fas fa-vr-cardboard mr-2"></i>Scenario Usage</button>
-      </div>
-      <div class="p-6">
-        <div id="tabQuizContent"     class="space-y-6"><p class="text-sm text-gray-500 mb-4">Lesson quiz scores per Data Structure</p><div id="quizPerformanceList" class="space-y-5"></div></div>
-        <div id="tabScenarioContent" class="hidden space-y-6"><p class="text-sm text-gray-500 mb-4">Most frequently used scenario per Data Structure</p><div id="scenarioUsageList" class="space-y-5"></div></div>
-      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabQuizPerf" onclick="switchModalTab('quiz')"><i class="fas fa-chart-bar" style="margin-right:6px;"></i>Quiz Performance</button>
+      <button class="modal-tab" id="tabScenarioUsage" onclick="switchModalTab('scenario')"><i class="fas fa-vr-cardboard" style="margin-right:6px;"></i>Scenario Usage</button>
+    </div>
+    <div class="modal-body" style="flex:1;overflow-y:auto;">
+      <div id="tabQuizContent"><p style="font-size:11px;color:var(--text3);margin-bottom:16px;">Lesson quiz scores per Data Structure</p><div id="quizPerformanceList" style="display:flex;flex-direction:column;gap:12px;"></div></div>
+      <div id="tabScenarioContent" class="hidden"><p style="font-size:11px;color:var(--text3);margin-bottom:16px;">Most frequently used scenario per Data Structure</p><div id="scenarioUsageList" style="display:flex;flex-direction:column;gap:12px;"></div></div>
     </div>
   </div>
+</div>
 
-  <!-- ══ SOFT-DELETE CONFIRMATION MODAL ════════════════════════════ -->
-  <div id="deleteModal">
-    <div class="delete-modal-content">
-      <div class="delete-modal-header">
-        <div class="delete-icon-wrap"><i class="fas fa-user-times text-white text-2xl"></i></div>
-        <h2 class="text-xl font-bold text-red-800">Delete User Account</h2>
-        <p class="text-sm text-red-600 mt-1">
-          Account will be moved to a 30-day holding period
-          <span class="cascade-badge"><i class="fas fa-clock"></i> Recoverable</span>
-        </p>
+<!-- SOFT-DELETE MODAL -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal-box" style="max-width:440px;">
+    <div class="delete-modal-header">
+      <div class="delete-icon-wrap"><i class="fas fa-user-times" style="color:#fff;font-size:20px;"></i></div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);">Delete User Account</div>
+      <div style="font-size:11px;color:var(--rose);margin-top:4px;">Account moved to 30-day holding period</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;">
+        <div class="u-avatar" style="width:36px;height:36px;background:rgba(251,113,133,0.2);color:var(--rose);" id="deleteUserAvatar">?</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--text);overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" id="deleteUserName">—</div>
+          <div style="font-size:11px;color:var(--text3);" id="deleteUserEmail">—</div>
+          <div style="font-size:11px;color:var(--rose);font-weight:600;">@<span id="deleteUsername">—</span></div>
+        </div>
       </div>
-      <div class="delete-modal-body">
-        <div class="flex items-center gap-3 bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200">
-          <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold text-base flex-shrink-0" id="deleteUserAvatar">?</div>
-          <div class="min-w-0 flex-1">
-            <p class="font-semibold text-gray-800 text-sm truncate" id="deleteUserName">—</p>
-            <p class="text-xs text-gray-500 truncate" id="deleteUserEmail">—</p>
-            <p class="text-xs text-red-500 font-medium mt-0.5">@<span id="deleteUsername">—</span></p>
-          </div>
-          <i class="fas fa-exclamation-triangle text-red-400 text-lg ml-auto flex-shrink-0"></i>
-        </div>
-
-        <!-- Reason field -->
-        <div class="mb-4">
-          <label class="block text-xs font-bold text-gray-600 mb-1 uppercase tracking-wide">Reason for deletion <span class="text-gray-400 font-normal normal-case">(optional)</span></label>
-          <input type="text" id="deleteReason" placeholder="e.g. Violated terms of service…"
-            class="w-full px-4 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-200" />
-        </div>
-
-        <div class="bg-amber-50 rounded-xl p-4 mb-5 border border-amber-200">
-          <p class="text-xs font-semibold text-amber-700 mb-1"><i class="fas fa-envelope mr-1"></i>The user will receive a notification email</p>
-          <p class="text-xs text-amber-600">It will explain the deletion, the reason, and that they have 30 days to appeal.</p>
-        </div>
-
-        <div class="mb-2">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Type the confirmation phrase to continue:</label>
-          <p class="confirm-hint mb-3">Please type <code id="deleteConfirmPhrase">DELETE USERNAME</code> exactly</p>
-          <input type="text" id="deleteConfirmInput" class="delete-confirm-input"
-            placeholder="Type here to confirm…" autocomplete="off" spellcheck="false"
-            oninput="onDeleteInputChange()" />
-        </div>
-        <p class="text-xs text-center mt-2 mb-4 font-medium" id="deleteInputStatus" style="color:#9ca3af;min-height:16px;"></p>
-        <button id="btnConfirmDelete" class="btn-delete-confirm" disabled onclick="confirmDelete()">
-          <i class="fas fa-user-slash mr-2"></i> Delete &amp; Notify User
-        </button>
-        <button class="btn-delete-cancel" onclick="closeDeleteModal()">
-          <i class="fas fa-arrow-left mr-2"></i> Cancel
-        </button>
+      <div class="form-field">
+        <label>Reason for deletion (optional)</label>
+        <input type="text" id="deleteReason" placeholder="e.g. Violated terms of service…" style="width:100%;padding:9px 12px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--text);font-size:12px;"/>
       </div>
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:16px;font-size:11px;color:var(--amber);">
+        <i class="fas fa-envelope" style="margin-right:6px;"></i>The user will receive a notification email with the reason and 30-day appeal window.
+      </div>
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px;">Type the confirmation phrase to continue:</div>
+      <p class="confirm-hint" style="margin-bottom:10px;">Please type <code id="deleteConfirmPhrase">DELETE USERNAME</code> exactly</p>
+      <input type="text" id="deleteConfirmInput" class="delete-confirm-input" placeholder="Type here to confirm…" autocomplete="off" spellcheck="false" oninput="onDeleteInputChange()"/>
+      <p style="font-size:11px;text-align:center;margin:8px 0 16px;min-height:16px;color:var(--text3);" id="deleteInputStatus"></p>
+      <button id="btnConfirmDelete" class="btn-confirm-delete" disabled onclick="confirmDelete()"><i class="fas fa-user-slash" style="margin-right:8px;"></i>Delete &amp; Notify User</button>
+      <button class="btn-cancel" onclick="closeDeleteModal()"><i class="fas fa-arrow-left" style="margin-right:8px;"></i>Cancel</button>
     </div>
   </div>
+</div>
 
-  <!-- ══ APPEAL DETAIL MODAL ════════════════════════════════════════ -->
-  <div id="appealModal">
-    <div class="appeal-modal-content">
-      <div class="p-6 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-gavel mr-2 text-amber-500"></i>Appeal Review</h3>
-        <button onclick="closeAppealModal()" class="text-gray-400 hover:text-gray-600 text-xl"><i class="fas fa-times"></i></button>
+<!-- APPEAL MODAL -->
+<div class="modal-backdrop" id="appealModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-gavel" style="margin-right:8px;color:var(--amber);"></i>Appeal Review</div>
+      <button class="modal-close" onclick="closeAppealModal()">✕</button>
+    </div>
+    <div class="modal-body" id="appealModalBody"></div>
+  </div>
+</div>
+
+<!-- PERMANENT DELETE MODAL -->
+<div class="modal-backdrop" id="permDeleteModal">
+  <div class="modal-box" style="max-width:420px;">
+    <div class="perm-delete-header">
+      <div style="width:56px;height:56px;border-radius:50%;background:#7f1d1d;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;"><i class="fas fa-skull" style="color:#fca5a5;font-size:22px;"></i></div>
+      <div style="font-size:16px;font-weight:700;color:var(--rose);">Permanent Deletion</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">This cannot be undone under any circumstances</div>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px;">
+        <div class="u-avatar" style="width:36px;height:36px;background:rgba(251,113,133,0.15);color:var(--rose);" id="permDeleteAvatar">?</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--text);" id="permDeleteName">—</div>
+          <div style="font-size:11px;color:var(--rose);font-weight:600;">@<span id="permDeleteUsername">—</span></div>
+        </div>
       </div>
-      <div class="p-6" id="appealModalBody"></div>
+      <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">All archived data for this account will be wiped immediately. There is <strong>no recovery</strong> after this action.</p>
+      <button onclick="confirmPermDelete()" style="width:100%;padding:12px;background:#b91c1c;color:#fff;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:opacity 0.2s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'"><i class="fas fa-bomb" style="margin-right:8px;"></i>Yes, Permanently Delete</button>
+      <button class="btn-cancel" onclick="closePermDeleteModal()"><i class="fas fa-arrow-left" style="margin-right:8px;"></i>Cancel</button>
     </div>
   </div>
+</div>
 
-  <!-- ══ PERMANENT DELETE CONFIRMATION ══════════════════════════════ -->
-  <div id="permDeleteModal">
-    <div class="perm-delete-content">
-      <div style="background:linear-gradient(135deg,#1c0a0a,#3b0a0a);padding:28px;text-align:center;">
-        <div style="width:64px;height:64px;border-radius:50%;background:#7f1d1d;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
-          <i class="fas fa-skull text-red-300 text-2xl"></i>
+<!-- ADD ADMIN MODAL -->
+<div class="modal-backdrop" id="addAdminModal">
+  <div class="modal-box" style="max-width:480px;">
+    <div class="add-admin-header">
+      <div class="add-admin-icon-wrap"><i class="fas fa-user-shield" style="color:#fff;font-size:20px;"></i></div>
+      <div style="font-size:16px;font-weight:700;color:var(--text);">Add Admin</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px;">Create a new admin account</div>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;">Current Admin Accounts</span>
+          <button onclick="loadAdminList()" style="font-size:11px;color:var(--accent2);background:none;border:none;cursor:pointer;">⟳ Refresh</button>
         </div>
-        <h2 class="text-xl font-bold text-red-200">Permanent Deletion</h2>
-        <p class="text-sm text-red-400 mt-1">This cannot be undone under any circumstances</p>
-      </div>
-      <div class="p-6">
-        <div class="bg-gray-50 rounded-xl p-4 mb-5 border border-gray-200 flex items-center gap-3">
-          <div class="w-11 h-11 bg-red-100 rounded-full flex items-center justify-center text-red-700 font-bold flex-shrink-0" id="permDeleteAvatar">?</div>
-          <div>
-            <p class="font-semibold text-gray-800 text-sm" id="permDeleteName">—</p>
-            <p class="text-xs text-red-500 font-medium">@<span id="permDeleteUsername">—</span></p>
-          </div>
+        <div id="adminListBody" style="display:flex;flex-direction:column;gap:6px;max-height:150px;overflow-y:auto;">
+          <p style="font-size:11px;color:var(--text3);text-align:center;padding:12px;">Loading…</p>
         </div>
-        <p class="text-sm text-gray-600 mb-5">All archived data for this account will be wiped immediately. There is <strong>no recovery</strong> after this action.</p>
-        <button id="btnPermDelete" class="w-full py-3 bg-red-700 hover:bg-red-800 text-white rounded-xl font-bold text-sm transition" onclick="confirmPermDelete()">
-          <i class="fas fa-bomb mr-2"></i> Yes, Permanently Delete
-        </button>
-        <button class="btn-delete-cancel mt-2" onclick="closePermDeleteModal()">
-          <i class="fas fa-arrow-left mr-2"></i> Cancel
-        </button>
       </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin-bottom:16px;"/>
+      <div class="form-row">
+        <div class="form-field"><label>Full Name</label><input type="text" id="adminName" placeholder="e.g. Jane Smith" autocomplete="off" oninput="clearFieldError('adminName','errAdminName')"/><p class="field-error-msg" id="errAdminName">Name is required</p></div>
+        <div class="form-field"><label>Username</label><input type="text" id="adminUsername" placeholder="e.g. jsmith" autocomplete="off" oninput="clearFieldError('adminUsername','errAdminUsername')"/><p class="field-error-msg" id="errAdminUsername">Username required</p></div>
+      </div>
+      <div class="form-field"><label>Email Address</label><input type="email" id="adminEmail" placeholder="jane@school.edu" autocomplete="off" oninput="clearFieldError('adminEmail','errAdminEmail')"/><p class="field-error-msg" id="errAdminEmail">Valid email required</p></div>
+      <div class="form-field"><label>Password</label><div class="pw-wrap"><input type="password" id="adminPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="clearFieldError('adminPassword','errAdminPassword')"/><button class="pw-toggle" id="eyeIcon" onclick="toggleAdminPw()"><i class="fas fa-eye"></i></button></div><p class="field-error-msg" id="errAdminPassword">Min. 8 characters</p></div>
+      <div id="addAdminStatus" style="display:none;font-size:12px;text-align:center;padding:9px 12px;border-radius:var(--radius-sm);margin-bottom:12px;font-weight:600;"></div>
+      <button id="btnSubmitAdmin" class="btn-submit-admin" onclick="submitAddAdmin()"><i class="fas fa-user-plus" style="margin-right:8px;"></i>Create Account</button>
+      <button class="btn-cancel" onclick="closeAddAdminModal()"><i class="fas fa-times" style="margin-right:8px;"></i>Cancel</button>
     </div>
   </div>
+</div>
 
-  <!-- ══ ADD ADMIN MODAL ════════════════════════════════════════════ -->
-  <div id="addAdminModal">
-    <div class="add-admin-content">
-      <div class="add-admin-header">
-        <div class="add-admin-icon-wrap"><i class="fas fa-user-shield text-white text-2xl"></i></div>
-        <h2 class="text-xl font-bold text-indigo-900">Add Admin</h2>
-        <p class="text-sm text-indigo-400 mt-1">Create a new admin account</p>
-      </div>
-      <div class="add-admin-body">
-        <div id="adminListSection" class="mb-5">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Current Admin Accounts</p>
-            <button onclick="loadAdminList()" class="text-xs text-indigo-500 hover:text-indigo-700 font-semibold"><i class="fas fa-sync-alt mr-1"></i>Refresh</button>
-          </div>
-          <div id="adminListBody" class="space-y-2 max-h-44 overflow-y-auto pr-1">
-            <p class="text-xs text-gray-400 text-center py-3">Loading…</p>
-          </div>
-        </div>
-        <hr class="border-gray-100 mb-5" />
-        <div class="form-row">
-          <div class="form-field"><label>Full Name</label><input type="text" id="adminName" placeholder="e.g. Jane Smith" autocomplete="off" oninput="clearFieldError('adminName','errAdminName')" /><p class="field-error-msg" id="errAdminName">Name is required</p></div>
-          <div class="form-field"><label>Username</label><input type="text" id="adminUsername" placeholder="e.g. jsmith" autocomplete="off" oninput="clearFieldError('adminUsername','errAdminUsername')" /><p class="field-error-msg" id="errAdminUsername">Username is required</p></div>
-        </div>
-        <div class="form-field"><label>Email Address</label><input type="email" id="adminEmail" placeholder="e.g. jane@school.edu" autocomplete="off" oninput="clearFieldError('adminEmail','errAdminEmail')" /><p class="field-error-msg" id="errAdminEmail">Valid email is required</p></div>
-        <div class="form-field"><label>Password</label><div class="password-toggle"><input type="password" id="adminPassword" placeholder="Min. 8 characters" autocomplete="new-password" oninput="clearFieldError('adminPassword','errAdminPassword')" /><i class="fas fa-eye toggle-eye" id="eyeIcon" onclick="toggleAdminPw()"></i></div><p class="field-error-msg" id="errAdminPassword">Password must be at least 8 characters</p></div>
-        <div id="addAdminStatus" class="hidden text-sm text-center py-2 px-3 rounded-lg mb-3 font-medium"></div>
-        <button id="btnSubmitAdmin" class="btn-add-admin-submit" onclick="submitAddAdmin()"><i class="fas fa-user-plus mr-2"></i> Create Account</button>
-        <button class="btn-add-admin-cancel" onclick="closeAddAdminModal()"><i class="fas fa-times mr-2"></i> Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="toast" id="toast"></div>
-  <div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+<!-- Toast + Loading -->
+<div class="toast-container" id="toastContainer"></div>
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div></div>
 
   <script>
     const SERVER_URL = 'https://structureality-admin.onrender.com';
@@ -517,6 +499,27 @@
       if (!raw || raw === 'undefined') { logout(); return null; }
       try { return JSON.parse(raw); } catch { logout(); return null; }
     }
+
+    function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
+
+// Override showToast to use the new toast system
+function showToast(msg, type = 'info') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const iconMap = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas ${iconMap[type] || iconMap.info}" style="color:${type==='success'?'var(--green)':type==='error'?'var(--rose)':'var(--accent2)'};"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(6px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// Override showLoading to use the new overlay
+function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
     function showToast(msg, type = 'info') {
       const cMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
       const iMap = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
@@ -1120,7 +1123,12 @@ const res = progressRes;        const data = await res.json();
     // ── Init ────────────────────────────────────────────────────
     window.addEventListener('load', async () => {
       const user = checkAuth();
-      if (user) { document.getElementById('adminUserDisplay').textContent = user.name || user.username; document.getElementById('adminEmailDisplay').textContent = user.email || ''; }
+      const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+      if (user) {document.getElementById('sidebarUserName').textContent = user.name || user.username;
+document.getElementById('sidebarAvatar').textContent   = (user.name || user.username || 'A')[0].toUpperCase();
+document.getElementById('sidebarUserRole').textContent = user.role === 'instructor' ? 'Instructor' : 'Administrator'; document.getElementById('adminUserDisplay').textContent = user.name || user.username; document.getElementById('adminEmailDisplay').textContent = user.email || ''; }
       await loadUsers();
     });
 

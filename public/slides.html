@@ -1,318 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>StructuReality – Featured Slides</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
-  <style>
-    * { font-family:"Poppins",sans-serif; }
-    .slide-card { transition:all .2s ease; }
-    .slide-card:hover { transform:translateY(-3px); box-shadow:0 10px 28px rgba(99,102,241,.14); }
-    .drag-over { border-color:#6366f1 !important; background:#eef2ff !important; }
-    .lesson-tag { animation:fadeIn .15s ease; }
-    @keyframes fadeIn { from{opacity:0;transform:scale(.9)} to{opacity:1;transform:scale(1)} }
-    .modal-backdrop { backdrop-filter:blur(4px); }
-    .toast { animation:slideIn .3s ease; }
-    @keyframes slideIn { from{transform:translateX(120%)} to{transform:translateX(0)} }
-    textarea { resize:vertical; min-height:80px; }
-
-    /* Preview card inside modal */
-    .mobile-preview { background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%); border-radius:.75rem; padding:1.5rem; color:white; position:relative; overflow:hidden; min-height:140px; display:flex; flex-direction:column; gap:.5rem; }
-    .mobile-preview::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 80% 20%,rgba(99,102,241,.18) 0%,transparent 60%); pointer-events:none; }
-    .preview-tag  { font-size:.55rem; font-weight:700; letter-spacing:.1em; color:#818cf8; background:rgba(99,102,241,.15); border:1px solid rgba(99,102,241,.3); padding:.3rem .65rem; border-radius:2rem; width:fit-content; text-transform:uppercase; }
-    .preview-title { font-size:.95rem; font-weight:700; line-height:1.3; }
-    .preview-title .accent { color:#818cf8; }
-    .preview-desc { font-size:.7rem; color:#94a3b8; line-height:1.5; }
-    .img-preview { object-fit:cover; border-radius:.5rem; }
-
-    /* Slide number badge */
-    .order-badge { width:1.6rem; height:1.6rem; background:#6366f1; color:white; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.65rem; font-weight:700; flex-shrink:0; }
-
-    /* Image drop zone */
-    .drop-zone { transition:all .2s ease; }
-    .drop-zone:hover { border-color:#6366f1; background:#eef2ff; }
-  </style>
-</head>
-<body class="bg-gray-100">
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>App Settings — StructuReality Admin</title>
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+        <style>
+          :root {
+            --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+            --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+            --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+            --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+            --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+            --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+            --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+            --shadow:0 4px 24px rgba(0,0,0,0.4);
+          }
+          [data-theme="light"] {
+            --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+            --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+            --text:#111827; --text2:#374151; --text3:#6b7280;
+          }
+          *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+          body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+          button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+          input,select,textarea{font-family:inherit;outline:none;}
+          ::-webkit-scrollbar{width:5px;height:5px;}
+          ::-webkit-scrollbar-track{background:var(--surface);}
+          ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+      
+          /* SIDEBAR */
+          .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+          .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+          .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+          .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+          .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+          .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+          .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+          .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+          .nav-link i{width:16px;text-align:center;font-size:13px;}
+          .nav-link:hover{background:var(--surface2);color:var(--text);}
+          .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+          .nav-link.active i{color:var(--accent);}
+          .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+          .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+          .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+          .user-name{font-size:12px;font-weight:600;color:var(--text);}
+          .user-role{font-size:10px;color:var(--text3);}
+      
+          /* TOPBAR */
+          .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+          .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+          .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+          .topbar-right{display:flex;align-items:center;gap:8px;}
+          .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;cursor:pointer;}
+          .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+          .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+          .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+          .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+          .btn-danger{background:rgba(251,113,133,0.12);color:var(--rose);border:1px solid rgba(251,113,133,0.25);}
+          .btn-danger:hover{background:rgba(251,113,133,0.22);}
+      
+          /* MAIN */
+          .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+          .page-content{padding:28px;}
+      
+          /* STAT CARDS */
+          .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+          .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden;transition:all 0.25s;}
+          .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.25s;}
+          .stat-card:hover::before{opacity:1;}
+          .stat-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+          .stat-card.indigo::before{background:linear-gradient(90deg,var(--accent),var(--accent2));}
+          .stat-card.green::before{background:linear-gradient(90deg,var(--green),#059669);}
+          .stat-card.amber::before{background:linear-gradient(90deg,var(--amber),#d97706);}
+          .stat-card.purple::before{background:linear-gradient(90deg,#c084fc,var(--accent2));}
+          .stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+          .stat-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+      
+          /* LIVE BANNER */
+          .live-banner{background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.2);border-radius:var(--radius);padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+          .live-banner-icon{width:36px;height:36px;background:rgba(108,99,255,0.15);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--accent2);font-size:15px;flex-shrink:0;}
+          .api-status-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
+      
+          /* SLIDES GRID */
+          .slides-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+          .slide-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:all 0.2s;}
+          .slide-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-3px);box-shadow:0 8px 24px rgba(108,99,255,0.12);}
+          .slide-thumb{height:160px;overflow:hidden;position:relative;}
+          .slide-thumb img{width:100%;height:100%;object-fit:cover;}
+          .slide-thumb-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px;background:linear-gradient(135deg,#1e293b,#0f172a);}
+          .slide-body{padding:16px;}
+          .slide-tag{font-size:10px;font-weight:700;color:var(--accent2);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+          .slide-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.4;}
+          .slide-desc{font-size:11px;color:var(--text3);line-height:1.5;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+          .slide-footer{display:flex;align-items:center;justify-content:space-between;}
+          .slide-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:100px;background:rgba(108,99,255,0.15);color:var(--accent2);}
+          .order-badge{width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+      
+          /* EMPTY STATE */
+          .empty-state{text-align:center;padding:80px 20px;}
+          .empty-icon{width:64px;height:64px;background:rgba(108,99,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:var(--accent2);}
+      
+          /* MODALS */
+          .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+          .modal-backdrop.show{display:flex;}
+          .modal-box{background:var(--surface);border:1px solid var(--border2);border-radius:20px;width:100%;margin:auto;box-shadow:var(--shadow);overflow:hidden;}
+          .modal-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(167,139,250,0.08));}
+          .modal-title{font-size:15px;font-weight:700;color:var(--text);}
+          .modal-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+          .modal-close{width:30px;height:30px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text2);cursor:pointer;transition:all 0.2s;}
+          .modal-close:hover{background:var(--surface3);color:var(--text);}
+          .modal-body{padding:24px;overflow-y:auto;max-height:72vh;}
+          .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2);}
+      
+          /* FORM */
+          .form-group{margin-bottom:16px;}
+          .form-label{display:block;font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+          .form-input,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;transition:border-color 0.2s;}
+          .form-input:focus,.form-textarea:focus{border-color:var(--accent);}
+          .form-input::placeholder,.form-textarea::placeholder{color:var(--text3);}
+          .form-textarea{resize:vertical;min-height:80px;font-size:12px;line-height:1.6;}
+          .form-hint{font-size:10px;color:var(--text3);margin-top:4px;}
+      
+          /* DROP ZONE */
+          .drop-zone{border:2px dashed var(--border2);border-radius:var(--radius-sm);padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;position:relative;}
+          .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:rgba(108,99,255,0.06);}
+      
+          /* LIVE PREVIEW */
+          .mobile-preview{background:linear-gradient(135deg,#1e293b,#0f172a);border-radius:var(--radius-sm);padding:20px;color:white;position:relative;overflow:hidden;min-height:120px;display:flex;flex-direction:column;gap:6px;}
+          .mobile-preview::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(108,99,255,0.18) 0%,transparent 60%);pointer-events:none;}
+          .preview-tag{font-size:9px;font-weight:700;letter-spacing:.1em;color:#818cf8;background:rgba(108,99,255,0.15);border:1px solid rgba(108,99,255,0.3);padding:3px 8px;border-radius:100px;width:fit-content;text-transform:uppercase;}
+          .preview-title{font-size:14px;font-weight:700;line-height:1.3;}
+          .preview-title .accent{color:#818cf8;}
+          .preview-desc{font-size:11px;color:#94a3b8;line-height:1.5;}
+      
+          /* LESSON TAGS */
+          .lesson-tag{display:flex;align-items:flex-start;gap:8px;background:rgba(108,99,255,0.08);border:1px solid rgba(108,99,255,0.15);border-radius:var(--radius-sm);padding:8px 10px;font-size:12px;color:var(--text2);}
+      
+          /* DELETE MODAL */
+          .delete-modal-header{padding:28px;text-align:center;background:rgba(251,113,133,0.06);border-bottom:1px solid rgba(251,113,133,0.15);}
+          .delete-icon-wrap{width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--rose),#e11d48);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;box-shadow:0 6px 20px rgba(251,113,133,0.3);}
+      
+          /* TOAST */
+          .toast-container{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+          .toast{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 16px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);min-width:220px;max-width:320px;animation:toastIn 0.3s ease both;font-size:12px;font-weight:500;color:var(--text);}
+          .toast.success{border-color:rgba(52,211,153,0.4);}
+          .toast.error{border-color:rgba(251,113,133,0.4);}
+          @keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+      
+          /* SPINNER */
+          .spinner{display:inline-block;width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+          @keyframes spin{to{transform:rotate(360deg);}}
+      
+          @media(max-width:1100px){.slides-grid{grid-template-columns:repeat(2,1fr);}}
+          @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+          @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}.slides-grid{grid-template-columns:1fr;}}
+        </style>
+      </head>
+      <body>
 
 <!-- Sidebar -->
-<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-  <div class="p-6 border-b border-indigo-700">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-        <i class="fas fa-cube text-indigo-700 text-xl"></i>
-      </div>
+<aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fas fa-cube"></i></div>
       <div>
-        <h1 class="text-xl font-bold">StructuReality</h1>
-        <p class="text-xs text-indigo-300">Admin Portal</p>
+        <div class="logo-text">StructuReality</div>
+        <div class="logo-sub">Admin Portal</div>
       </div>
     </div>
-  </div>
-  <nav class="mt-6 px-4">
-    <a href="index.html"    class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-    <a href="users.html"    class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-    <a href="quizzes.html"  class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-    <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-    <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
-    <a href="slides.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-images w-5"></i><span class="font-medium">App Settings</span></a>
-    <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-bar w-5"></i><span class="font-medium">User &amp; Scenario Analytics</span></a>
-  </nav>
-</aside>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+      <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+      <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+      <div class="nav-section">Analytics</div>
+      <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+      <a href="slides.html"            class="nav-link active"><i class="fas fa-images"></i> App Settings</a>
+      <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
+        <div>
+          <div class="user-name" id="sidebarUserName">Admin</div>
+          <div class="user-role" id="sidebarUserRole">Administrator</div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
 <!-- Top Nav -->
-<nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-  <div class="px-8 py-4 flex items-center justify-between">
-    <div>
-      <h2 class="text-2xl font-bold text-gray-800">Featured Slides</h2>
-      <p class="text-sm text-gray-500">Manage the carousel shown on the mobile home screen</p>
+<nav class="topbar">
+    <div class="topbar-left">
+      <h1>Featured Slides</h1>
+      <p>Manage the carousel shown on the mobile home screen</p>
     </div>
-    <div class="flex items-center space-x-3">
-      <span id="slideCount" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">0 slides</span>
-      <button onclick="openCreateModal()" class="flex items-center space-x-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
-        <i class="fas fa-plus"></i><span>New Slide</span>
-      </button>
-      <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
-        <i class="fas fa-sign-out-alt text-gray-600"></i>
-      </button>
+    <div class="topbar-right">
+      <div class="api-status-chip" id="apiStatus">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;" id="apiDot"></span>
+        <span id="apiStatusText">Connecting…</span>
+      </div>
+      <span id="slideCount" style="font-size:11px;color:var(--text3);padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;">0 slides</span>
+      <button onclick="openCreateModal()" class="btn btn-primary"><i class="fas fa-plus"></i> New Slide</button>
+      <button onclick="toggleTheme()" class="btn btn-ghost" id="themeBtn">☀️</button>
+      <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
-  </div>
-</nav>
+  </nav>
 
 <!-- Main Content -->
-<main class="ml-64 mt-20 p-8">
+<main class="main">
+    <div class="page-content">
 
   <!-- Live Preview Banner -->
-  <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 mb-6 flex items-center justify-between">
-    <div class="flex items-center space-x-3">
-      <div class="w-9 h-9 bg-indigo-100 rounded-lg flex items-center justify-center">
-        <i class="fas fa-mobile-alt text-indigo-600"></i>
-      </div>
+  <div class="live-banner">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="live-banner-icon"><i class="fas fa-mobile-alt"></i></div>
       <div>
-        <p class="font-semibold text-indigo-800 text-sm">Live on Mobile App</p>
-        <p class="text-xs text-indigo-500">Changes appear immediately — the app fetches slides fresh on every home screen load</p>
+        <div style="font-size:13px;font-weight:700;color:var(--accent2);">Live on Mobile App</div>
+        <div style="font-size:11px;color:var(--text3);">Changes appear immediately — the app fetches slides fresh on every home screen load</div>
       </div>
     </div>
-    <div class="flex items-center space-x-3">
-      <span id="apiStatus" class="flex items-center space-x-1.5 text-xs text-gray-400">
-        <span class="w-2 h-2 rounded-full bg-gray-300 inline-block"></span><span>Connecting…</span>
-      </span>
-      <button onclick="loadSlides()" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition">
-        <i class="fas fa-sync-alt mr-1"></i>Refresh
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="loadSlides()" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
+        <i class="fas fa-sync-alt"></i> Refresh
       </button>
     </div>
   </div>
 
   <!-- Stats Row -->
-  <div class="grid grid-cols-4 gap-4 mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-indigo-500">
-      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Slides</p>
-      <p class="text-2xl font-bold text-gray-800" id="statTotal">–</p>
+  <div class="stats-row">
+    <div class="stat-card indigo">
+      <div class="stat-label">Total Slides</div>
+      <div class="stat-value" id="statTotal">—</div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-green-500">
-      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">With Images</p>
-      <p class="text-2xl font-bold text-gray-800" id="statWithImg">–</p>
+    <div class="stat-card green">
+      <div class="stat-label">With Images</div>
+      <div class="stat-value" id="statWithImg">—</div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-amber-500">
-      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Avg. Lesson Bullets</p>
-      <p class="text-2xl font-bold text-gray-800" id="statAvgLessons">–</p>
+    <div class="stat-card amber">
+      <div class="stat-label">Avg. Lesson Bullets</div>
+      <div class="stat-value" id="statAvgLessons">—</div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-4 border-l-4 border-purple-500">
-      <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Last Updated</p>
-      <p class="text-sm font-bold text-gray-800" id="statLastUpdated">–</p>
+    <div class="stat-card purple">
+      <div class="stat-label">Last Updated</div>
+      <div class="stat-value" style="font-size:14px;" id="statLastUpdated">—</div>
     </div>
   </div>
 
   <!-- Slides Grid -->
-  <div id="slidesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"></div>
-
+  <div id="slidesGrid" class="slides-grid"></div>
   <!-- Empty State -->
-  <div id="emptyState" class="hidden text-center py-24">
-    <div class="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
-      <i class="fas fa-images text-indigo-300 text-3xl"></i>
-    </div>
-    <h3 class="text-lg font-semibold text-gray-700 mb-2">No slides yet</h3>
-    <p class="text-gray-400 text-sm mb-6">Create your first featured slide to show on the mobile home screen.</p>
-    <button onclick="openCreateModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg font-medium transition">
-      <i class="fas fa-plus mr-2"></i>Create First Slide
-    </button>
+  <div id="emptyState" class="hidden empty-state">
+    <div class="empty-icon"><i class="fas fa-images"></i></div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;">No slides yet</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:20px;">Create your first featured slide to show on the mobile home screen.</div>
+    <button onclick="openCreateModal()" class="btn btn-primary"><i class="fas fa-plus"></i> Create First Slide</button>
   </div>
-
 </main>
 
 <!-- ═══════════════════ CREATE / EDIT MODAL ═══════════════════ -->
-<div id="slideModal" class="fixed inset-0 z-50 hidden">
-  <div class="modal-backdrop absolute inset-0 bg-black/50" onclick="closeModal()"></div>
-  <div class="relative flex items-start justify-center min-h-screen p-6 pt-10">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl relative z-10 overflow-hidden">
-
-      <!-- Header -->
-      <div class="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+<div id="slideModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:680px;">
+      <div class="modal-header">
         <div>
-          <h3 class="text-white font-bold text-lg" id="modalTitle">New Featured Slide</h3>
-          <p class="text-indigo-200 text-xs">Appears in the carousel on the mobile home screen</p>
+          <div class="modal-title" id="modalTitle">New Featured Slide</div>
+          <div class="modal-sub">Appears in the carousel on the mobile home screen</div>
         </div>
-        <button onclick="closeModal()" class="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-lg flex items-center justify-center transition">
-          <i class="fas fa-times text-white text-sm"></i>
-        </button>
+        <button onclick="closeModal()" class="modal-close">✕</button>
       </div>
-
-      <div class="p-6 space-y-5 overflow-y-auto max-h-[72vh]">
-
-        <!-- Mobile Preview -->
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-            <i class="fas fa-eye mr-1 text-indigo-400"></i>Live Preview (no image)
-          </p>
+      <div class="modal-body">
+  
+        <!-- Live Preview -->
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-eye" style="margin-right:4px;color:var(--accent2);"></i>Live Preview</div>
           <div class="mobile-preview" id="livePreview">
             <span class="preview-tag" id="prevTag">TAG</span>
             <div class="preview-title" id="prevTitle">Slide Title</div>
             <div class="preview-desc" id="prevDesc">Your description will appear here…</div>
           </div>
         </div>
-
+  
         <!-- Image Upload -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            <i class="fas fa-image mr-1 text-indigo-500"></i>Slide Image
-            <span class="text-gray-400 font-normal ml-1">(optional — card placeholder shown if none)</span>
-          </label>
-          <div id="dropZone"
-               class="drop-zone border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer relative"
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-image" style="margin-right:4px;color:var(--accent2);"></i>Slide Image <span style="color:var(--text3);font-weight:400;">(optional)</span></div>
+          <div id="dropZone" class="drop-zone"
                onclick="document.getElementById('imgInput').click()"
                ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
             <div id="dropPlaceholder">
-              <i class="fas fa-cloud-upload-alt text-3xl text-gray-300 mb-2 block"></i>
-              <p class="text-sm text-gray-400">Click to upload or drag &amp; drop</p>
-              <p class="text-xs text-gray-300 mt-1">PNG, JPG, WebP — recommended 900×500 px</p>
+              <i class="fas fa-cloud-upload-alt" style="font-size:24px;color:var(--text3);display:block;margin-bottom:8px;"></i>
+              <div style="font-size:12px;color:var(--text3);">Click to upload or drag &amp; drop</div>
+              <div style="font-size:10px;color:var(--text3);margin-top:4px;">PNG, JPG, WebP — recommended 900×500 px</div>
             </div>
-            <img id="imgPreview" class="img-preview w-full max-h-48 hidden" alt="preview"/>
+            <img id="imgPreview" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--radius-sm);display:none;" alt="preview"/>
             <button id="removeImgBtn" onclick="removeImage(event)"
-                    class="hidden absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full text-xs hover:bg-red-600 transition z-10">
+              style="display:none;position:absolute;top:8px;right:8px;width:24px;height:24px;background:var(--rose);color:#fff;border-radius:50%;font-size:10px;border:none;cursor:pointer;z-index:10;">
               <i class="fas fa-times"></i>
             </button>
           </div>
-          <input type="file" id="imgInput" accept="image/*" class="hidden" onchange="onFileSelect(event)"/>
+          <input type="file" id="imgInput" accept="image/*" style="display:none;" onchange="onFileSelect(event)"/>
         </div>
-
-        <!-- OR image URL -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">
-            <i class="fas fa-link mr-1 text-indigo-500"></i>Or paste an image URL
-          </label>
-          <input id="imgUrl" type="url" placeholder="https://example.com/slide.jpg"
-                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                 oninput="onUrlInput()"/>
+  
+        <!-- Image URL -->
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-link" style="margin-right:4px;color:var(--accent2);"></i>Or paste an image URL</div>
+          <input id="imgUrl" type="url" placeholder="https://example.com/slide.jpg" class="form-input" oninput="onUrlInput()"/>
         </div>
-
+  
         <!-- Tag -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">
-            <i class="fas fa-tag mr-1 text-indigo-500"></i>Tag <span class="text-red-400">*</span>
-          </label>
-          <input id="slideTag" type="text" placeholder="e.g. INTRODUCTION TO DSA"
-                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 uppercase"
-                 oninput="updatePreview()"/>
-          <p class="text-xs text-gray-400 mt-0.5">Displayed in caps above the title on the slide</p>
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-tag" style="margin-right:4px;color:var(--accent2);"></i>Tag <span style="color:var(--rose);">*</span></div>
+          <input id="slideTag" type="text" placeholder="e.g. INTRODUCTION TO DSA" class="form-input" style="text-transform:uppercase;" oninput="updatePreview()"/>
+          <div class="form-hint">Displayed in caps above the title on the slide</div>
         </div>
-
+  
         <!-- Title -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">
-            <i class="fas fa-heading mr-1 text-indigo-500"></i>Title <span class="text-red-400">*</span>
-          </label>
-          <input id="slideTitle" type="text" placeholder="e.g. Data Structures & Algorithms"
-                 class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                 oninput="updatePreview()"/>
-          <p class="text-xs text-gray-400 mt-0.5">
-            Use <code class="bg-gray-100 px-1 rounded text-indigo-600">&lt;span class="accent"&gt;word&lt;/span&gt;</code> to highlight a word in purple
-          </p>
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-heading" style="margin-right:4px;color:var(--accent2);"></i>Title <span style="color:var(--rose);">*</span></div>
+          <input id="slideTitle" type="text" placeholder="e.g. Data Structures & Algorithms" class="form-input" oninput="updatePreview()"/>
+          <div class="form-hint">Use <code style="font-family:var(--mono);font-size:10px;background:var(--surface3);padding:1px 5px;border-radius:4px;color:var(--accent2);">&lt;span class="accent"&gt;word&lt;/span&gt;</code> to highlight a word</div>
         </div>
-
+  
         <!-- Description -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">
-            <i class="fas fa-align-left mr-1 text-indigo-500"></i>Description <span class="text-red-400">*</span>
-          </label>
-          <textarea id="slideDesc" placeholder="A concise overview shown when the user taps the slide…"
-                    class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                    oninput="updatePreview()"></textarea>
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-align-left" style="margin-right:4px;color:var(--accent2);"></i>Description <span style="color:var(--rose);">*</span></div>
+          <textarea id="slideDesc" placeholder="A concise overview shown when the user taps the slide…" class="form-textarea" oninput="updatePreview()"></textarea>
         </div>
-
+  
         <!-- Lesson Bullets -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-2">
-            <i class="fas fa-list-ul mr-1 text-indigo-500"></i>Lesson Bullets
-          </label>
-          <div id="lessonList" class="space-y-2 mb-2"></div>
-          <div class="flex gap-2">
-            <input id="lessonInput" type="text" placeholder="Type a bullet point and press Enter"
-                   class="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-list-ul" style="margin-right:4px;color:var(--accent2);"></i>Lesson Bullets</div>
+          <div id="lessonList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px;"></div>
+          <div style="display:flex;gap:8px;">
+            <input id="lessonInput" type="text" placeholder="Type a bullet point and press Enter" class="form-input"
                    onkeydown="if(event.key==='Enter'){event.preventDefault();addLesson();}"/>
-            <button onclick="addLesson()" class="px-4 py-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-sm font-medium transition">
-              Add
-            </button>
+            <button onclick="addLesson()" class="btn btn-ghost">Add</button>
           </div>
-          <p class="text-xs text-gray-400 mt-1">Shown as bullet points when a student taps the slide</p>
+          <div class="form-hint">Shown as bullet points when a student taps the slide</div>
         </div>
-
+  
         <!-- Display Order -->
-        <div>
-          <label class="block text-sm font-semibold text-gray-700 mb-1">
-            <i class="fas fa-sort-numeric-up mr-1 text-indigo-500"></i>Display Order
-          </label>
-          <input id="slideOrder" type="number" min="1" value="1"
-                 class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
-          <p class="text-xs text-gray-400 mt-0.5">Lower numbers appear first in the carousel</p>
+        <div class="form-group">
+          <div class="form-label"><i class="fas fa-sort-numeric-up" style="margin-right:4px;color:var(--accent2);"></i>Display Order</div>
+          <input id="slideOrder" type="number" min="1" value="1" class="form-input" style="width:100px;"/>
+          <div class="form-hint">Lower numbers appear first in the carousel</div>
         </div>
-
+  
       </div>
-
-      <!-- Footer -->
-      <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-        <button onclick="closeModal()" class="px-4 py-2 text-gray-600 hover:bg-gray-200 rounded-lg text-sm font-medium transition">Cancel</button>
-        <div class="flex space-x-2">
-          <button id="deleteSlideBtn" onclick="openDeleteConfirm()" class="hidden px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium transition">
-            <i class="fas fa-trash mr-1"></i>Delete
-          </button>
-          <button onclick="saveSlide()" id="saveBtn"
-                  class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition flex items-center space-x-2">
+      <div class="modal-footer">
+        <button id="deleteSlideBtn" onclick="openDeleteConfirm()" class="btn btn-danger" style="display:none;">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+        <div style="display:flex;gap:8px;margin-left:auto;">
+          <button onclick="closeModal()" class="btn btn-ghost">Cancel</button>
+          <button onclick="saveSlide()" id="saveBtn" class="btn btn-primary">
             <i class="fas fa-save"></i><span id="saveLabel">Create Slide</span>
           </button>
         </div>
       </div>
     </div>
   </div>
-</div>
 
 <!-- ═══════════════════ DELETE CONFIRM ═══════════════════ -->
-<div id="deleteModal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/50 modal-backdrop"></div>
-  <div class="relative flex items-center justify-center min-h-screen p-6">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm text-center relative z-10">
-      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <i class="fas fa-trash text-red-500 text-xl"></i>
+<div id="deleteModal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="delete-modal-header">
+        <div class="delete-icon-wrap"><i class="fas fa-trash" style="color:#fff;font-size:20px;"></i></div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);">Delete Slide?</div>
+        <div style="font-size:11px;color:var(--rose);margin-top:4px;">Removes from the mobile carousel immediately</div>
       </div>
-      <h3 class="font-bold text-gray-800 text-lg mb-2">Delete Slide?</h3>
-      <p class="text-gray-500 text-sm mb-6">This removes the slide from the mobile carousel immediately and cannot be undone.</p>
-      <div class="flex space-x-3">
-        <button onclick="closeDeleteModal()" class="flex-1 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Cancel</button>
-        <button onclick="confirmDelete()"    class="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-semibold transition">Delete</button>
+      <div style="padding:24px;">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:20px;text-align:center;">This cannot be undone.</p>
+        <div style="display:flex;gap:8px;">
+          <button onclick="closeDeleteModal()" class="btn btn-ghost" style="flex:1;justify-content:center;">Cancel</button>
+          <button onclick="confirmDelete()" style="flex:1;padding:9px;background:linear-gradient(135deg,var(--rose),#e11d48);color:#fff;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;border:none;justify-content:center;display:flex;align-items:center;">Delete</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
 <!-- ═══════════════════ TOAST ═══════════════════ -->
-<div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
-  <div class="toast bg-white border border-gray-200 shadow-xl rounded-xl px-5 py-3 flex items-center space-x-3">
-    <i id="toastIcon" class="fas fa-check-circle text-green-500 text-lg"></i>
-    <span id="toastMsg" class="text-sm font-medium text-gray-700"></span>
-  </div>
-</div>
-
+<div class="toast-container" id="toastContainer"></div>
 <script>
 const API_URL = window.location.hostname === 'localhost'
   ? 'http://localhost:3000/api'
@@ -363,12 +434,11 @@ async function loadSlides() {
 }
 
 function setApiStatus(s) {
-  const el  = document.getElementById('apiStatus');
-  const dot = el.querySelector('span:first-child');
-  const txt = el.querySelector('span:last-child');
-  if (s === 'ok')     { dot.className = 'w-2 h-2 rounded-full bg-green-400 inline-block'; txt.textContent = 'Connected'; }
-  else if (s==='error'){dot.className = 'w-2 h-2 rounded-full bg-red-400 inline-block'; txt.textContent = 'Offline'; }
-  else                 { dot.className = 'w-2 h-2 rounded-full bg-yellow-400 inline-block animate-pulse'; txt.textContent = 'Loading…'; }
+  const dot = document.getElementById('apiDot');
+  const txt = document.getElementById('apiStatusText');
+  if (s === 'ok')      { dot.style.background='var(--green)';  txt.textContent='Connected'; }
+  else if (s==='error'){ dot.style.background='var(--rose)';   txt.textContent='Offline'; }
+  else                 { dot.style.background='var(--amber)';  txt.textContent='Loading…'; }
 }
 
 // ── Grid ──────────────────────────────────────────────────────────
@@ -382,41 +452,36 @@ function renderGrid() {
 
   const sorted = [...slides].sort((a, b) => (a.order||99) - (b.order||99));
   grid.innerHTML = sorted.map(slide => {
-    const hasImg    = !!(slide.img && slide.img.length > 10);
-    const lessons   = (slide.lessons || []).length;
-    const tag       = (slide.tag || '').toUpperCase();
+    const hasImg   = !!(slide.img && slide.img.length > 10);
+    const lessons  = (slide.lessons || []).length;
+    const tag      = (slide.tag || '').toUpperCase();
     const titleClean = (slide.title || '').replace(/<[^>]*>/g, '');
-    const desc      = slide.desc || slide.description || '';
+    const desc     = slide.desc || slide.description || '';
 
     return `
-    <div class="slide-card bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 cursor-pointer" onclick="openEditModal('${slide._id}')">
-      <div class="relative overflow-hidden" style="height:180px;">
+    <div class="slide-card" onclick="openEditModal('${slide._id}')">
+      <div class="slide-thumb">
         ${hasImg
-          ? `<img src="${slide.img}" alt="${esc(titleClean)}" class="w-full h-full object-cover"/>`
-          : `<div class="w-full h-full flex flex-col items-center justify-center gap-2 p-4"
-                  style="background:linear-gradient(135deg,#1e293b,#0f172a)">
-               <span class="text-xs font-bold tracking-widest text-indigo-400 uppercase">${esc(tag)}</span>
-               <span class="text-white font-bold text-sm text-center leading-snug">${esc(titleClean)}</span>
-               <span class="text-gray-400 text-xs text-center leading-relaxed line-clamp-2">${esc(desc.substring(0,80))}${desc.length>80?'…':''}</span>
+          ? `<img src="${slide.img}" alt="${esc(titleClean)}"/>`
+          : `<div class="slide-thumb-placeholder">
+               <span style="font-size:9px;font-weight:700;letter-spacing:2px;color:#818cf8;text-transform:uppercase;">${esc(tag)}</span>
+               <span style="font-size:12px;font-weight:700;color:#fff;text-align:center;line-height:1.4;">${esc(titleClean)}</span>
+               <span style="font-size:10px;color:#64748b;text-align:center;line-height:1.5;">${esc(desc.substring(0,60))}${desc.length>60?'…':''}</span>
              </div>`
         }
-        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        <div class="absolute top-3 left-3">
-          <span class="bg-indigo-600 text-white text-xs font-bold px-2.5 py-1 rounded-full">#${slide.order || '–'}</span>
+        <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.3),transparent);"></div>
+        <div style="position:absolute;top:10px;left:10px;">
+          <div class="order-badge">#${slide.order||'–'}</div>
         </div>
-        ${hasImg ? '<div class="absolute top-3 right-3"><span class="bg-green-500/90 text-white text-xs px-2 py-0.5 rounded-full"><i class="fas fa-image mr-1"></i>img</span></div>' : ''}
+        ${hasImg ? `<div style="position:absolute;top:10px;right:10px;"><span style="font-size:10px;font-weight:600;padding:3px 8px;background:rgba(52,211,153,0.85);color:#fff;border-radius:100px;"><i class="fas fa-image" style="margin-right:3px;"></i>img</span></div>` : ''}
       </div>
-      <div class="p-5">
-        <p class="text-xs font-bold text-indigo-500 tracking-widest uppercase mb-1">${esc(tag) || '—'}</p>
-        <h3 class="font-bold text-gray-800 text-base leading-tight mb-2 line-clamp-2">${esc(titleClean) || 'Untitled'}</h3>
-        <p class="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-4">${esc(desc) || '—'}</p>
-        <div class="flex items-center justify-between">
-          <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">
-            <i class="fas fa-list-ul mr-1 text-indigo-400"></i>${lessons} bullet${lessons!==1?'s':''}
-          </span>
-          <button class="text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg text-xs font-semibold transition">
-            <i class="fas fa-edit mr-1"></i>Edit
-          </button>
+      <div class="slide-body">
+        <div class="slide-tag">${esc(tag) || '—'}</div>
+        <div class="slide-title">${esc(titleClean) || 'Untitled'}</div>
+        <div class="slide-desc">${esc(desc) || '—'}</div>
+        <div class="slide-footer">
+          <span class="slide-badge"><i class="fas fa-list-ul" style="margin-right:4px;"></i>${lessons} bullet${lessons!==1?'s':''}</span>
+          <span style="font-size:11px;color:var(--accent2);font-weight:600;"><i class="fas fa-edit" style="margin-right:4px;"></i>Edit</span>
         </div>
       </div>
     </div>`;
@@ -523,10 +588,10 @@ function addLesson() {
 function removeLesson(i) { currentLessons.splice(i,1); renderLessonList(); }
 function renderLessonList() {
   document.getElementById('lessonList').innerHTML = currentLessons.map((l,i)=>`
-    <div class="lesson-tag flex items-start space-x-2 bg-indigo-50 border border-indigo-100 rounded-lg px-3 py-2">
-      <p class="flex-1 text-xs text-gray-700 leading-relaxed">${esc(l)}</p>
-      <button onclick="removeLesson(${i})" class="text-gray-300 hover:text-red-500 transition flex-shrink-0 mt-0.5">
-        <i class="fas fa-times text-xs"></i>
+    <div class="lesson-tag">
+      <span style="flex:1;font-size:12px;">${esc(l)}</span>
+      <button onclick="removeLesson(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;flex-shrink:0;" onmouseover="this.style.color='var(--rose)'" onmouseout="this.style.color='var(--text3)'">
+        <i class="fas fa-times"></i>
       </button>
     </div>`).join('');
 }
@@ -578,18 +643,16 @@ async function confirmDelete() {
 
 // ── Toast ─────────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg, type='success') {
-  clearTimeout(toastTimer);
-  const toast = document.getElementById('toast');
-  const icon  = document.getElementById('toastIcon');
-  document.getElementById('toastMsg').textContent = msg;
-  icon.className = type === 'success'
-    ? 'fas fa-check-circle text-green-500 text-lg'
-    : 'fas fa-exclamation-circle text-red-500 text-lg';
-  toast.classList.remove('hidden');
-  toastTimer = setTimeout(() => toast.classList.add('hidden'), 3500);
+function showToast(msg, type = 'success') {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const iconMap = { success:'fa-check-circle', error:'fa-exclamation-circle', info:'fa-info-circle' };
+  const colorMap = { success:'var(--green)', error:'var(--rose)', info:'var(--accent2)' };
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fas ${iconMap[type]||iconMap.info}" style="color:${colorMap[type]||colorMap.info};font-size:14px;"></i><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; t.style.transform='translateY(6px)'; t.style.transition='all .3s'; setTimeout(()=>t.remove(),300); }, 3000);
 }
-
 // ── Utility ───────────────────────────────────────────────────────
 function esc(s) {
   if (!s) return '';
@@ -598,9 +661,24 @@ function esc(s) {
 
 // ── Init ──────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
+  const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
   const user = checkAuth();
-  if (user) loadSlides();
+  if (user) {
+    document.getElementById('sidebarUserName').textContent = user.name || user.username;
+    document.getElementById('sidebarAvatar').textContent   = (user.name || user.username || 'A')[0].toUpperCase();
+    document.getElementById('sidebarUserRole').textContent = user.role === 'instructor' ? 'Instructor' : 'Administrator';
+    loadSlides();
+  }
 });
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
 </script>
 </body>
 </html>

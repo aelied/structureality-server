@@ -1,177 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AR Scenarios - StructuReality Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    * { font-family: "Poppins", sans-serif; }
-    .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
-    .scenario-card { transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s; }
-
-    .scenario-card.active-Arrays      { border-color: #6366f1; box-shadow: 0 0 0 2px #6366f1, 0 8px 24px rgba(99,102,241,0.15); }
-    .scenario-card.active-Stacks      { border-color: #8b5cf6; box-shadow: 0 0 0 2px #8b5cf6, 0 8px 24px rgba(139,92,246,0.15); }
-    .scenario-card.active-Queue       { border-color: #10b981; box-shadow: 0 0 0 2px #10b981, 0 8px 24px rgba(16,185,129,0.15); }
-    .scenario-card.active-LinkedList  { border-color: #f43f5e; box-shadow: 0 0 0 2px #f43f5e, 0 8px 24px rgba(244,63,94,0.15); }
-    .scenario-card.active-Graph       { border-color: #0ea5e9; box-shadow: 0 0 0 2px #0ea5e9, 0 8px 24px rgba(14,165,233,0.15); }
-    .scenario-card.active-Trees       { border-color: #16a34a; box-shadow: 0 0 0 2px #16a34a, 0 8px 24px rgba(22,163,74,0.15); }
-
-    .ds-tab {
-      position: relative; padding: 10px 24px; border-radius: 10px 10px 0 0;
-      font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s;
-      border: 2px solid transparent; border-bottom: none; background: #f3f4f6; color: #6b7280;
-    }
-    .ds-tab.active-tab { background: white; border-color: #e5e7eb; border-bottom-color: white; z-index: 2; }
-    .ds-tab.active-tab.tab-Arrays { color: #4f46e5; }
-    .ds-tab.active-tab.tab-Stacks { color: #7c3aed; }
-    .ds-tab.active-tab.tab-Queue  { color: #059669; }
-    .ds-tab.active-tab.tab-LinkedList { color: #e11d48; }
-    .ds-tab.active-tab.tab-Graph  { color: #0284c7; }
-    .ds-tab.active-tab.tab-Trees  { color: #15803d; }
-    .ds-tab:hover:not(.active-tab) { background: #e9eaff; color: #4f46e5; }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-    .tab-bar { display: flex; gap: 4px; border-bottom: 2px solid #e5e7eb; position: relative; z-index: 1; margin-bottom: 0; flex-wrap: wrap; }
-
-    .toggle-switch { position: relative; width: 44px; height: 24px; }
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; inset: 0; background: #e5e7eb; border-radius: 24px; cursor: pointer; transition: background 0.25s; }
-    .slider::before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: transform 0.25s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-    .toggle-Arrays     input:checked + .slider { background: #6366f1; }
-    .toggle-Stacks     input:checked + .slider { background: #8b5cf6; }
-    .toggle-Queue      input:checked + .slider { background: #10b981; }
-    .toggle-LinkedList input:checked + .slider { background: #f43f5e; }
-    .toggle-Graph      input:checked + .slider { background: #0ea5e9; }
-    .toggle-Trees      input:checked + .slider { background: #16a34a; }
-    .toggle-switch input:checked + .slider::before { transform: translateX(20px); }
-
-    .preview-btn-active-Arrays      { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 600; }
-    .preview-btn-active-Stacks      { background: linear-gradient(135deg, #8b5cf6, #a78bfa); color: white; font-weight: 600; }
-    .preview-btn-active-Queue       { background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 600; }
-    .preview-btn-active-LinkedList  { background: linear-gradient(135deg, #f43f5e, #fb7185); color: white; font-weight: 600; }
-    .preview-btn-active-Graph       { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: white; font-weight: 600; }
-    .preview-btn-active-Trees       { background: linear-gradient(135deg, #16a34a, #22c55e); color: white; font-weight: 600; }
-    .preview-btn-empty { border: 2px dashed #d1d5db; color: #9ca3af; }
-
-    .toast {
-      position: fixed; bottom: 24px; right: 24px;
-      padding: 14px 20px; border-radius: 12px; font-size: 13px; font-weight: 600;
-      display: flex; align-items: center; gap: 10px;
-      transform: translateY(80px); opacity: 0;
-      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-      z-index: 999; max-width: 340px; pointer-events: none;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; pointer-events: auto; }
-
-    .loading-overlay {
-      display: none; position: fixed; inset: 0;
-      background: rgba(0,0,0,0.3); z-index: 200;
-      align-items: center; justify-content: center; backdrop-filter: blur(3px);
-    }
-    .loading-overlay.show { display: flex; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #e5e7eb; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .diff-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; letter-spacing: 0.3px; }
-    .diff-beginner     { background: #dcfce7; color: #15803d; }
-    .diff-intermediate { background: #fef3c7; color: #b45309; }
-
-    .usage-section { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-    .usage-bar-track { height: 8px; background: #f3f4f6; border-radius: 99px; overflow: hidden; }
-    .usage-bar-fill { height: 100%; border-radius: 99px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
-
-    .rank-badge { width: 24px; height: 24px; border-radius: 50%; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
-    .rank-1 { background: #fef3c7; color: #92400e; }
-    .rank-2 { background: #f3f4f6; color: #374151; }
-    .rank-3 { background: #fce7f3; color: #9d174d; }
-
-    .user-search-result { cursor: pointer; transition: background 0.15s; }
-    .user-search-result:hover { background: #f5f3ff; }
-
-    .main-tab-btn { padding: 10px 20px; font-size: 13px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
-    .main-tab-btn.active { background: #4f46e5; color: white; }
-    .main-tab-btn:not(.active) { background: #f3f4f6; color: #6b7280; }
-    .main-tab-btn:not(.active):hover { background: #e9eaff; color: #4f46e5; }
-
-    /* no-data state for sparkline area */
-    .no-data-spark { font-size: 11px; color: #9ca3af; display: flex; align-items: center; justify-content: center; flex: 1; height: 28px; }
-  </style>
-</head>
-<body class="bg-gray-100">
-
-  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-cube text-indigo-700 text-xl"></i>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR Scenarios — StructuReality Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <style>
+      :root {
+        --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+        --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+        --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+        --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+        --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+        --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+        --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+        --shadow:0 4px 24px rgba(0,0,0,0.4);
+      }
+      [data-theme="light"] {
+        --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+        --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+        --text:#111827; --text2:#374151; --text3:#6b7280;
+      }
+      *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+      button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+      input,select,textarea{font-family:inherit;outline:none;}
+      ::-webkit-scrollbar{width:5px;height:5px;}
+      ::-webkit-scrollbar-track{background:var(--surface);}
+      ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+  
+      /* SIDEBAR */
+      .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+      .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+      .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+      .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+      .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+      .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+      .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+      .nav-link i{width:16px;text-align:center;font-size:13px;}
+      .nav-link:hover{background:var(--surface2);color:var(--text);}
+      .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+      .nav-link.active i{color:var(--accent);}
+      .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+      .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+      .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+      .user-name{font-size:12px;font-weight:600;color:var(--text);}
+      .user-role{font-size:10px;color:var(--text3);}
+  
+      /* TOPBAR */
+      .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+      .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+      .topbar-right{display:flex;align-items:center;gap:8px;}
+      .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;cursor:pointer;}
+      .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+      .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+      .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+      .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+  
+      /* MAIN */
+      .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+      .page-content{padding:28px;}
+  
+      /* API STATUS */
+      .api-status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
+  
+      /* MAIN TABS */
+      .main-tab-btn{padding:8px 16px;font-size:12px;font-weight:600;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.2s;border:1px solid var(--border2);background:transparent;color:var(--text3);}
+      .main-tab-btn.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border-color:rgba(108,99,255,0.25);}
+      .main-tab-btn:not(.active):hover{background:var(--surface2);color:var(--text);}
+  
+      /* DS TABS */
+      .tab-bar{display:flex;gap:4px;border-bottom:1px solid var(--border);flex-wrap:wrap;margin-bottom:0;}
+      .ds-tab{padding:9px 16px;border-radius:var(--radius-sm) var(--radius-sm) 0 0;font-weight:600;font-size:12px;cursor:pointer;transition:all 0.2s;border:1px solid transparent;border-bottom:none;background:var(--surface2);color:var(--text3);}
+      .ds-tab.active-tab{background:var(--surface);border-color:var(--border);border-bottom-color:var(--surface);z-index:2;color:var(--accent2);}
+      .ds-tab:hover:not(.active-tab){background:var(--surface3);color:var(--text);}
+      .tab-panel{display:none;}
+      .tab-panel.active{display:block;}
+  
+      /* PANEL BODY */
+      .panel{background:var(--surface);border:1px solid var(--border);border-radius:0 var(--radius) var(--radius) var(--radius);overflow:hidden;margin-bottom:24px;}
+      .panel-inner{padding:24px;}
+  
+      /* STAT CARDS */
+      .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+      .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;transition:all 0.25s;position:relative;overflow:hidden;}
+      .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.25s;}
+      .stat-card:hover::before{opacity:1;}
+      .stat-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+      .stat-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:10px;}
+      .stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+      .stat-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+      .stat-sub{font-size:10px;color:var(--text3);margin-top:2px;}
+  
+      /* SCENARIO CARDS */
+      .scenario-card{background:var(--surface2);border:2px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all 0.2s;}
+      .scenario-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+      .scenario-card.active-Arrays{border-color:#6c63ff;box-shadow:0 0 0 1px #6c63ff,0 8px 24px rgba(108,99,255,0.2);}
+      .scenario-card.active-Stacks{border-color:#8b5cf6;box-shadow:0 0 0 1px #8b5cf6,0 8px 24px rgba(139,92,246,0.2);}
+      .scenario-card.active-Queue{border-color:#34d399;box-shadow:0 0 0 1px #34d399,0 8px 24px rgba(52,211,153,0.2);}
+      .scenario-card.active-LinkedList{border-color:#fb7185;box-shadow:0 0 0 1px #fb7185,0 8px 24px rgba(251,113,133,0.2);}
+      .scenario-card.active-Graph{border-color:#38bdf8;box-shadow:0 0 0 1px #38bdf8,0 8px 24px rgba(56,189,248,0.2);}
+      .scenario-card.active-Trees{border-color:#34d399;box-shadow:0 0 0 1px #34d399,0 8px 24px rgba(52,211,153,0.2);}
+  
+      /* TOGGLE */
+      .toggle-switch{position:relative;width:44px;height:24px;}
+      .toggle-switch input{opacity:0;width:0;height:0;}
+      .slider{position:absolute;inset:0;background:var(--surface3);border-radius:24px;cursor:pointer;transition:background 0.25s;}
+      .slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform 0.25s;box-shadow:0 1px 3px rgba(0,0,0,0.3);}
+      .toggle-Arrays input:checked+.slider{background:#6c63ff;}
+      .toggle-Stacks input:checked+.slider{background:#8b5cf6;}
+      .toggle-Queue input:checked+.slider{background:#34d399;}
+      .toggle-LinkedList input:checked+.slider{background:#fb7185;}
+      .toggle-Graph input:checked+.slider{background:#38bdf8;}
+      .toggle-Trees input:checked+.slider{background:#34d399;}
+      .toggle-switch input:checked+.slider::before{transform:translateX(20px);}
+  
+      /* PREVIEW BTNS */
+      .preview-btn-empty{border:2px dashed var(--border2);color:var(--text3);padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;}
+      .preview-btn-active-Arrays{background:linear-gradient(135deg,#6c63ff,#8b5cf6);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+      .preview-btn-active-Stacks{background:linear-gradient(135deg,#8b5cf6,#a78bfa);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+      .preview-btn-active-Queue{background:linear-gradient(135deg,#34d399,#059669);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+      .preview-btn-active-LinkedList{background:linear-gradient(135deg,#fb7185,#f43f5e);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+      .preview-btn-active-Graph{background:linear-gradient(135deg,#38bdf8,#0ea5e9);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+      .preview-btn-active-Trees{background:linear-gradient(135deg,#34d399,#16a34a);color:#fff;padding:10px 20px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;}
+  
+      /* BADGES */
+      .diff-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:99px;}
+      .diff-beginner{background:rgba(52,211,153,0.15);color:var(--green);}
+      .diff-intermediate{background:rgba(251,191,36,0.15);color:var(--amber);}
+  
+      /* USAGE BARS */
+      .usage-bar-track{height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+      .usage-bar-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);}
+      .rank-badge{width:24px;height:24px;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;background:var(--surface3);color:var(--text2);}
+  
+      /* ACTIVITY LOG */
+      .log-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-top:24px;}
+      .log-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+      .log-title{font-size:13px;font-weight:700;color:var(--text);}
+  
+      /* TOAST */
+      .toast{position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);z-index:999;max-width:340px;pointer-events:none;background:var(--surface);border:1px solid var(--border2);color:var(--text);box-shadow:var(--shadow);}
+      .toast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+  
+      /* LOADING */
+      .loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+      .loading-overlay.show{display:flex;}
+      .spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+      @keyframes spin{to{transform:rotate(360deg);}}
+  
+      /* USER SEARCH */
+      .user-search-result{cursor:pointer;transition:background 0.15s;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);}
+      .user-search-result:hover{background:var(--surface2);}
+      .user-search-result:last-child{border-bottom:none;}
+  
+      /* INNER PANELS */
+      .inner-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+      .inner-panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+      .inner-panel-title{font-size:13px;font-weight:700;color:var(--text);}
+      .inner-panel-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+      .inner-panel-body{padding:20px;}
+  
+      /* GRID */
+      .two-col{display:grid;grid-template-columns:2fr 1fr;gap:16px;}
+      .scenarios-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;}
+  
+      /* PREVIEW BAR */
+      .preview-bar{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+  
+      /* INFO NOTE */
+      .info-note{border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;font-size:12px;}
+      .info-note-rose{background:rgba(251,113,133,0.08);border:1px solid rgba(251,113,133,0.2);color:var(--rose);}
+      .info-note-sky{background:rgba(56,189,248,0.08);border:1px solid rgba(56,189,248,0.2);color:var(--sky);}
+      .info-note-green{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);color:var(--green);}
+  
+      /* TOPIC PILLS */
+      .pill-btn{padding:6px 14px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;}
+      .pill-btn:hover{border-color:var(--accent);color:var(--accent2);}
+  
+      @media(max-width:1100px){.scenarios-grid{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}}
+      @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+      @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}}
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon"><i class="fas fa-cube"></i></div>
         <div>
-          <h1 class="text-xl font-bold">StructuReality</h1>
-          <p class="text-xs text-indigo-300">Admin Portal</p>
+          <div class="logo-text">StructuReality</div>
+          <div class="logo-sub">Admin Portal</div>
         </div>
       </div>
-    </div>
-    <nav class="mt-6 px-4">
-      <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-      <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-      <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-      <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
-      <a href="slides.html"
-      class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-      <i class="fas fa-images w-5"></i>
-      <span class="font-medium">App Settings</span>
-  </a>
-      <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-chart-line w-5"></i>
-        <span class="font-medium">User & Scenario Analytics</span>
-      </a>
-    </nav>
-  </aside>
-
-  <nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-      <div>
-        <h2 class="text-2xl font-bold text-gray-800">AR Scenarios</h2>
-        <p class="text-sm text-gray-500">Configure scenarios &amp; track usage</p>
-      </div>
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm">
-          <span class="text-gray-500">API:</span>
-          <span id="apiStatus" class="font-medium text-yellow-500">connecting…</span>
-        </div>
-        <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" onclick="window.location.href='profile.html'">
-          <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center">
-            <i class="fas fa-user text-indigo-700 text-sm"></i>
-          </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">Main</div>
+        <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+        <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+        <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+        <div class="nav-section">Analytics</div>
+        <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+        <a href="scenarios.html"         class="nav-link active"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+        <a href="slides.html"            class="nav-link"><i class="fas fa-images"></i> App Settings</a>
+        <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebarAvatar">A</div>
           <div>
-            <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin User</p>
-            <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+            <div class="user-name" id="sidebarUserName">Admin</div>
+            <div class="user-role" id="sidebarUserRole">Administrator</div>
           </div>
         </div>
-        <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg transition" title="Logout">
-          <i class="fas fa-sign-out-alt text-gray-600"></i>
-        </button>
       </div>
-    </div>
-  </nav>
+    </aside>
 
-  <main class="ml-64 mt-20 p-8">
+    <nav class="topbar">
+      <div class="topbar-left">
+        <h1>AR Scenarios</h1>
+        <p>Configure scenarios &amp; track usage</p>
+      </div>
+      <div class="topbar-right">
+        <div class="api-status-chip">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;" id="apiDot"></span>
+          <span id="apiStatus">connecting…</span>
+        </div>
+        <button onclick="toggleTheme()" class="btn btn-ghost" id="themeBtn">☀️</button>
+        <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+      </div>
+    </nav>
 
-    <div class="flex items-center gap-3 mb-6">
-      <button class="main-tab-btn active" id="btnConfig" onclick="switchMainTab('config')">
-        <i class="fas fa-sliders-h mr-2"></i>Scenario Config
-      </button>
-      <button class="main-tab-btn" id="btnUsage" onclick="switchMainTab('usage')">
-        <i class="fas fa-chart-bar mr-2"></i>Usage Analytics
-      </button>
-    </div>
+    <main class="main">
+      <div class="page-content">
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+          <button class="main-tab-btn active" id="btnConfig" onclick="switchMainTab('config')">
+            <i class="fas fa-sliders-h" style="margin-right:6px;"></i>Scenario Config
+          </button>
+          <button class="main-tab-btn" id="btnUsage" onclick="switchMainTab('usage')">
+            <i class="fas fa-chart-bar" style="margin-right:6px;"></i>Usage Analytics
+          </button>
+        </div>
 
     <!-- SECTION A: Config -->
     <div id="sectionConfig">
@@ -189,117 +260,118 @@
     <!-- SECTION B: Usage Analytics -->
     <div id="sectionUsage" class="hidden usage-section">
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Total Picks</p>
-          <p class="text-3xl font-bold text-gray-800" id="statTotalPicks">—</p>
-          <p class="text-xs text-gray-400 mt-1">across all users &amp; topics</p>
+      <div class="stats-row" style="margin-bottom:20px;">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.18);color:var(--accent2);"><i class="fas fa-hand-pointer"></i></div>
+          <div class="stat-label">Total Picks</div>
+          <div class="stat-value" id="statTotalPicks">—</div>
+          <div class="stat-sub">across all users &amp; topics</div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Most Popular</p>
-          <p class="text-lg font-bold text-indigo-600 leading-tight" id="statMostPopular">—</p>
-          <p class="text-xs text-gray-400 mt-1" id="statMostPopularSub">—</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(52,211,153,0.18);color:var(--green);"><i class="fas fa-trophy"></i></div>
+          <div class="stat-label">Most Popular</div>
+          <div class="stat-value" style="font-size:16px;letter-spacing:0;" id="statMostPopular">—</div>
+          <div class="stat-sub" id="statMostPopularSub">—</div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Users Tracked</p>
-          <p class="text-3xl font-bold text-gray-800" id="statTrackedUsers">—</p>
-          <p class="text-xs text-gray-400 mt-1">with scenario data</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(56,189,248,0.18);color:var(--sky);"><i class="fas fa-users"></i></div>
+          <div class="stat-label">Users Tracked</div>
+          <div class="stat-value" id="statTrackedUsers">—</div>
+          <div class="stat-sub">with scenario data</div>
         </div>
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
-          <p class="text-xs text-gray-500 uppercase font-semibold mb-1">Topics w/ Picks</p>
-          <p class="text-3xl font-bold text-gray-800" id="statTopicsActive">—</p>
-          <p class="text-xs text-gray-400 mt-1">out of 6 topics</p>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(251,191,36,0.18);color:var(--amber);"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-label">Topics w/ Picks</div>
+          <div class="stat-value" id="statTopicsActive">—</div>
+          <div class="stat-sub">out of 6 topics</div>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100">
-          <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+      <div class="two-col" style="margin-bottom:16px;">
+        <div class="inner-panel">
+          <div class="inner-panel-header">
             <div>
-              <h3 class="text-base font-semibold text-gray-800">Global Scenario Usage</h3>
-              <p class="text-xs text-gray-400">Pick distribution across all users, by topic</p>
+              <div class="inner-panel-title">Global Scenario Usage</div>
+              <div class="inner-panel-sub">Pick distribution across all users, by topic</div>
             </div>
-            <button onclick="loadUsageData()" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-semibold transition">
-              <i class="fas fa-sync-alt mr-1"></i>Refresh
+            <button onclick="loadUsageData()" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
+              <i class="fas fa-sync-alt"></i> Refresh
             </button>
           </div>
-          <div class="flex gap-2 flex-wrap px-5 pt-4" id="topicPills"></div>
-          <div class="p-5">
-            <div id="globalChartWrap" style="position:relative;width:100%;height:220px;">
+          <div class="inner-panel-body">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="topicPills"></div>
+            <div style="position:relative;width:100%;height:200px;">
               <canvas id="globalUsageChart"></canvas>
             </div>
-            <div class="mt-4 space-y-3" id="globalBreakdownList">
-              <p class="text-center text-gray-400 text-sm py-4">Select a topic above to see breakdown</p>
+            <div style="margin-top:16px;" id="globalBreakdownList">
+              <p style="text-align:center;color:var(--text3);font-size:12px;">Select a topic above to see breakdown</p>
             </div>
           </div>
         </div>
-
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 flex flex-col">
-          <div class="p-5 border-b border-gray-100">
-            <h3 class="text-base font-semibold text-gray-800">Individual User</h3>
-            <p class="text-xs text-gray-400">See which scenarios a user prefers</p>
+      
+        <div class="inner-panel" style="display:flex;flex-direction:column;">
+          <div class="inner-panel-header">
+            <div>
+              <div class="inner-panel-title">Individual User</div>
+              <div class="inner-panel-sub">See which scenarios a user prefers</div>
+            </div>
           </div>
-          <div class="p-5 flex-1 flex flex-col gap-4">
-            <div class="relative">
-              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+          <div class="inner-panel-body" style="flex:1;display:flex;flex-direction:column;gap:12px;">
+            <div style="position:relative;">
+              <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;"></i>
               <input type="text" id="userSearchInput" placeholder="Search username…"
-                class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                oninput="searchUsers(this.value)" />
+                style="width:100%;padding:8px 12px 8px 30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;"
+                oninput="searchUsers(this.value)"/>
             </div>
-            <div id="userSearchResults" class="rounded-lg border border-gray-100 overflow-hidden hidden max-h-36 overflow-y-auto"></div>
-            <div id="userUsagePanel" class="hidden flex-1">
-              <div class="flex items-center gap-3 mb-4 p-3 bg-indigo-50 rounded-xl">
-                <div class="w-9 h-9 bg-indigo-200 rounded-full flex items-center justify-center text-indigo-700 font-bold text-sm" id="userUsageAvatar">?</div>
-                <div>
-                  <p class="font-semibold text-gray-800 text-sm" id="userUsageName">—</p>
-                  <p class="text-xs text-gray-500" id="userUsageUsername">—</p>
+            <div id="userSearchResults" class="inner-panel hidden" style="max-height:140px;overflow-y:auto;"></div>
+            <div id="userUsagePanel" class="hidden" style="flex:1;">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:14px;border:1px solid var(--border);">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;" id="userUsageAvatar">?</div>
+                <div style="flex:1;">
+                  <div style="font-size:12px;font-weight:600;color:var(--text);" id="userUsageName">—</div>
+                  <div style="font-size:10px;color:var(--text3);" id="userUsageUsername">—</div>
                 </div>
-                <button onclick="clearUserSearch()" class="ml-auto text-gray-400 hover:text-gray-600 text-xs">
-                  <i class="fas fa-times"></i>
-                </button>
+                <button onclick="clearUserSearch()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:11px;"><i class="fas fa-times"></i></button>
               </div>
-              <div id="userUsageTopics" class="space-y-4 overflow-y-auto" style="max-height: 380px;"></div>
-              <p id="userNoData" class="hidden text-center text-gray-400 text-sm py-6">No scenario data for this user yet.</p>
+              <div id="userUsageTopics" style="max-height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;"></div>
+              <p id="userNoData" class="hidden" style="text-align:center;color:var(--text3);font-size:12px;padding:20px 0;">No scenario data for this user yet.</p>
             </div>
-            <div id="userUsagePlaceholder" class="flex-1 flex flex-col items-center justify-center gap-3 py-8 text-center">
-              <div class="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-user-circle text-gray-400 text-2xl"></i>
-              </div>
-              <p class="text-sm text-gray-500">Search for a user to<br>see their scenario history</p>
+            <div id="userUsagePlaceholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;text-align:center;">
+              <i class="fas fa-user-circle" style="font-size:28px;color:var(--text3);"></i>
+              <p style="font-size:12px;color:var(--text3);">Search for a user to<br>see their scenario history</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6">
-        <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+      <div class="inner-panel" style="margin-top:0;">
+        <div class="inner-panel-header">
           <div>
-            <h3 class="text-base font-semibold text-gray-800">Top Scenarios Leaderboard</h3>
-            <p class="text-xs text-gray-400">Most-played scenarios across all topics &amp; users</p>
+            <div class="inner-panel-title">Top Scenarios Leaderboard</div>
+            <div class="inner-panel-sub">Most-played scenarios across all topics &amp; users</div>
           </div>
-          <span class="text-xs px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg font-semibold border border-yellow-200">
-            <i class="fas fa-trophy mr-1"></i>All-time
+          <span style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:100px;background:rgba(251,191,36,0.15);color:var(--amber);">
+            <i class="fas fa-trophy" style="margin-right:4px;"></i>All-time
           </span>
         </div>
-        <div class="p-5" id="leaderboardList">
-          <p class="text-center text-gray-400 text-sm py-4">Loading leaderboard…</p>
+        <div class="inner-panel-body" id="leaderboardList">
+          <p style="text-align:center;color:var(--text3);font-size:12px;">Loading leaderboard…</p>
         </div>
       </div>
-    </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 mt-6" id="activityLog">
-      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="text-base font-semibold text-gray-800">Activity Log</h3>
-        <button onclick="clearLog()" class="text-xs text-gray-400 hover:text-gray-600 transition">Clear</button>
-      </div>
-      <div class="p-5 space-y-2.5 max-h-52 overflow-y-auto" id="logList">
-        <div class="flex items-center gap-3 text-sm text-gray-600">
-          <div class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></div>
-          <span>Admin panel loaded — fetching server config…</span>
-          <span class="ml-auto text-xs text-gray-400" id="initTime"></span>
+      <div class="log-panel" id="activityLog">
+        <div class="log-header">
+          <span class="log-title">Activity Log</span>
+          <button onclick="clearLog()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;">Clear</button>
+        </div>
+        <div style="padding:16px;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;" id="logList">
+          <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--accent2);display:inline-block;flex-shrink:0;"></span>
+            <span>Admin panel loaded — fetching server config…</span>
+            <span style="margin-left:auto;font-size:10px;color:var(--text3);" id="initTime"></span>
+          </div>
         </div>
       </div>
-    </div>
 
   </main>
 
@@ -479,25 +551,24 @@
     }
 
     function showToast(msg, type = 'info') {
-      const colorMap = { success: 'bg-green-50 border border-green-300 text-green-700', error: 'bg-red-50 border border-red-300 text-red-700', info: 'bg-indigo-50 border border-indigo-300 text-indigo-700' };
-      const iconMap  = { success: 'fa-check-circle', error: 'fa-times-circle', info: 'fa-info-circle' };
-      const t = document.getElementById('toast');
-      t.className = `toast ${colorMap[type]}`;
-      t.innerHTML = `<i class="fas ${iconMap[type]}"></i> ${msg}`;
-      t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3500);
-    }
+  const iconMap = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-info-circle' };
+  const colorMap = { success:'var(--green)', error:'var(--rose)', info:'var(--accent2)' };
+  const t = document.getElementById('toast');
+  t.innerHTML = `<i class="fas ${iconMap[type]||iconMap.info}" style="color:${colorMap[type]||colorMap.info};"></i> ${msg}`;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
     function showLoading(v) { document.getElementById('loadingOverlay').classList.toggle('show', v); }
     function addLog(msg, type = 'info') {
-      const list = document.getElementById('logList');
-      const now  = new Date().toLocaleTimeString();
-      const dot  = type === 'success' ? 'bg-green-400' : type === 'error' ? 'bg-red-400' : 'bg-indigo-400';
-      const el   = document.createElement('div');
-      el.className = 'flex items-center gap-3 text-sm text-gray-600';
-      el.innerHTML = `<div class="w-2 h-2 rounded-full ${dot} flex-shrink-0"></div><span>${msg}</span><span class="ml-auto text-xs text-gray-400">${now}</span>`;
-      list.prepend(el);
-      while (list.children.length > 30) list.removeChild(list.lastChild);
-    }
+  const list = document.getElementById('logList');
+  const now  = new Date().toLocaleTimeString();
+  const color = type==='success'?'var(--green)':type==='error'?'var(--rose)':'var(--accent2)';
+  const el = document.createElement('div');
+  el.style.cssText = 'display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);';
+  el.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0;"></span><span>${msg}</span><span style="margin-left:auto;font-size:10px;color:var(--text3);">${now}</span>`;
+  list.prepend(el);
+  while (list.children.length > 30) list.removeChild(list.lastChild);
+}
     function clearLog() { document.getElementById('logList').innerHTML = ''; }
 
     // ── SCENARIO CARD RENDERING ───────────────────────────────────────────────
@@ -658,14 +729,15 @@
           const ids = data.config.scenarios[ds] || [];
           state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
         } else { state[ds].activeIds = getDefaults(ds); }
-        document.getElementById('apiStatus').textContent = 'connected';
-        document.getElementById('apiStatus').className   = 'font-medium text-green-500';
+        document.getElementById('apiDot').style.background = 'var(--green)';
+document.getElementById('apiStatus').textContent = 'connected';
         addLog(`[${ds}] Loaded — active: [${state[ds].activeIds.join(', ')}]`, 'success');
         showToast(`${ds} config loaded.`, 'success');
       } catch (err) {
         if (!state[ds].activeIds.length) state[ds].activeIds = getDefaults(ds);
-        document.getElementById('apiStatus').textContent = 'offline';
-        document.getElementById('apiStatus').className   = 'font-medium text-red-500';
+        document.getElementById('apiDot').style.background = 'var(--rose)';
+document.getElementById('apiStatus').textContent = 'offline';
+
         addLog(`[${ds}] Server unreachable — using local state.`, 'error');
         showToast('Server unreachable. Working offline.', 'error');
       } finally { showLoading(false); renderGrid(ds); }
@@ -985,8 +1057,13 @@
 
       const user = checkAuth();
       if (user) {
-        document.getElementById('adminUserDisplay').textContent  = user.name || user.username;
-        document.getElementById('adminEmailDisplay').textContent = user.email || '';
+  const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+  document.getElementById('sidebarUserName').textContent = user.name || user.username;
+  document.getElementById('sidebarAvatar').textContent   = (user.name || user.username || 'A')[0].toUpperCase();
+  document.getElementById('sidebarUserRole').textContent = user.role === 'instructor' ? 'Instructor' : 'Administrator';
+  // remove the old adminUserDisplay / adminEmailDisplay lines
       }
       document.getElementById('initTime').textContent = new Date().toLocaleTimeString();
 
@@ -1016,6 +1093,12 @@
         ALL_DS.forEach(ds => renderGrid(ds));
       }
     });
+    function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
   </script>
 </body>
 </html>

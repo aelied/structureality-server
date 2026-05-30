@@ -1,332 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>User & Scenario Analytics - StructuReality Admin</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-  <style>
-    * { font-family: "Poppins", sans-serif; }
-    body { background: #f9fafb; }
-
-    /* ── METRIC CARDS ────────────────────────────────────────────── */
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-
-    .metric-card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 24px;
-      transition: all 0.3s;
-    }
-
-    .metric-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    }
-
-    .metric-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      margin-bottom: 16px;
-    }
-
-    .metric-label {
-      font-size: 12px;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .metric-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: #111827;
-    }
-
-    /* ── CARDS ────────────────────────────────────────────────── */
-    .card {
-      background: white;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-
-    .card-header h2 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #111827;
-      margin: 0 0 4px 0;
-    }
-
-    .card-header p {
-      font-size: 12px;
-      color: #6b7280;
-      margin: 0;
-    }
-
-    /* ── CHART ────────────────────────────────────────────────────– */
-    .chart-container {
-      position: relative;
-      height: 300px;
-      margin-bottom: 16px;
-    }
-
-    /* ── BUTTONS ────────────────────────────────────────────────── */
-    .btn {
-      padding: 12px 24px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .btn-primary {
-      background: #6366f1;
-      color: white;
-    }
-
-    .btn-primary:hover {
-      background: #4f46e5;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-    }
-
-    .btn-secondary {
-      background: #f9fafb;
-      color: #111827;
-      border: 1px solid #e5e7eb;
-    }
-
-    .btn-secondary:hover {
-      background: white;
-      border-color: #6366f1;
-    }
-
-    /* ── BADGES ────────────────────────────────────────────────– */
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .badge-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-
-    /* ── LIST ITEMS ────────────────────────────────────────────– */
-    .list-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px;
-      border-bottom: 1px solid #e5e7eb;
-      transition: background 0.2s;
-    }
-
-    .list-item:last-child { border-bottom: none; }
-    .list-item:hover { background: #f9fafb; }
-
-    /* ── PROGRESS BAR ────────────────────────────────────────────– */
-    .progress-bar-track {
-      height: 8px;
-      background: #f9fafb;
-      border-radius: 99px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    /* ── TAB NAVIGATION ────────────────────────────────────────────– */
-    .tab-container {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 32px;
-      border-bottom: 2px solid #e5e7eb;
-    }
-
-    .tab-btn {
-      padding: 12px 24px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      color: #6b7280;
-      border-bottom: 3px solid transparent;
-      transition: all 0.3s;
-      position: relative;
-      bottom: -2px;
-      font-size: 14px;
-    }
-
-    .tab-btn:hover { color: #6366f1; }
-    .tab-btn.active {
-      color: #6366f1;
-      border-bottom-color: #6366f1;
-    }
-
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.4s ease;
-    }
-
-    .tab-content.active { display: block; }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ── TOAST ────────────────────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 32px;
-      right: 32px;
-      padding: 16px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transform: translateY(120%);
-      opacity: 0;
-      transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-      z-index: 999;
-      max-width: 400px;
-      color: white;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .toast.success { background: #10b981; }
-    .toast.error { background: #ef4444; }
-    .toast.info { background: #6366f1; }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analytics — StructuReality Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+      :root {
+        --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+        --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+        --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+        --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+        --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+        --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+        --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+        --shadow:0 4px 24px rgba(0,0,0,0.4);
+      }
+      [data-theme="light"] {
+        --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+        --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+        --text:#111827; --text2:#374151; --text3:#6b7280;
+      }
+      *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+      button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+      input,select,textarea{font-family:inherit;outline:none;}
+      ::-webkit-scrollbar{width:5px;height:5px;}
+      ::-webkit-scrollbar-track{background:var(--surface);}
+      ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+  
+      /* SIDEBAR */
+      .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+      .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+      .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+      .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+      .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+      .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+      .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+      .nav-link i{width:16px;text-align:center;font-size:13px;}
+      .nav-link:hover{background:var(--surface2);color:var(--text);}
+      .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+      .nav-link.active i{color:var(--accent);}
+      .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+      .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+      .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+      .user-name{font-size:12px;font-weight:600;color:var(--text);}
+      .user-role{font-size:10px;color:var(--text3);}
+  
+      /* TOPBAR */
+      .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+      .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+      .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+      .topbar-right{display:flex;align-items:center;gap:8px;}
+      .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;cursor:pointer;}
+      .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+      .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+      .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+  
+      /* MAIN */
+      .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+      .page-content{padding:28px;}
+  
+      /* API STATUS */
+      .api-status-chip{display:flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:100px;font-size:11px;font-weight:600;color:var(--text2);}
+  
+      /* PAGE TABS */
+      .page-tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:24px;}
+      .tab-btn{padding:9px 18px;font-size:12px;font-weight:600;border-radius:var(--radius-sm) var(--radius-sm) 0 0;cursor:pointer;transition:all 0.2s;border:1px solid transparent;border-bottom:none;background:transparent;color:var(--text3);}
+      .tab-btn:hover{color:var(--text);background:var(--surface2);}
+      .tab-btn.active{background:var(--surface);border-color:var(--border);border-bottom-color:var(--surface);color:var(--accent2);}
+      .tab-content{display:none;animation:fadeIn 0.3s ease;}
+      .tab-content.active{display:block;}
+      @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+  
+      /* STAT CARDS */
+      .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+      .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;transition:all 0.25s;position:relative;overflow:hidden;}
+      .stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));opacity:0;transition:opacity 0.25s;}
+      .stat-card:hover::before{opacity:1;}
+      .stat-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+      .stat-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:16px;margin-bottom:12px;}
+      .stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+      .stat-value{font-size:28px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+  
+      /* PANELS */
+      .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:20px;}
+      .panel-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+      .panel-title{font-size:13px;font-weight:700;color:var(--text);}
+      .panel-sub{font-size:11px;color:var(--text3);margin-top:2px;}
+      .panel-body{padding:20px;}
+      .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+  
+      /* CHART */
+      .chart-wrap{position:relative;height:260px;}
+  
+      /* LIST ITEMS */
+      .list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text2);transition:background 0.15s;}
+      .list-item:last-child{border-bottom:none;}
+      .list-item:hover{background:var(--surface2);}
+      .list-item-title{font-size:12px;font-weight:600;color:var(--text);}
+      .list-item-sub{font-size:10px;color:var(--text3);}
+  
+      /* PROGRESS */
+      .progress-track{height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;margin-top:6px;}
+      .progress-fill{height:100%;border-radius:99px;transition:width 0.6s cubic-bezier(0.4,0,0.2,1);}
+  
+      /* USAGE BARS */
+      .usage-bar-track{height:6px;background:var(--surface3);border-radius:99px;overflow:hidden;}
+      .usage-bar-fill{height:100%;border-radius:99px;transition:width 0.8s cubic-bezier(0.4,0,0.2,1);}
+  
+      /* PILLS */
+      .pill-btn{padding:5px 12px;border-radius:100px;font-size:11px;font-weight:600;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;}
+      .pill-btn:hover{border-color:var(--accent);color:var(--accent2);}
+  
+      /* USER SEARCH */
+      .user-search-result{cursor:pointer;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:12px;color:var(--text2);border-bottom:1px solid var(--border);transition:background 0.15s;}
+      .user-search-result:hover{background:var(--surface2);}
+      .user-search-result:last-child{border-bottom:none;}
+  
+      /* LEADERBOARD */
+      .lb-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px;transition:background 0.15s;}
+      .lb-item:hover{background:var(--surface3);}
+      .lb-item:last-child{margin-bottom:0;}
+  
+      /* BADGE */
+      .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;}
+      .badge-amber{background:rgba(251,191,36,0.15);color:var(--amber);}
+  
+      /* TOAST */
+      .toast{position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;display:flex;align-items:center;gap:10px;transform:translateY(80px);opacity:0;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);z-index:999;pointer-events:none;background:var(--surface);border:1px solid var(--border2);color:var(--text);box-shadow:var(--shadow);}
+      .toast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+      .toast.success{border-color:rgba(52,211,153,0.4);}
+      .toast.error{border-color:rgba(251,113,133,0.4);}
+  
+      @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}.two-col{grid-template-columns:1fr;}}
+      @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}}
+    </style>
+  </head>
 <body>
 
   <!-- Sidebar -->
-  <aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <i class="fas fa-cube text-indigo-700 text-xl"></i>
-        </div>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><i class="fas fa-cube"></i></div>
+      <div>
+        <div class="logo-text">StructuReality</div>
+        <div class="logo-sub">Admin Portal</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+      <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+      <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+      <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+      <div class="nav-section">Analytics</div>
+      <a href="analytics.html"         class="nav-link"><i class="fas fa-chart-line"></i> Analytics</a>
+      <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+      <a href="slides.html"            class="nav-link"><i class="fas fa-images"></i> App Settings</a>
+      <a href="unified-analytics.html" class="nav-link active"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
         <div>
-          <h1 class="text-xl font-bold">StructuReality</h1>
-          <p class="text-xs text-indigo-300">Admin Portal</p>
+          <div class="user-name" id="sidebarUserName">Admin</div>
+          <div class="user-role" id="sidebarUserRole">Administrator</div>
         </div>
       </div>
     </div>
-
-    <nav class="mt-6 px-4">
-      <a href="index.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-home w-5"></i>
-        <span class="font-medium">Dashboard</span>
-      </a>
-
-      <a href="users.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-users w-5"></i>
-        <span class="font-medium">Users</span>
-      </a>
-      <a href="quizzes.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-question-circle w-5"></i>
-        <span class="font-medium">Quizzes</span>
-      </a>
-
-      <a href="analytics.html" id="analyticsLink"
-                class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-                <i class="fas fa-chart-line w-5"></i>
-                <span class="font-medium">Analytics</span>
-            </a>
-
-      <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-vr-cardboard w-5"></i>
-        <span class="font-medium">AR Scenarios</span>
-      </a>
-
-      <a href="slides.html"
-      class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-      <i class="fas fa-images w-5"></i>
-      <span class="font-medium">App Settings</span>
-  </a>
-
-      <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2">
-        <i class="fas fa-chart-line w-5"></i>
-        <span class="font-medium">User & Scenario Analytics</span>
-      </a>
-    </nav>
   </aside>
 
   <!-- NAVBAR -->
-  <nav class="fixed top-0 left-64 right-0 bg-white border-b border-gray-200 z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold text-gray-800">Analytics Dashboard</h1>
-        <p class="text-sm text-gray-500">User progress & scenario usage</p>
+  <nav class="topbar">
+    <div class="topbar-left">
+      <h1>Analytics Dashboard</h1>
+      <p>User progress &amp; scenario usage</p>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status-chip">
+        <span style="width:7px;height:7px;border-radius:50%;background:var(--amber);display:inline-block;" id="apiDot"></span>
+        <span id="apiStatus">Connecting…</span>
       </div>
-      <div class="flex items-center space-x-4">
-        <div class="flex items-center space-x-2 px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg text-sm">
-          <span class="text-gray-600">API:</span>
-          <span id="apiStatus" class="font-medium text-yellow-600">Connecting...</span>
-        </div>
-        <button class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition" onclick="refreshData()">
-          <i class="fas fa-sync-alt mr-2"></i>Refresh
-        </button>
-      </div>
+      <button onclick="refreshData()" class="btn btn-ghost"><i class="fas fa-sync-alt"></i> Refresh</button>
+      <button onclick="toggleTheme()" class="btn btn-ghost" id="themeBtn">☀️</button>
+      <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </nav>
-
   <!-- MAIN CONTENT -->
-  <main class="ml-64 mt-20 p-8">
+  <main class="main">
+    <div class="page-content">
 
     <!-- TAB NAVIGATION -->
-    <div class="tab-container">
-      <button class="tab-btn active" onclick="switchTab('users')">
-        <i class="fas fa-users mr-2"></i>User Analytics
+    <div class="page-tabs">
+      <button class="tab-btn active" onclick="switchTab('users', this)">
+        <i class="fas fa-users" style="margin-right:6px;"></i>User Analytics
       </button>
-      <button class="tab-btn" onclick="switchTab('scenarios')">
-        <i class="fas fa-vr-cardboard mr-2"></i>Scenario Analytics
+      <button class="tab-btn" onclick="switchTab('scenarios', this)">
+        <i class="fas fa-vr-cardboard" style="margin-right:6px;"></i>Scenario Analytics
       </button>
     </div>
 
@@ -334,103 +208,91 @@
     <div id="users-tab" class="tab-content active">
 
       <!-- Metrics Grid -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
-            <i class="fas fa-users-alt"></i>
-          </div>
-          <div class="metric-label">Total Users</div>
-          <div class="metric-value" id="metricTotalUsers">—</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.15);color:var(--accent2);"><i class="fas fa-users-alt"></i></div>
+          <div class="stat-label">Total Users</div>
+          <div class="stat-value" id="metricTotalUsers">—</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: #10b981;">
-            <i class="fas fa-fire"></i>
-          </div>
-          <div class="metric-label">Avg Streak</div>
-          <div class="metric-value" id="metricAvgStreak">—</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(52,211,153,0.15);color:var(--green);"><i class="fas fa-fire"></i></div>
+          <div class="stat-label">Avg Streak</div>
+          <div class="stat-value" id="metricAvgStreak">—</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
-            <i class="fas fa-book-open"></i>
-          </div>
-          <div class="metric-label">Completion Rate</div>
-          <div class="metric-value" id="metricCompletionRate">—%</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.15);color:var(--accent2);"><i class="fas fa-book-open"></i></div>
+          <div class="stat-label">Completion Rate</div>
+          <div class="stat-value" id="metricCompletionRate">—%</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">
-            <i class="fas fa-star"></i>
-          </div>
-          <div class="metric-label">Engagement Score</div>
-          <div class="metric-value" id="metricEngagement">—</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(251,113,133,0.15);color:var(--rose);"><i class="fas fa-star"></i></div>
+          <div class="stat-label">Engagement Score</div>
+          <div class="stat-value" id="metricEngagement">—</div>
         </div>
       </div>
 
       <!-- User Status & Progress Charts -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
-        <div class="card">
-          <div class="card-header">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header">
             <div>
-              <h2>User Status</h2>
-              <p>Activity distribution</p>
+              <div class="panel-title">User Status</div>
+              <div class="panel-sub">Activity distribution</div>
             </div>
           </div>
-          <div class="chart-container">
-            <canvas id="userStatusChart"></canvas>
+          <div class="panel-body">
+            <div class="chart-wrap"><canvas id="userStatusChart"></canvas></div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
+        <div class="panel">
+          <div class="panel-header">
             <div>
-              <h2>Progress Distribution</h2>
-              <p>Users by completion level</p>
+              <div class="panel-title">Progress Distribution</div>
+              <div class="panel-sub">Users by completion level</div>
             </div>
           </div>
-          <div class="chart-container">
-            <canvas id="progressChart"></canvas>
+          <div class="panel-body">
+            <div class="chart-wrap"><canvas id="progressChart"></canvas></div>
           </div>
         </div>
       </div>
 
       <!-- Activity Chart -->
-      <div class="card">
-        <div class="card-header">
+      <div class="panel">
+        <div class="panel-header">
           <div>
-            <h2>Weekly Activity</h2>
-            <p>Lessons completed over 7 days</p>
+            <div class="panel-title">Weekly Activity</div>
+            <div class="panel-sub">Lessons completed over 7 days</div>
           </div>
         </div>
-        <div class="chart-container" style="height: 250px;">
-          <canvas id="activityChart"></canvas>
+        <div class="panel-body">
+          <div class="chart-wrap" style="height:220px;"><canvas id="activityChart"></canvas></div>
         </div>
       </div>
 
       <!-- Topic Performance -->
-      <div class="card">
-        <div class="card-header">
+      <div class="panel">
+        <div class="panel-header">
           <div>
-            <h2>Topic Performance</h2>
-            <p>Completion & engagement by topic</p>
+            <div class="panel-title">Topic Performance</div>
+            <div class="panel-sub">Completion &amp; engagement by topic</div>
           </div>
         </div>
-        <div id="topicPerformance">
-          <p style="text-align: center; color: #6b7280;">Loading...</p>
+        <div id="topicPerformance" style="padding:0;">
+          <p style="text-align:center;color:var(--text3);font-size:12px;padding:20px;">Loading…</p>
         </div>
       </div>
 
       <!-- Streak Distribution -->
-      <div class="card">
-        <div class="card-header">
+      <div class="panel">
+        <div class="panel-header">
           <div>
-            <h2>Streak Distribution</h2>
-            <p>How many users maintain streaks</p>
+            <div class="panel-title">Streak Distribution</div>
+            <div class="panel-sub">How many users maintain streaks</div>
           </div>
         </div>
-        <div class="chart-container" style="height: 250px;">
-          <canvas id="streakChart"></canvas>
+        <div class="panel-body">
+          <div class="chart-wrap" style="height:220px;"><canvas id="streakChart"></canvas></div>
         </div>
       </div>
 
@@ -440,97 +302,83 @@
     <div id="scenarios-tab" class="tab-content">
 
       <!-- Scenario Metrics -->
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;">
-            <i class="fas fa-gamepad"></i>
-          </div>
-          <div class="metric-label">Total Picks</div>
-          <div class="metric-value" id="scenarioMetricTotalPicks">—</div>
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(108,99,255,0.15);color:var(--accent2);"><i class="fas fa-gamepad"></i></div>
+          <div class="stat-label">Total Picks</div>
+          <div class="stat-value" id="scenarioMetricTotalPicks">—</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(34, 197, 94, 0.1); color: #10b981;">
-            <i class="fas fa-crown"></i>
-          </div>
-          <div class="metric-label">Most Popular</div>
-          <div class="metric-value" style="font-size: 20px;" id="scenarioMetricMostPopular">—</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(52,211,153,0.15);color:var(--green);"><i class="fas fa-crown"></i></div>
+          <div class="stat-label">Most Popular</div>
+          <div class="stat-value" style="font-size:16px;letter-spacing:0;" id="scenarioMetricMostPopular">—</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;">
-            <i class="fas fa-users-alt"></i>
-          </div>
-          <div class="metric-label">Users Tracked</div>
-          <div class="metric-value" id="scenarioMetricTrackedUsers">—</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(251,113,133,0.15);color:var(--rose);"><i class="fas fa-users-alt"></i></div>
+          <div class="stat-label">Users Tracked</div>
+          <div class="stat-value" id="scenarioMetricTrackedUsers">—</div>
         </div>
-
-        <div class="metric-card">
-          <div class="metric-icon" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
-            <i class="fas fa-layer-group"></i>
-          </div>
-          <div class="metric-label">Topics Active</div>
-          <div class="metric-value" id="scenarioMetricTopicsActive">—</div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:rgba(56,189,248,0.15);color:var(--sky);"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-label">Topics Active</div>
+          <div class="stat-value" id="scenarioMetricTopicsActive">—</div>
         </div>
       </div>
 
       <!-- Global & User Lookup -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-        <div class="card">
-          <div class="card-header">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-header">
             <div>
-              <h2>Global Scenario Usage</h2>
-              <p>Pick distribution by topic</p>
+              <div class="panel-title">Global Scenario Usage</div>
+              <div class="panel-sub">Pick distribution by topic</div>
             </div>
-            <button class="btn btn-secondary" onclick="loadUsageData()">
+            <button onclick="loadUsageData()" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
               <i class="fas fa-sync-alt"></i>
             </button>
           </div>
-
-          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;" id="topicPills"></div>
-
-          <div class="chart-container" style="height: 250px;">
-            <canvas id="globalUsageChart"></canvas>
-          </div>
-
-          <div style="margin-top: 16px;" id="globalBreakdownList">
-            <p style="text-align: center; color: #6b7280;">Select a topic above</p>
+          <div class="panel-body">
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;" id="topicPills"></div>
+            <div class="chart-wrap" style="height:220px;"><canvas id="globalUsageChart"></canvas></div>
+            <div style="margin-top:16px;" id="globalBreakdownList">
+              <p style="text-align:center;color:var(--text3);font-size:12px;">Select a topic above</p>
+            </div>
           </div>
         </div>
-
-        <div class="card">
-          <div class="card-header">
+      
+        <div class="panel">
+          <div class="panel-header">
             <div>
-              <h2>Individual User</h2>
-              <p>Scenario preferences</p>
+              <div class="panel-title">Individual User</div>
+              <div class="panel-sub">Scenario preferences</div>
             </div>
           </div>
-
-          <div style="margin-bottom: 24px; position: relative;">
-            <input type="text" id="userSearchInput" placeholder="Search username..."
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"
-              oninput="searchUsers(this.value)" />
-            <div id="userSearchResults" style="position: absolute; background: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 8px; width: 100%; max-height: 200px; overflow-y: auto; display: none; z-index: 10;"></div>
-          </div>
-
-          <div id="userUsagePanel" style="display: none;">
-            <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 24px;">
-              <div style="width: 40px; height: 40px; background: #6366f1; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700;" id="userUsageAvatar">?</div>
-              <div style="flex: 1;">
-                <div style="font-weight: 600; color: #111827;" id="userUsageName">—</div>
-                <div style="font-size: 14px; color: #6b7280;" id="userUsageUsername">—</div>
+          <div class="panel-body" style="display:flex;flex-direction:column;gap:12px;">
+            <div style="position:relative;">
+              <i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;"></i>
+              <input type="text" id="userSearchInput" placeholder="Search username…"
+                style="width:100%;padding:8px 12px 8px 30px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;"
+                oninput="searchUsers(this.value)"/>
+              <div id="userSearchResults" style="position:absolute;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-sm);margin-top:4px;width:100%;max-height:180px;overflow-y:auto;display:none;z-index:10;box-shadow:var(--shadow);"></div>
+            </div>
+      
+            <div id="userUsagePanel" style="display:none;">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:12px;">
+                <div style="width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;" id="userUsageAvatar">?</div>
+                <div style="flex:1;">
+                  <div style="font-size:12px;font-weight:600;color:var(--text);" id="userUsageName">—</div>
+                  <div style="font-size:10px;color:var(--text3);" id="userUsageUsername">—</div>
+                </div>
+                <button onclick="clearUserSearch()" class="btn btn-ghost" style="padding:4px 8px;font-size:11px;"><i class="fas fa-times"></i></button>
               </div>
-              <button class="btn btn-secondary" style="padding: 8px; width: auto;" onclick="clearUserSearch()">
-                <i class="fas fa-times"></i>
-              </button>
+              <div id="userUsageTopics" style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;"></div>
+              <p id="userNoData" style="display:none;text-align:center;color:var(--text3);font-size:12px;padding:24px 0;">No scenario data for this user yet.</p>
             </div>
-            <div id="userUsageTopics" style="max-height: 400px; overflow-y: auto;"></div>
-            <p id="userNoData" style="display: none; text-align: center; color: #6b7280; padding: 32px 0;">No scenario data for this user yet.</p>
-          </div>
-
-          <div id="userUsagePlaceholder" style="text-align: center; padding: 32px 0;">
-            <div style="font-size: 32px; margin-bottom: 16px;"><i class="fas fa-search" style="color: #6b7280;"></i></div>
-            <p style="color: #6b7280;">Search for a user to<br>see their scenario history</p>
+      
+            <div id="userUsagePlaceholder" style="text-align:center;padding:40px 0;">
+              <i class="fas fa-search" style="font-size:28px;color:var(--text3);display:block;margin-bottom:10px;"></i>
+              <p style="font-size:12px;color:var(--text3);">Search for a user to<br>see their scenario history</p>
+            </div>
           </div>
         </div>
       </div>
@@ -574,23 +422,21 @@
     let selectedUsageTopic = null;
 
     function showToast(msg, type = 'info') {
-      const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.className = `toast ${type} show`;
-      setTimeout(() => toast.classList.remove('show'), 3500);
-    }
+  const t = document.getElementById('toast');
+  const iconMap = { success:'fa-check-circle', error:'fa-times-circle', info:'fa-info-circle' };
+  const colorMap = { success:'var(--green)', error:'var(--rose)', info:'var(--accent2)' };
+  t.className = `toast ${type} show`;
+  t.innerHTML = `<i class="fas ${iconMap[type]||iconMap.info}" style="color:${colorMap[type]||colorMap.info};"></i> ${msg}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-      
-      document.getElementById(tab + '-tab').classList.add('active');
-      event.target.closest('.tab-btn').classList.add('active');
-      
-      if (tab === 'scenarios' && !globalUsageData) {
-        loadUsageData();
-      }
-    }
+    function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(tab + '-tab').classList.add('active');
+  btn.classList.add('active');
+  if (tab === 'scenarios' && !globalUsageData) loadUsageData();
+}
 
     async function loadUserAnalytics() {
       try {
@@ -600,13 +446,13 @@
         if (data.success) {
           userAnalytics = data.data;
           renderUserAnalytics();
-          document.getElementById('apiStatus').textContent = 'Connected';
-          document.getElementById('apiStatus').style.color = '#10b981';
+          document.getElementById('apiDot').style.background = 'var(--green)';
+document.getElementById('apiStatus').textContent = 'Connected';
         }
       } catch (err) {
         showToast('Failed to load user analytics', 'error');
-        document.getElementById('apiStatus').textContent = 'Offline';
-        document.getElementById('apiStatus').style.color = '#ef4444';
+        document.getElementById('apiDot').style.background = 'var(--rose)';
+document.getElementById('apiStatus').textContent = 'Offline';
       }
     }
 
@@ -628,6 +474,15 @@
       renderStreakChart(streak);
       renderTopicPerformance();
     }
+
+    function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
+
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
 
     function renderUserStatusChart(status) {
       const ctx = document.getElementById('userStatusChart').getContext('2d');
@@ -730,28 +585,24 @@
     }
 
     function renderTopicPerformance() {
-      const perf = userAnalytics.lessonPerformance || [];
-      const container = document.getElementById('topicPerformance');
-      
-      if (!perf.length) {
-        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No data available</p>';
-        return;
-      }
-
-      container.innerHTML = perf.map(topic => `
-        <div class="list-item">
-          <div>
-            <div style="font-weight: 600; color: #111827;">${topic.name}</div>
-            <div style="font-size: 12px; color: #6b7280;">${topic.topic}</div>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-weight: 700; color: #6366f1;">${topic.completions}</div>
-            <div style="font-size: 12px; color: #6b7280;">completions</div>
-          </div>
-        </div>
-      `).join('');
-    }
-
+  const perf = userAnalytics.lessonPerformance || [];
+  const container = document.getElementById('topicPerformance');
+  if (!perf.length) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text3);font-size:12px;padding:20px;">No data available</p>';
+    return;
+  }
+  container.innerHTML = perf.map(topic => `
+    <div class="list-item">
+      <div>
+        <div class="list-item-title">${topic.name}</div>
+        <div class="list-item-sub">${topic.topic}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px;font-weight:700;color:var(--accent2);">${topic.completions}</div>
+        <div class="list-item-sub">completions</div>
+      </div>
+    </div>`).join('');
+}
     async function loadUsageData() {
       try {
         const [usageRes, lbRes, usersRes] = await Promise.all([
@@ -800,37 +651,31 @@
     }
 
     function renderTopicPills(usage) {
-      const container = document.getElementById('topicPills');
-      const topics = ['Arrays', 'Stacks', 'Queue', 'LinkedList', 'Graph', 'Trees'];
-      
-      container.innerHTML = topics.map(topic => {
-        const total = Object.values(usage[topic] || {}).reduce((s, x) => s + x.totalPicks, 0);
-        return `<button class="btn btn-secondary" onclick="selectUsageTopic('${topic}')" id="pill-${topic}">
-          ${topic} <span style="opacity: 0.6;">${total}</span>
-        </button>`;
-      }).join('');
-      
-      selectUsageTopic(topics[0]);
-    }
+  const container = document.getElementById('topicPills');
+  const topics = ['Arrays','Stacks','Queue','LinkedList','Graph','Trees'];
+  container.innerHTML = topics.map(topic => {
+    const total = Object.values(usage[topic]||{}).reduce((s,x)=>s+x.totalPicks,0);
+    return `<button class="pill-btn" onclick="selectUsageTopic('${topic}')" id="pill-${topic}">
+      ${topic} <span style="opacity:0.6;margin-left:2px;">${total}</span>
+    </button>`;
+  }).join('');
+  selectUsageTopic(topics[0]);
+}
 
-    function selectUsageTopic(topic) {
-      selectedUsageTopic = topic;
-      document.querySelectorAll('[id^="pill-"]').forEach(btn => {
-        btn.style.borderColor = '#e5e7eb';
-        btn.style.color = '#111827';
-        btn.style.background = '#f9fafb';
-      });
-      
-      const pill = document.getElementById(`pill-${topic}`);
-      if (pill) {
-        pill.style.borderColor = '#6366f1';
-        pill.style.color = '#6366f1';
-        pill.style.background = 'rgba(99, 102, 241, 0.1)';
-      }
-      
-      renderGlobalChart(topic);
-      renderBreakdownList(topic);
-    }
+function selectUsageTopic(topic) {
+  selectedUsageTopic = topic;
+  document.querySelectorAll('[id^="pill-"]').forEach(b => {
+    b.style.borderColor=''; b.style.color=''; b.style.background='';
+  });
+  const pill = document.getElementById(`pill-${topic}`);
+  if (pill) {
+    pill.style.borderColor='var(--accent)';
+    pill.style.color='var(--accent2)';
+    pill.style.background='rgba(108,99,255,0.1)';
+  }
+  renderGlobalChart(topic);
+  renderBreakdownList(topic);
+}
 
     function renderGlobalChart(topic) {
       const usage = globalUsageData?.globalUsage?.[topic] || {};
@@ -860,93 +705,87 @@
     }
 
     function renderBreakdownList(topic) {
-      const usage = globalUsageData?.globalUsage?.[topic] || {};
-      const container = document.getElementById('globalBreakdownList');
-      const scenarios = Object.entries(usage).sort((a, b) => b[1].totalPicks - a[1].totalPicks);
-      const total = scenarios.reduce((s, [, info]) => s + info.totalPicks, 0);
-
-      if (!scenarios.length) {
-        container.innerHTML = '<p style="text-align: center; color: #6b7280;">No picks recorded yet</p>';
-        return;
-      }
-
-      container.innerHTML = scenarios.map(([id, info], idx) => {
-        const pct = total > 0 ? Math.round((info.totalPicks / total) * 100) : 0;
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '';
-        
-        return `
-          <div class="list-item">
-            <div style="display: flex; align-items: center; gap: 12px; flex: 1;">
-              ${medal ? `<span style="font-size: 20px;">${medal}</span>` : ''}
-              <div>
-                <div style="font-weight: 600; color: #111827;">${info.name}</div>
-                <div style="font-size: 12px; color: #6b7280;">${info.uniqueUsers} users</div>
-              </div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 700; color: #6366f1;">${pct}%</div>
-            </div>
+  const usage = globalUsageData?.globalUsage?.[topic] || {};
+  const container = document.getElementById('globalBreakdownList');
+  const scenarios = Object.entries(usage).sort((a,b) => b[1].totalPicks - a[1].totalPicks);
+  const total = scenarios.reduce((s,[,info]) => s + info.totalPicks, 0);
+  if (!scenarios.length) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text3);font-size:12px;">No picks recorded yet</p>';
+    return;
+  }
+  container.innerHTML = scenarios.map(([id, info], idx) => {
+    const pct = total > 0 ? Math.round((info.totalPicks / total) * 100) : 0;
+    const medal = idx===0?'🥇':idx===1?'🥈':'';
+    return `
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        <span style="font-size:14px;width:20px;">${medal}</span>
+        <div style="flex:1;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:600;color:var(--text);">${info.name}</span>
+            <span style="font-size:11px;color:var(--text3);">${info.totalPicks} picks · ${info.uniqueUsers} users</span>
           </div>
-        `;
-      }).join('');
-    }
+          <div class="usage-bar-track">
+            <div class="usage-bar-fill" style="width:${pct}%;background:var(--accent);"></div>
+          </div>
+        </div>
+        <span style="font-size:12px;font-weight:700;color:var(--accent2);min-width:32px;text-align:right;">${pct}%</span>
+      </div>`;
+  }).join('');
+}
 
     function renderLeaderboard(leaderboard) {
-      const container = document.getElementById('leaderboardList');
-      
-      if (!leaderboard.length) {
-        container.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 32px;">No data yet</p>';
-        return;
-      }
-
-      const maxPicks = leaderboard[0]?.totalPicks || 1;
-
-      container.innerHTML = leaderboard.map((item, idx) => {
-        const pct = Math.round((item.totalPicks / maxPicks) * 100);
-        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : '';
-        
-        return `
-          <div style="padding: 16px; background: #f9fafb; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
-            ${medal ? `<span style="font-size: 20px;">${medal}</span>` : `<span style="width: 32px; text-align: center; font-weight: 700; color: #6b7280;">${idx + 1}</span>`}
-            <div style="flex: 1;">
-              <div style="font-weight: 600; color: #111827;">${item.name}</div>
-              <div style="font-size: 12px; color: #6b7280;">${item.topicName} • ${item.uniqueUsers} users</div>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-weight: 700; color: #6366f1;">${item.totalPicks}</div>
-              <div style="font-size: 12px; color: #6b7280;">picks</div>
-            </div>
+  const container = document.getElementById('leaderboardList');
+  if (!leaderboard.length) {
+    container.innerHTML = '<p style="text-align:center;color:var(--text3);font-size:12px;padding:20px;">No data yet</p>';
+    return;
+  }
+  const maxPicks = leaderboard[0]?.totalPicks || 1;
+  container.innerHTML = leaderboard.map((item, idx) => {
+    const pct = Math.round((item.totalPicks / maxPicks) * 100);
+    const medal = idx===0?'🥇':idx===1?'🥈':idx===2?'🥉':'';
+    return `
+      <div class="lb-item">
+        <div style="width:28px;text-align:center;font-size:16px;">${medal || `<span style="font-size:11px;font-weight:700;color:var(--text3);">${idx+1}</span>`}</div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;">${item.name}
+            <span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:100px;background:rgba(108,99,255,0.15);color:var(--accent2);margin-left:6px;">${item.topicName}</span>
           </div>
-        `;
-      }).join('');
-    }
-
-    function searchUsers(term) {
-      const results = document.getElementById('userSearchResults');
-      if (!term.trim()) {
-        results.style.display = 'none';
-        return;
-      }
-
-      const matches = allUsersCache.filter(u =>
-        (u.username || '').toLowerCase().includes(term.toLowerCase()) ||
-        (u.name || '').toLowerCase().includes(term.toLowerCase())
-      ).slice(0, 5);
-
-      if (!matches.length) {
-        results.innerHTML = '<div style="padding: 16px; text-align: center; color: #6b7280;">No users found</div>';
-        results.style.display = 'block';
-        return;
-      }
-
-      results.innerHTML = matches.map(u => `
-        <div style="padding: 16px; border-bottom: 1px solid #e5e7eb; cursor: pointer;" onclick="loadUserUsage('${u.username}')">
-          <div style="font-weight: 600; color: #111827;">${u.name || u.username}</div>
-          <div style="font-size: 12px; color: #6b7280;">@${u.username}</div>
+          <div class="usage-bar-track" style="margin-top:4px;">
+            <div class="usage-bar-fill" style="width:${pct}%;background:var(--accent);"></div>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px;">${item.uniqueUsers} users</div>
         </div>
-      `).join('');
-      results.style.display = 'block';
-    }
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:14px;font-weight:700;color:var(--text);">${item.totalPicks}</div>
+          <div style="font-size:10px;color:var(--text3);">picks</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function searchUsers(term) {
+  const results = document.getElementById('userSearchResults');
+  if (!term.trim()) { results.style.display='none'; return; }
+  const matches = allUsersCache.filter(u =>
+    (u.username||'').toLowerCase().includes(term.toLowerCase()) ||
+    (u.name||'').toLowerCase().includes(term.toLowerCase())
+  ).slice(0,5);
+  if (!matches.length) {
+    results.innerHTML='<div style="padding:12px;text-align:center;font-size:12px;color:var(--text3);">No users found</div>';
+    results.style.display='block'; return;
+  }
+  results.innerHTML = matches.map(u=>`
+    <div class="user-search-result" onclick="loadUserUsage('${u.username}')">
+      <div style="width:28px;height:28px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;">
+        ${(u.name||u.username).substring(0,2).toUpperCase()}
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--text);">${u.name||u.username}</div>
+        <div style="font-size:10px;color:var(--text3);">@${u.username}</div>
+      </div>
+    </div>`).join('');
+  results.style.display='block';
+}
 
     async function loadUserUsage(username) {
       document.getElementById('userSearchResults').style.display = 'none';
@@ -962,53 +801,44 @@
     }
 
     function renderUserUsage(data) {
-      document.getElementById('userUsagePlaceholder').style.display = 'none';
-      document.getElementById('userUsagePanel').style.display = 'block';
-
-      const initials = (data.name || data.username).substring(0, 2).toUpperCase();
-      document.getElementById('userUsageAvatar').textContent = initials;
-      document.getElementById('userUsageName').textContent = data.name || data.username;
-      document.getElementById('userUsageUsername').textContent = '@' + data.username;
-
-      const usage = data.scenarioUsage || {};
-      const topics = Object.keys(usage);
-
-      if (!topics.length) {
-        document.getElementById('userUsageTopics').style.display = 'none';
-        document.getElementById('userNoData').style.display = 'block';
-        return;
-      }
-
-      document.getElementById('userNoData').style.display = 'none';
-      document.getElementById('userUsageTopics').style.display = 'block';
-      document.getElementById('userUsageTopics').innerHTML = topics.map(topicName => {
-        const topicUsage = usage[topicName];
-        const scenarios = Object.entries(topicUsage.scenarios || {});
-        if (!scenarios.length) return '';
-
-        const totalPicks = scenarios.reduce((s, [, x]) => s + x.pickCount, 0);
-
-        return `
-          <div style="padding: 16px; background: #f9fafb; border-radius: 12px; margin-bottom: 12px;">
-            <div style="font-weight: 700; color: #111827; margin-bottom: 12px;">${topicName}</div>
-            ${scenarios.sort((a, b) => b[1].pickCount - a[1].pickCount).map(([id, info]) => {
-              const pct = totalPicks > 0 ? Math.round((info.pickCount / totalPicks) * 100) : 0;
-              return `
-                <div style="margin-bottom: 12px;">
-                  <div style="display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 12px;">
-                    <span>${info.name}</span>
-                    <span style="font-weight: 600;">${info.pickCount}×</span>
-                  </div>
-                  <div class="progress-bar-track">
-                    <div class="progress-bar-fill" style="width: ${pct}%; background: #6366f1;"></div>
-                  </div>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }).join('');
-    }
+  document.getElementById('userUsagePlaceholder').style.display = 'none';
+  document.getElementById('userUsagePanel').style.display = 'block';
+  const initials = (data.name||data.username).substring(0,2).toUpperCase();
+  document.getElementById('userUsageAvatar').textContent = initials;
+  document.getElementById('userUsageName').textContent   = data.name||data.username;
+  document.getElementById('userUsageUsername').textContent = '@'+data.username;
+  const usage = data.scenarioUsage || {};
+  const topics = Object.keys(usage);
+  if (!topics.length) {
+    document.getElementById('userUsageTopics').style.display = 'none';
+    document.getElementById('userNoData').style.display = 'block';
+    return;
+  }
+  document.getElementById('userNoData').style.display = 'none';
+  document.getElementById('userUsageTopics').style.display = 'flex';
+  document.getElementById('userUsageTopics').innerHTML = topics.map(topicName => {
+    const topicUsage = usage[topicName];
+    const scenarios = Object.entries(topicUsage.scenarios||{});
+    if (!scenarios.length) return '';
+    const totalPicks = scenarios.reduce((s,[,x])=>s+x.pickCount,0);
+    return `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;">
+        <div style="font-size:11px;font-weight:700;color:var(--accent2);text-transform:uppercase;margin-bottom:10px;">${topicName} <span style="color:var(--text3);font-weight:400;">${totalPicks} total</span></div>
+        ${scenarios.sort((a,b)=>b[1].pickCount-a[1].pickCount).map(([id,info])=>{
+          const pct = totalPicks>0?Math.round((info.pickCount/totalPicks)*100):0;
+          return `<div style="margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;font-size:11px;">
+              <span style="color:var(--text2);">${info.name}</span>
+              <span style="font-weight:700;color:var(--accent2);">${info.pickCount}×</span>
+            </div>
+            <div class="usage-bar-track">
+              <div class="usage-bar-fill" style="width:${pct}%;background:var(--accent);"></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  }).join('');
+}
 
     function clearUserSearch() {
       document.getElementById('userSearchInput').value = '';
@@ -1026,15 +856,28 @@
     }
 
     window.addEventListener('load', async () => {
-      await loadUserAnalytics();
-      
-      if (selectedUsername) {
-        setTimeout(() => {
-          document.querySelector('[onclick="switchTab(\'scenarios\')"]').click();
-          loadUserUsage(selectedUsername);
-        }, 500);
-      }
-    });
+  const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
+  const raw = localStorage.getItem('adminUser');
+  if (!raw || raw === 'undefined') { window.location.href = 'login.html'; return; }
+  try {
+    const user = JSON.parse(raw);
+    document.getElementById('sidebarUserName').textContent = user.name || user.username;
+    document.getElementById('sidebarAvatar').textContent   = (user.name || user.username || 'A')[0].toUpperCase();
+    document.getElementById('sidebarUserRole').textContent = user.role === 'instructor' ? 'Instructor' : 'Administrator';
+  } catch { window.location.href = 'login.html'; return; }
+
+  await loadUserAnalytics();
+
+  if (selectedUsername) {
+    setTimeout(() => {
+      document.querySelectorAll('.tab-btn')[1].click();
+      loadUserUsage(selectedUsername);
+    }, 500);
+  }
+});
   </script>
 </body>
 </html>
