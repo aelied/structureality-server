@@ -11,10 +11,9 @@
    TOKENS
 ═══════════════════════════════════════════════ */
 :root {
+    
   --bg:         #0d0f14;
   --surface:    #13161e;
-  --surface2:   #1a1e28;
-  --surface3:   #222636;
   --border:     rgba(255,255,255,0.07);
   --border2:    rgba(255,255,255,0.12);
   --accent:     #6c63ff;
@@ -24,9 +23,11 @@
   --amber:      #fbbf24;
   --rose:       #fb7185;
   --sky:        #38bdf8;
-  --text:       #e8eaf2;
-  --text2:      #8b92a8;
-  --text3:      #4e5568;
+  --text:       #f1f3fa;   /* was #e8eaf2 */
+--text2:      #b0b8cc;   /* was #8b92a8 */
+--text3:      #6a7389;   /* was #4e5568 */
+--surface2:   #1e2230;   /* was #1a1e28 */
+--surface3:   #282d3d;   /* was #222636 */
   --radius:     14px;
   --radius-sm:  8px;
   --sidebar-w:  240px;
@@ -34,6 +35,18 @@
   --mono:       'DM Mono', monospace;
   --shadow:     0 4px 24px rgba(0,0,0,0.4);
   --shadow-glow:0 0 40px rgba(108,99,255,0.15);
+}
+
+[data-theme="light"] {
+  --bg:         #f4f5f9;
+  --surface:    #ffffff;
+  --surface2:   #f0f1f6;
+  --surface3:   #e4e6ee;
+  --border:     rgba(0,0,0,0.08);
+  --border2:    rgba(0,0,0,0.13);
+  --text:       #111827;
+  --text2:      #374151;
+  --text3:      #6b7280;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html{height:100%;scroll-behavior:smooth;}
@@ -721,6 +734,7 @@ input,select,textarea{font-family:inherit;outline:none;}
   <div class="topbar-right">
     <button class="btn btn-ghost" onclick="loadLessons()"><i class="fas fa-sync"></i> Refresh</button>
     <button class="btn btn-primary" onclick="openAddModal()"><i class="fas fa-plus"></i> New Lesson</button>
+    <button class="btn btn-ghost" onclick="toggleTheme()" id="themeBtn" title="Toggle theme">☀️</button>
     <button class="btn btn-ghost" onclick="logout()" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
   </div>
 </nav>
@@ -1339,6 +1353,13 @@ function insertBox() {
   closeBoxModal();
 }
 
+function toggleTheme() {
+  const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+  document.documentElement.setAttribute('data-theme', isLight ? 'dark' : 'light');
+  document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
+  localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
+}
+
 // ═══════════════════════════════════════════
 //  CHIP BUILDER
 // ═══════════════════════════════════════════
@@ -1545,6 +1566,9 @@ function escHtml(s){ if(!s)return''; return s.replace(/&/g,'&amp;').replace(/</g
 //  INIT
 // ═══════════════════════════════════════════
 window.addEventListener('load',()=>{
+    const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+document.documentElement.setAttribute('data-theme', savedTheme);
+document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
   currentUser = checkAuth();
   if(!currentUser) return;
   document.getElementById('sidebarUserName').textContent  = currentUser.name||currentUser.username||'Admin';
