@@ -116,27 +116,98 @@
             border-radius: 2px;
         }
 
-        .mobile-card {
-            margin-bottom: 20px;
-            margin-top: 0;
-            padding: 12px;
-            border-radius: 8px;
-            background: white;
-            border: 1px solid #e0e0e0;
-        }
+        
+/* ── App-accurate preview styles ── */
+.app-lesson-modal {
+    background: white;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+.app-modal-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid #f3f4f6;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.app-modal-close {
+    width: 32px; height: 32px;
+    background: #f3f4f6; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: #6b7280; flex-shrink: 0;
+}
+.app-modal-icon {
+    width: 40px; height: 40px; border-radius: 11px;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+}
+.app-modal-header-text { flex: 1; min-width: 0; }
+.app-modal-topic {
+    font-size: 9px; font-weight: 700;
+    color: #7c3aed; text-transform: uppercase;
+    letter-spacing: 0.6px; margin-bottom: 1px;
+}
+.app-modal-title {
+    font-size: 13px; font-weight: 700;
+    color: #111827; line-height: 1.2; word-break: break-word;
+}
+.app-modal-scroll {
+    flex: 1; overflow-y: auto;
+    padding: 12px 14px;
+    display: flex; flex-direction: column; gap: 10px;
+}
+.app-modal-scroll::-webkit-scrollbar { width: 3px; }
+.app-modal-scroll::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 2px; }
+.app-page-counter {
+    font-size: 10px; color: #9ca3af;
+    font-weight: 500; text-align: center; margin-bottom: 2px;
+}
+.app-content-card {
+    background: #f9fafb; border-radius: 12px;
+    padding: 12px 14px; font-size: 12px;
+    line-height: 1.65; color: #4b5563;
+}
+.app-custom-box {
+    border-radius: 12px; padding: 12px 14px; border-left: 4px solid;
+}
+.app-custom-box .box-title {
+    font-size: 12px; font-weight: 700; margin-bottom: 5px;
+}
+.app-custom-box .box-body { font-size: 11.5px; line-height: 1.6; }
+.app-image-block {
+    background: white; border-radius: 12px;
+    padding: 8px; border: 1px solid #f3f4f6; text-align: center;
+}
+.app-image-block img {
+    max-width: 100%; border-radius: 8px; object-fit: contain;
+}
+.app-image-caption { font-size: 10px; color: #9ca3af; margin-top: 4px; }
+.app-modal-footer {
+    padding: 10px 14px 14px;
+    display: flex; gap: 6px;
+    border-top: 1px solid #f3f4f6; flex-shrink: 0;
+}
+.app-nav-btn {
+    flex: 1; padding: 9px 6px; border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    text-align: center; border: none; cursor: default;
+}
+.app-nav-btn.secondary { background: #f3f4f6; color: #6b7280; }
+.app-nav-btn.primary   { background: linear-gradient(135deg, #7c3aed, #9333ea); color: white; }
+.app-nav-btn.danger    { background: linear-gradient(135deg, #f43f5e, #e11d48); color: white; }
+.app-nav-btn.ar        { background: linear-gradient(135deg, #4c1d95, #7c3aed); color: white; }
+.app-nav-btn.disabled  { opacity: 0.35; }
+.app-page-dots { display: flex; justify-content: center; gap: 4px; padding: 6px 0 2px; }
+.app-dot { width: 5px; height: 5px; border-radius: 50%; background: #e5e7eb; }
+.app-dot.active { background: #7c3aed; }
 
-        .mobile-card-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 8px;
-            word-break: break-word;
-        }
-
-        .mobile-card-content {
-            font-size: 14px;
-            line-height: 1.5;
-            word-break: break-word;
-        }
+/* Keep existing mobile preview frame styles */
+.mobile-card { margin-bottom: 20px; margin-top: 0; padding: 12px; border-radius: 8px; background: white; border: 1px solid #e0e0e0; }
+.mobile-card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; word-break: break-word; }
+.mobile-card-content { font-size: 14px; line-height: 1.5; word-break: break-word; }
 
         .mobile-image {
             width: 100%;
@@ -1298,73 +1369,187 @@ Like this paragraph has space above it!"
         }
 
         function renderMobilePreview(content, previewElement) {
-            previewElement.innerHTML = '';
+    previewElement.innerHTML = '';
+    previewElement.style.padding = '0';
+    previewElement.style.background = '#f9fafb';
 
-            // Split by special tags FIRST to preserve complete CUSTOMBOX and IMAGE tags
-            const parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+    // Split content into pages
+    var pages = [];
+    if (content.indexOf('<<<PAGE_BREAK>>>') >= 0) {
+        pages = content.split('<<<PAGE_BREAK>>>').map(function(p){ return p.trim(); }).filter(Boolean);
+    } else {
+        var parts = content.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+        var currentPage = '', pageHasBox = false;
+        parts.forEach(function(part) {
+            if (!part || !part.trim()) return;
+            var trimmed = part.trim();
+            var isSpecial = /^\[CUSTOMBOX/i.test(trimmed) || /^\[IMAGE/i.test(trimmed) ||
+                            /^\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]/i.test(trimmed);
+            if (isSpecial && pageHasBox && currentPage.length > 0) {
+                pages.push(currentPage.trim());
+                currentPage = trimmed + '\n\n';
+                pageHasBox = true;
+            } else {
+                if (currentPage.length > 0) currentPage += '\n\n';
+                currentPage += trimmed;
+                if (isSpecial) pageHasBox = true;
+            }
+        });
+        if (currentPage.trim()) pages.push(currentPage.trim());
+    }
+    if (pages.length === 0) pages = [''];
 
-            parts.forEach((part) => {
-                if (!part || !part.trim()) return;
+    var totalPages = pages.length;
+    // Store for navigation
+    window._previewPages  = pages;
+    window._previewEl     = previewElement;
+    window._previewTarget = null; // will be set by addLesson/editLesson context
+    renderPreviewPage(0, pages, totalPages, previewElement);
+}
 
-                const trimmed = part.trim();
+function renderPreviewPage(pageIdx, pages, totalPages, previewElement) {
+    previewElement.innerHTML = '';
 
-                // Handle CUSTOMBOX - gets its own card
-                const customBoxMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]*)"]\s*([\s\S]*?)\s*\[\/CUSTOMBOX\]$/i);
-                if (customBoxMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    div.style.borderLeft = `4px solid ${customBoxMatch[1]}`;
-                    div.style.backgroundColor = customBoxMatch[2];
-                    div.style.color = customBoxMatch[3];
-                    div.innerHTML = `<strong>${customBoxMatch[4]}</strong><br><br>${customBoxMatch[5].trim()}`;
-                    previewElement.appendChild(div);
-                    return;
-                }
+    var modal = document.createElement('div');
+    modal.className = 'app-lesson-modal';
 
-                // Handle IMAGE - gets its own card
-                const imageMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
-                if (imageMatch) {
-                    const div = document.createElement('div');
-                    div.className = 'mobile-card';
-                    const img = document.createElement('img');
-                    img.src = imageMatch[1];
-                    img.className = 'mobile-image';
-                    img.style.height = (imageMatch[4] || '180') + 'px';
-                    div.appendChild(img);
+    // Header
+    var header = document.createElement('div');
+    header.className = 'app-modal-header';
+    // Detect which modal is open to grab title/topic
+    var isEdit = document.getElementById('editLessonModal').classList.contains('active');
+    var topic = isEdit
+        ? (document.getElementById('editLessonTopic').value || 'Topic')
+        : (document.getElementById('lessonTopic').value || 'Topic');
+    var title = isEdit
+        ? (document.getElementById('editLessonTitle').value || 'Lesson Title')
+        : (document.getElementById('lessonTitle').value || 'Lesson Title');
 
-                    if (imageMatch[2]) {
-                        const cap = document.createElement('p');
-                        cap.style.fontSize = '12px';
-                        cap.style.color = '#999';
-                        cap.style.margin = '4px 0 0 0';
-                        cap.textContent = imageMatch[2];
-                        div.appendChild(cap);
-                    }
-                    previewElement.appendChild(div);
-                    return;
-                }
+    header.innerHTML =
+        '<div class="app-modal-close">✕</div>' +
+        '<div class="app-modal-icon">📚</div>' +
+        '<div class="app-modal-header-text">' +
+            '<div class="app-modal-topic">' + topic + '</div>' +
+            '<div class="app-modal-title">' + title + '</div>' +
+        '</div>';
+    modal.appendChild(header);
 
-                // Handle plain text - split by blank lines for paragraph spacing
-                if (trimmed) {
-                    // Split text by double newlines to create separate cards with gaps
-                    const paragraphs = trimmed.split(/\n\n+/);
-                    console.log('Plain text part, paragraphs:', paragraphs.length, paragraphs.map(p => p.substring(0,50)));
-                    
-                    paragraphs.forEach((para) => {
-                        if (para.trim()) {
-                            const div = document.createElement('div');
-                            div.className = 'mobile-card mobile-card-content';
-                            
-                            // Convert single newlines to <br>
-                            let html = para.trim().replace(/\n/g, '<br>');
-                            
-                            div.innerHTML = html;
-                            previewElement.appendChild(div);
-                        }
-                    });
-                }
-            });
+    // Scroll area
+    var scroll = document.createElement('div');
+    scroll.className = 'app-modal-scroll';
+
+    if (totalPages > 1) {
+        var counter = document.createElement('div');
+        counter.className = 'app-page-counter';
+        counter.textContent = 'Page ' + (pageIdx + 1) + ' of ' + totalPages;
+        scroll.appendChild(counter);
+    }
+
+    // Render blocks for this page
+    var pageContent = pages[pageIdx] || '';
+    var blockParts  = pageContent.split(/(\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]|\[IMAGE[^\]]+\])/gi);
+
+    blockParts.forEach(function(part) {
+        if (!part || !part.trim()) return;
+        var trimmed = part.trim();
+        var el = null;
+
+        // CUSTOMBOX
+        var cbMatch = trimmed.match(/^\[CUSTOMBOX\s+border="([^"]*)"\s+bg="([^"]*)"\s+text="([^"]*)"\s+title="([^"]*)"\]([\s\S]*?)\[\/CUSTOMBOX\]$/i);
+        if (cbMatch) {
+            el = document.createElement('div');
+            el.className = 'app-custom-box';
+            el.style.borderColor     = cbMatch[1];
+            el.style.backgroundColor = cbMatch[2];
+            el.style.color           = cbMatch[3];
+            el.innerHTML = '<div class="box-title">' + cbMatch[4] + '</div>' +
+                           '<div class="box-body">' + cbMatch[5].trim().replace(/\n/g,'<br>') + '</div>';
+            scroll.appendChild(el);
+            return;
         }
+
+        // IMAGE
+        var imgMatch = trimmed.match(/^\[IMAGE\s+src="([^"]*)"\s*(?:caption="([^"]*)")?\s*(?:align="([^"]*)")?\s*(?:height="([^"]*)")?\]$/i);
+        if (imgMatch) {
+            el = document.createElement('div');
+            el.className = 'app-image-block';
+            var imgH = imgMatch[4] ? Math.min(parseInt(imgMatch[4]), 160) + 'px' : '120px';
+            el.innerHTML = '<img src="' + imgMatch[1] + '" style="height:' + imgH + ';" alt="' + (imgMatch[2]||'') + '" />' +
+                (imgMatch[2] ? '<div class="app-image-caption">' + imgMatch[2] + '</div>' : '');
+            scroll.appendChild(el);
+            return;
+        }
+
+        // INFO/TIP/WARNING/NOTE/IMPORTANT
+        var infoMatch = trimmed.match(/^\[(INFO|TIP|WARNING|NOTE|IMPORTANT)\]([\s\S]*?)$/i);
+        if (infoMatch) {
+            var typeColors = {
+                INFO:      { border:'#006064', bg:'#E0F7FA', text:'#006064', icon:'ℹ️' },
+                TIP:       { border:'#F57F17', bg:'#FFF9C4', text:'#F57F17', icon:'💡' },
+                WARNING:   { border:'#B71C1C', bg:'#FFEBEE', text:'#B71C1C', icon:'⚠️' },
+                NOTE:      { border:'#4A148C', bg:'#F3E5F5', text:'#4A148C', icon:'📝' },
+                IMPORTANT: { border:'#1B5E20', bg:'#E8F5E9', text:'#1B5E20', icon:'⭐' }
+            };
+            var t = infoMatch[1].toUpperCase(), c = typeColors[t] || typeColors['INFO'];
+            el = document.createElement('div');
+            el.className = 'app-custom-box';
+            el.style.borderColor     = c.border;
+            el.style.backgroundColor = c.bg;
+            el.style.color           = c.text;
+            el.innerHTML = '<div class="box-title">' + c.icon + ' ' + (t.charAt(0) + t.slice(1).toLowerCase()) + '</div>' +
+                           '<div class="box-body">' + infoMatch[2].trim().replace(/\n/g,'<br>') + '</div>';
+            scroll.appendChild(el);
+            return;
+        }
+
+        // Plain text paragraphs
+        trimmed.split(/\n\n+/).forEach(function(para) {
+            if (!para.trim()) return;
+            var p = document.createElement('div');
+            p.className = 'app-content-card';
+            p.innerHTML = para.trim().replace(/\n/g,'<br>');
+            scroll.appendChild(p);
+        });
+    });
+
+    modal.appendChild(scroll);
+
+    // Page dots
+    if (totalPages > 1) {
+        var dots = document.createElement('div');
+        dots.className = 'app-page-dots';
+        for (var i = 0; i < totalPages; i++) {
+            var dot = document.createElement('div');
+            dot.className = 'app-dot' + (i === pageIdx ? ' active' : '');
+            dots.appendChild(dot);
+        }
+        modal.appendChild(dots);
+    }
+
+    // Footer
+    var footer = document.createElement('div');
+    footer.className = 'app-modal-footer';
+    var isFirst = pageIdx === 0;
+    var isLast  = pageIdx === totalPages - 1;
+
+    var prevBtn = '<button class="app-nav-btn secondary' + (isFirst ? ' disabled' : '') + '" ' +
+        (isFirst ? 'disabled' : 'onclick="previewGoToPage(' + (pageIdx-1) + ')"') + '>← Prev</button>';
+
+    var rightBtns = isLast
+        ? '<button class="app-nav-btn danger">Code</button>' +
+          '<button class="app-nav-btn ar">Try AR</button>' +
+          '<button class="app-nav-btn primary">✓ Done</button>'
+        : '<button class="app-nav-btn primary" onclick="previewGoToPage(' + (pageIdx+1) + ')">Next Page</button>';
+
+    footer.innerHTML = prevBtn + rightBtns;
+    modal.appendChild(footer);
+    previewElement.appendChild(modal);
+}
+
+function previewGoToPage(idx) {
+    if (!window._previewPages || idx < 0 || idx >= window._previewPages.length) return;
+    renderPreviewPage(idx, window._previewPages, window._previewPages.length, window._previewEl);
+}
 
         // ════════════════════════════════════════════════════════
         //  CONTENT BUILDER
