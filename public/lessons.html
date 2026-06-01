@@ -295,6 +295,7 @@ input,select,textarea{font-family:inherit;outline:none;}
 .editor-left{
   display:flex;flex-direction:column;
   overflow:hidden;border-right:1px solid var(--border);
+  max-height:92vh;   /* ← match the modal's max-height */
 }
 .editor-header{
   padding:20px 24px;border-bottom:1px solid var(--border);
@@ -326,7 +327,6 @@ input,select,textarea{font-family:inherit;outline:none;}
   background: var(--surface); /* ← add this */
   z-index: 10;             /* ← add this */
 }
-
 /* ═══════════════════════════════════════════════
    FORM ELEMENTS
 ═══════════════════════════════════════════════ */
