@@ -307,10 +307,24 @@ input,select,textarea{font-family:inherit;outline:none;}
   font-size:14px;color:var(--text2);transition:all 0.2s;
 }
 .editor-close:hover{background:var(--surface3);color:var(--text);}
-.editor-body{flex:1;overflow-y:auto;padding:24px;}
-.editor-footer{
-  padding:16px 24px;border-top:1px solid var(--border);
-  display:flex;justify-content:flex-end;gap:10px;flex-shrink:0;
+.editor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  min-height: 0;   /* ← add this */
+}
+
+.editor-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-shrink: 0;          /* ← add this */
+  position: sticky;        /* ← add this */
+  bottom: 0;               /* ← add this */
+  background: var(--surface); /* ← add this */
+  z-index: 10;             /* ← add this */
 }
 
 /* ═══════════════════════════════════════════════
