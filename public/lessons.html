@@ -1242,32 +1242,36 @@ function filterLessons() {
 //  EDITOR OPEN / CLOSE
 // ═══════════════════════════════════════════
 function openAddModal() {
-  document.getElementById('editorTitle').textContent='Add Lesson';
-  document.getElementById('saveBtnLabel').textContent='Add Lesson';
-  document.getElementById('editorLessonId').value='';
-  document.getElementById('editorTopic').value='';
-  document.getElementById('editorDifficulty').value='beginner';
-  document.getElementById('editorLessonTitle').value='';
-  document.getElementById('editorDescription').value='';
-  document.getElementById('editorContent').value='';
-  document.getElementById('editorOrder').value='1';
-  previewPages=[];previewPageIdx=0;
+  document.getElementById('editorTitle').textContent  = 'Add Lesson';
+  document.getElementById('saveBtnLabel').textContent = 'Add Lesson';
+  document.getElementById('editorLessonId').value     = '';
+  document.getElementById('editorTopic').value        = '';
+  document.getElementById('editorDifficulty').value   = 'beginner';
+  document.getElementById('editorLessonTitle').value  = '';
+  document.getElementById('editorDescription').value  = '';
+  document.getElementById('editorContent').value      = '';
+  document.getElementById('editorOrder').value        = '1';
+  previewPages   = [];
+  previewPageIdx = 0;
   document.getElementById('editorModal').classList.add('open');
   previewRefresh();
 }
 
 function openEditModal(id) {
-  const l=allLessons.find(x=>x._id===id);
-  if(!l)return;
-  document.getElementById('editorTitle').textContent='Edit Lesson';
-  document.getElementById('saveBtnLabel').textContent='Save Changes';
-  document.getElementById('editorLessonId').value=l._id;
-  document.getElementById('editorTopic').value=l.topicName;
-  document.getElementById('editorDifficulty').value=l.difficultyLevel||'beginner';
-  document.getElementById('editorLessonTitle').value=l.title;
-  document.getElementById('editorDescription').value=l.description;
-  document.getElementById('editorContent').value=l.content||'';
-  document.getElementById('editorOrder').value=l.order||1;
+  const l = allLessons.find(x => x._id === id);
+  if (!l) { showToast('Lesson not found', 'error'); return; }
+
+  document.getElementById('editorTitle').textContent  = 'Edit Lesson';
+  document.getElementById('saveBtnLabel').textContent = 'Save Changes';
+  document.getElementById('editorLessonId').value     = (l._id || '').toString().trim(); // FIX: trim whitespace
+  document.getElementById('editorTopic').value        = l.topicName       || '';
+  document.getElementById('editorDifficulty').value   = l.difficultyLevel || 'beginner';
+  document.getElementById('editorLessonTitle').value  = l.title           || '';
+  document.getElementById('editorDescription').value  = l.description     || '';
+  document.getElementById('editorContent').value      = l.content         || '';
+  document.getElementById('editorOrder').value        = l.order           || 1;
+
+  previewPageIdx = 0;
   document.getElementById('editorModal').classList.add('open');
   previewRefresh();
 }
@@ -1280,41 +1284,87 @@ function closeEditor() {
 //  SAVE
 // ═══════════════════════════════════════════
 async function saveLesson() {
-  const id    = document.getElementById('editorLessonId').value;
-  const topic = document.getElementById('editorTopic').value;
+  const id    = (document.getElementById('editorLessonId').value || '').trim(); // FIX: trim ID
+  const topic = document.getElementById('editorTopic').value.trim();
   const title = document.getElementById('editorLessonTitle').value.trim();
   const desc  = document.getElementById('editorDescription').value.trim();
-  if(!topic||!title||!desc){ showToast('Please fill in all required fields','error'); return; }
+
+  if (!topic || !title || !desc) {
+    showToast('Please fill in Topic, Title, and Description', 'error');
+    return;
+  }
 
   const payload = {
     topicName:       topic,
     title,
     description:     desc,
     content:         document.getElementById('editorContent').value,
-    order:           parseInt(document.getElementById('editorOrder').value)||1,
-    difficultyLevel: document.getElementById('editorDifficulty').value
+    order:           parseInt(document.getElementById('editorOrder').value) || 1,
+    difficultyLevel: document.getElementById('editorDifficulty').value,
   };
 
+  // FIX: disable button to prevent double-submit
+  const saveBtn  = document.querySelector('#editorModal .btn-primary');
+  const origHTML = saveBtn.innerHTML;
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<span class="spinner"></span> Saving…';
+
   try {
-    const url    = id ? `${API_URL}/lessons/${id}` : `${API_URL}/lessons`;
-    const method = id ? 'PUT' : 'POST';
-    const r      = await fetch(url,{method,headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
-    const d      = await r.json();
-    if(d.success){ showToast(id?'Lesson updated!':'Lesson added!','success'); closeEditor(); loadLessons(); }
-    else showToast(d.error||'Save failed','error');
-  } catch(e){ showToast('Network error: '+e.message,'error'); }
+    const isEdit = Boolean(id);
+    const url    = isEdit ? `${API_URL}/lessons/${id}` : `${API_URL}/lessons`;
+    const method = isEdit ? 'PUT' : 'POST';
+
+    const r = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    // FIX: check HTTP status before parsing JSON
+    if (!r.ok) {
+      const text = await r.text();
+      showToast(`Server error ${r.status}: ${text.substring(0, 80)}`, 'error');
+      return;
+    }
+
+    let d;
+    try { d = await r.json(); }
+    catch (jsonErr) { showToast('Unexpected server response', 'error'); return; }
+
+    // FIX: accept truthy variants — success:1, or response contains _id or lesson
+    if (d.success || d._id || d.lesson) {
+      showToast(isEdit ? 'Lesson updated!' : 'Lesson added!', 'success');
+      closeEditor();
+      await loadLessons();
+    } else {
+      showToast(d.error || d.message || 'Save failed — check console', 'error');
+      console.error('Save response:', d);
+    }
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+    console.error('saveLesson error:', e);
+  } finally {
+    // FIX: always restore button even if save fails
+    saveBtn.disabled  = false;
+    saveBtn.innerHTML = origHTML;
+  }
 }
 
 async function deleteLesson(id) {
-  if(!confirm('Delete this lesson?')) return;
+  if (!confirm('Delete this lesson? This cannot be undone.')) return;
   try {
-    const r = await fetch(`${API_URL}/lessons/${id}`,{method:'DELETE'});
+    const r = await fetch(`${API_URL}/lessons/${id}`, { method: 'DELETE' });
     const d = await r.json();
-    if(d.success){ showToast('Lesson deleted','success'); loadLessons(); }
-    else showToast(d.error||'Delete failed','error');
-  } catch(e){ showToast('Network error','error'); }
+    if (d.success || d.deleted) {
+      showToast('Lesson deleted', 'success');
+      loadLessons();
+    } else {
+      showToast(d.error || 'Delete failed', 'error');
+    }
+  } catch (e) {
+    showToast('Network error: ' + e.message, 'error');
+  }
 }
-
 // ═══════════════════════════════════════════
 //  INSERT BLOCK HELPERS
 // ═══════════════════════════════════════════
