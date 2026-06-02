@@ -374,6 +374,9 @@ const API = window.location.hostname === 'localhost'
 
 let lessons = [];
 let quizzes = [];
+const MIN_QUESTIONS = 5;
+const MAX_QUESTIONS = 15;
+const MAX_QUIZZES_PER_TOPIC = 3;
 
 // ── Auth ───────────────────────────────────────────────────────
 function logout() { localStorage.removeItem('adminUser'); window.location.href = 'login.html'; }
@@ -521,8 +524,7 @@ html += `
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
                 ${hasQuiz
-                  ? `<span class="quiz-status-badge quiz-status-has">✓ ${questionCount} Q${questionCount!==1?'s':''}</span>`
-                  : `<span class="quiz-status-badge quiz-status-no">⚠ No quiz</span>`
+                  ? `<span class="quiz-status-badge quiz-status-has">✓ ${questionCount}/${MAX_QUESTIONS} Q${questionCount!==1?'s':''}</span>`                  : `<span class="quiz-status-badge quiz-status-no">⚠ No quiz</span>`
                 }
                 <button onclick="openAddModal('${topic}','${escapedTitle}')"
                   class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
@@ -581,39 +583,32 @@ function populateLessonPicker(selectId, topicSelectId, prefill = '') {
     const topic = document.getElementById(topicSelectId).value;
     const sel   = document.getElementById(selectId);
     sel.innerHTML = '<option value="">— select a lesson —</option>';
-    
-    console.log(`🔍 populateLessonPicker called:`);
-    console.log(`   Topic: "${topic}"`);
-    console.log(`   SelectId: ${selectId}`);
-    console.log(`   Total lessons available: ${lessons.length}`);
-    
-    if (!topic) {
-        console.log('   ⚠️ No topic selected');
-        return;
-    }
-    
-    const filtered = lessons.filter(l => {
-        const match = l.topicName === topic;
-        console.log(`   Checking: "${l.title}" (topicName: "${l.topicName}") → ${match ? '✓ MATCH' : '✗'}`);
-        return match;
+    if (!topic) return;
+
+    // Count existing quizzes per lesson
+    const quizCountByLesson = {};
+    quizzes.forEach(q => {
+        if (q.lessonTitle) quizCountByLesson[q.lessonTitle] = (quizCountByLesson[q.lessonTitle] || 0) + 1;
     });
-    
-    console.log(`✅ Found ${filtered.length} lessons for "${topic}"`);
-    
-    if (filtered.length === 0) {
+
+    const filtered = lessons
+        .filter(l => l.topicName === topic)
+        .sort((a, b) => a.order - b.order);
+
+    if (!filtered.length) {
         sel.innerHTML = '<option value="">❌ No lessons found for this topic</option>';
         return;
     }
-    
-    filtered
-        .sort((a, b) => a.order - b.order)
-        .forEach(l => {
-            const opt = document.createElement('option');
-            opt.value       = l.title;
-            opt.textContent = `${l.order}. ${l.title}`;
-            if (l.title === prefill) opt.selected = true;
-            sel.appendChild(opt);
-        });
+
+    filtered.forEach(l => {
+        const count = quizCountByLesson[l.title] || 0;
+        if (count >= MAX_QUIZZES_PER_TOPIC * MAX_QUESTIONS) return; // full cap
+        const opt = document.createElement('option');
+        opt.value       = l.title;
+        opt.textContent = `${l.order}. ${l.title} (${count} Q${count !== 1 ? 's' : ''})`;
+        if (l.title === prefill) opt.selected = true;
+        sel.appendChild(opt);
+    });
 }
 
 // ── Question Management ────────────────────────────────────────
@@ -621,6 +616,11 @@ let questionCount = 1;
 
 function addQuestion() {
     const container = document.getElementById('questionsContainer');
+    const currentCount = container.querySelectorAll('.question-section').length;
+    if (currentCount >= MAX_QUESTIONS) {
+        alert(`Maximum ${MAX_QUESTIONS} questions per quiz.`);
+        return;
+    }
     const newIndex = questionCount;
     
     const questionHTML = `
@@ -665,10 +665,13 @@ function removeQuestion(index) {
         section.remove();
     }
 }
-
 function addEditQuestion() {
     const container = document.getElementById('editQuestionsContainer');
     const newIndex = container.querySelectorAll('.question-section').length;
+    if (newIndex >= MAX_QUESTIONS) {
+        alert(`Maximum ${MAX_QUESTIONS} questions per quiz.`);
+        return;
+    }
     
     const questionHTML = `
     <div class="question-section" data-question-index="${newIndex}">
@@ -774,9 +777,18 @@ async function submitAdd(e) {
     const topicName = document.getElementById('addTopic').value;
     
     if (!lessonTitle) { alert('Please select a lesson.'); return; }
-    if (!topicName) { alert('Please select a topic.'); return; }
+if (!topicName) { alert('Please select a topic.'); return; }
 
-    const questionSections = document.querySelectorAll('#questionsContainer .question-section');
+const questionSections = document.querySelectorAll('#questionsContainer .question-section');
+
+if (questionSections.length < MIN_QUESTIONS) {
+  alert(`A quiz must have at least ${MIN_QUESTIONS} questions. You have ${questionSections.length}.`);
+  return;
+}
+if (questionSections.length > MAX_QUESTIONS) {
+  alert(`A quiz cannot exceed ${MAX_QUESTIONS} questions.`);
+  return;
+}
     
     // Submit each question individually to the API
     let successCount = 0;
@@ -895,11 +907,14 @@ async function submitEdit(e) {
     const topicName   = document.getElementById('editTopicName').value;
     const questionSections = document.querySelectorAll('#editQuestionsContainer .question-section');
 
-    if (questionSections.length === 0) {
-        alert('Please keep at least one question.');
-        return;
-    }
-
+    if (questionSections.length < MIN_QUESTIONS) {
+    alert(`A quiz must have at least ${MIN_QUESTIONS} questions. You currently have ${questionSections.length}.`);
+    return;
+}
+if (questionSections.length > MAX_QUESTIONS) {
+    alert(`A quiz cannot exceed ${MAX_QUESTIONS} questions.`);
+    return;
+}
     let successCount = 0;
     
     for (const section of questionSections) {
