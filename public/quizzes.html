@@ -622,43 +622,35 @@ function addQuestion() {
         return;
     }
     const newIndex = questionCount;
-    
+
     const questionHTML = `
     <div class="question-section" data-question-index="${newIndex}">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-gray-800 text-lg">Question ${newIndex + 1}</h3>
-            <button type="button" onclick="removeQuestion(${newIndex})" class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i> Remove
-            </button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span class="question-section-title">Question ${newIndex + 1}</span>
+        <button type="button" onclick="removeQuestion(${newIndex})" class="btn-remove-q"><i class="fas fa-trash" style="margin-right:4px;"></i>Remove</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Question Text *</label>
+        <textarea class="addQuestion form-textarea" rows="2" placeholder="Enter the quiz question…" required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Answer Options — tick the correct one *</label>
+        <div class="addAnswers">
+          <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="0" required/><input type="text" placeholder="Option A" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="1"/><input type="text" placeholder="Option B" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="2"/><input type="text" placeholder="Option C" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="3"/><input type="text" placeholder="Option D" required class="form-input"/></div>
         </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
-            <textarea placeholder="Enter the quiz question…" rows="2"
-                class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
-            <div class="addAnswers">
-                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct${newIndex}" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
-            <textarea placeholder="Explain why the answer is correct…" rows="2"
-                class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Explanation *</label>
+        <textarea class="addExplanation form-textarea" rows="2" placeholder="Explain why the answer is correct…" required></textarea>
+      </div>
     </div>`;
-    
+
     container.insertAdjacentHTML('beforeend', questionHTML);
     questionCount++;
 }
-
 function removeQuestion(index) {
     const section = document.querySelector(`[data-question-index="${index}"]`);
     if (section) {
@@ -672,41 +664,33 @@ function addEditQuestion() {
         alert(`Maximum ${MAX_QUESTIONS} questions per quiz.`);
         return;
     }
-    
+
     const questionHTML = `
     <div class="question-section" data-question-index="${newIndex}">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-gray-800 text-lg">Question ${newIndex + 1}</h3>
-            <button type="button" onclick="removeEditQuestion(${newIndex})" class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i> Remove
-            </button>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span class="question-section-title">Question ${newIndex + 1}</span>
+        <button type="button" onclick="removeEditQuestion(${newIndex})" class="btn-remove-q"><i class="fas fa-trash" style="margin-right:4px;"></i>Remove</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Question Text *</label>
+        <textarea class="editQuestion form-textarea" rows="2" placeholder="Enter the quiz question…" required></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Answer Options — tick the correct one *</label>
+        <div class="editAnswers">
+          <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="0" required/><input type="text" placeholder="Option A" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="1"/><input type="text" placeholder="Option B" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="2"/><input type="text" placeholder="Option C" required class="form-input"/></div>
+          <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="3"/><input type="text" placeholder="Option D" required class="form-input"/></div>
         </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
-            <textarea placeholder="Enter the quiz question…" rows="2"
-                class="editQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
-            <div class="editAnswers">
-                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="editCorrect${newIndex}" class="editCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
-            <textarea placeholder="Explain why the answer is correct…" rows="2"
-                class="editExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
-        <!-- Empty questionId = new question, will be POSTed -->
-        <input type="hidden" class="questionId" value="" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Explanation *</label>
+        <textarea class="editExplanation form-textarea" rows="2" placeholder="Explain why the answer is correct…" required></textarea>
+      </div>
+      <input type="hidden" class="questionId" value="" />
     </div>`;
-    
+
     container.insertAdjacentHTML('beforeend', questionHTML);
 }
 
@@ -731,36 +715,29 @@ function openAddModal(prefillTopic = '', prefillLesson = '') {
     // Reset questions container
     const container = document.getElementById('questionsContainer');
     container.innerHTML = `
-    <div class="question-section" data-question-index="0">
-        <div class="flex justify-between items-center mb-3">
-            <h3 class="font-semibold text-gray-800 text-lg">Question 1</h3>
-            <button type="button" onclick="removeQuestion(0)" class="text-red-500 hover:text-red-700 hidden" id="removeBtn0">
-                <i class="fas fa-trash"></i> Remove
-            </button>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Question Text *</label>
-            <textarea placeholder="Enter the quiz question…" rows="2"
-                class="addQuestion w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Answer Options — tick the correct one *</label>
-            <div class="addAnswers">
-                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required /><input type="text" placeholder="Option A" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1" /><input type="text" placeholder="Option B" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2" /><input type="text" placeholder="Option C" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-                <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3" /><input type="text" placeholder="Option D" required class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" /></div>
-            </div>
-        </div>
-
-        <div class="mb-3">
-            <label class="block text-xs font-medium text-gray-600 mb-1">Explanation *</label>
-            <textarea placeholder="Explain why the answer is correct…" rows="2"
-                class="addExplanation w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" required></textarea>
-        </div>
-    </div>`;
+<div class="question-section" data-question-index="0">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+    <span class="question-section-title">Question 1</span>
+    <button type="button" onclick="removeQuestion(0)" class="btn-remove-q" style="display:none;" id="removeBtn0"><i class="fas fa-trash" style="margin-right:4px;"></i>Remove</button>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Question Text *</label>
+    <textarea class="addQuestion form-textarea" rows="2" placeholder="Enter the quiz question…" required></textarea>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Answer Options — tick the correct one *</label>
+    <div class="addAnswers">
+      <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required/><input type="text" placeholder="Option A" required class="form-input"/></div>
+      <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1"/><input type="text" placeholder="Option B" required class="form-input"/></div>
+      <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2"/><input type="text" placeholder="Option C" required class="form-input"/></div>
+      <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3"/><input type="text" placeholder="Option D" required class="form-input"/></div>
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="form-label">Explanation *</label>
+    <textarea class="addExplanation form-textarea" rows="2" placeholder="Explain why the answer is correct…" required></textarea>
+  </div>
+</div>`;
     
     document.getElementById('addModal').classList.add('active');
     if (prefillTopic) {
