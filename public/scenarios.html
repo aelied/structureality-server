@@ -389,8 +389,8 @@
     // ── SCENARIO DEFINITIONS (no sessions arrays — those come from DB) ─────────
     const SCENARIOS = {
       Arrays: [
-        { id: 'ParkingLot',     name: 'Parking Lot',       icon: '🅿️', desc: 'Cars in numbered parking spots. Students INSERT cars, REMOVE them, and ACCESS a spot by index.', ops: ['INSERT','REMOVE','ACCESS','SORTED INSERT','BINARY SEARCH'], avgTime: '4.2 min' },
-        { id: 'VendingMachine', name: 'Vending Machine',   icon: '🏪', desc: '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address.', ops: ['RESTOCK','DISPENSE','INSPECT','SORTED RESTOCK','PRICE SEARCH'], avgTime: '3.8 min' },
+      { id: 'SushiBar', name: 'Sushi Bar', icon: '🍣', desc: 'Sushi plates move along an oblong conveyor belt. Students SERVE (insert) plates, TAKE (remove) them, and PEEK (access) a conveyor slot by index.', ops: ['SERVE','TAKE','PEEK','SORTED SERVE','ROLL SEARCH'], avgTime: '4.2 min' },
+              { id: 'VendingMachine', name: 'Vending Machine',   icon: '🏪', desc: '2×3 grid of product slots. Students RESTOCK items, DISPENSE them, and INSPECT a slot by grid address.', ops: ['RESTOCK','DISPENSE','INSPECT','SORTED RESTOCK','PRICE SEARCH'], avgTime: '3.8 min' },
         { id: 'Supermarket',    name: 'Supermarket Shelf', icon: '🛒', desc: 'Linear shelf with 6 grocery slots. Students STOCK items, PULL them off, and CHECK by index.', ops: ['STOCK','PULL','CHECK','SORTED STOCK','BARCODE SCAN'], avgTime: '4.0 min' },
       ],
       Stacks: [
@@ -750,7 +750,7 @@ document.getElementById('apiStatus').textContent = 'offline';
     }
 
     function getDefaults(ds) {
-      return { Arrays:['ParkingLot','VendingMachine'], Stacks:['Plates','Warehouse'], Queue:['CoffeeShop','ConveyorBelt'], LinkedList:['Train','Solar'], Graph:['CityMap','IslandNetwork'], Trees:['FamilyTree','FruitTree'] }[ds];
+      return { Arrays: ['SushiBar','VendingMachine'], Stacks:['Plates','Warehouse'], Queue:['CoffeeShop','ConveyorBelt'], LinkedList:['Train','Solar'], Graph:['CityMap','IslandNetwork'], Trees:['FamilyTree','FruitTree'] }[ds];
     }
 
     async function pushConfig(ds) {

@@ -3435,7 +3435,7 @@ app.post('/api/admin/seed-scenario-data', async (req, res) => {
         console.log('🎮 Seeding dummy scenario data for all users...');
 
         const scenarioMap = {
-            Arrays:      ['Parking', 'Vending', 'Supermarket'],
+            Arrays: ['SushiBar', 'Vending', 'Supermarket'],
             Queue:       ['CoffeeShop', 'ConveyorBelt', 'Hospital'],
             Stacks:      ['Plates', 'Warehouse', 'Kitchen'],
             LinkedLists: ['Train', 'Solar', 'CityMetro'],
