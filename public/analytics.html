@@ -1,212 +1,287 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>StructuReality - Analytics</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        * { font-family: "Poppins", sans-serif; }
-        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .score-bar-track { height: 7px; background: #f1f5f9; border-radius: 9999px; overflow: hidden; }
-        .score-bar-fill  { height: 100%; border-radius: 9999px; transition: width 1s ease; }
-        .topic-card {
-            background: #fff; border-radius: 16px; border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 6px rgba(0,0,0,0.05); overflow: hidden;
-            transition: box-shadow 0.25s, transform 0.25s;
-        }
-        .topic-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,0.11); transform: translateY(-3px); }
-        .accent-arrays      { border-top: 4px solid #6366f1; }
-        .accent-stacks      { border-top: 4px solid #22c55e; }
-        .accent-queue       { border-top: 4px solid #3b82f6; }
-        .accent-linkedlists { border-top: 4px solid #a855f7; }
-        .accent-trees       { border-top: 4px solid #eab308; }
-        .accent-graphs      { border-top: 4px solid #ef4444; }
-        .badge-pct { font-size:0.7rem; font-weight:700; padding:2px 9px; border-radius:9999px; }
+    :root {
+      --bg:#0d0f14; --surface:#13161e; --border:rgba(255,255,255,0.07);
+      --border2:rgba(255,255,255,0.12); --accent:#6c63ff; --accent2:#a78bfa;
+      --accent-glow:rgba(108,99,255,0.25); --green:#34d399; --amber:#fbbf24;
+      --rose:#fb7185; --sky:#38bdf8; --text:#f1f3fa; --text2:#b0b8cc;
+      --text3:#6a7389; --surface2:#1e2230; --surface3:#282d3d;
+      --radius:14px; --radius-sm:8px; --sidebar-w:240px;
+      --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+      --shadow:0 4px 24px rgba(0,0,0,0.4);
+    }
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
+    button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+    ::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-track{background:var(--surface);} ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
+    
+    /* SIDEBAR */
+    .sidebar{position:fixed;top:0;left:0;height:100vh;width:var(--sidebar-w);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;}
+    .sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}
+    .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px var(--accent-glow);}
+    .logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+    .logo-sub{font-size:10px;color:var(--text3);font-weight:500;margin-top:1px;}
+    .sidebar-nav{flex:1;padding:12px 10px;overflow-y:auto;}
+    .nav-section{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.2px;padding:16px 10px 6px;}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--radius-sm);color:var(--text2);font-size:13px;font-weight:500;text-decoration:none;transition:all 0.2s;margin-bottom:2px;}
+    .nav-link i{width:16px;text-align:center;font-size:13px;}
+    .nav-link:hover{background:var(--surface2);color:var(--text);}
+    .nav-link.active{background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(167,139,250,0.1));color:var(--accent2);border:1px solid rgba(108,99,255,0.25);}
+    .nav-link.active i{color:var(--accent);}
+    .sidebar-footer{padding:16px;border-top:1px solid var(--border);}
+    .user-chip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);}
+    .user-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;}
+    .user-name{font-size:12px;font-weight:600;color:var(--text);}
+    .user-role{font-size:10px;color:var(--text3);}
+    
+    /* TOPBAR */
+    .topbar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:60px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;z-index:90;gap:16px;}
+    .topbar-left h1{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+    .topbar-left p{font-size:11px;color:var(--text3);margin-top:1px;}
+    .topbar-right{display:flex;align-items:center;gap:8px;}
+    .btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:var(--radius-sm);font-size:12px;font-weight:600;transition:all 0.2s;cursor:pointer;}
+    .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border2);}
+    .btn-ghost:hover{background:var(--surface2);color:var(--text);}
+    .btn-primary{background:linear-gradient(135deg,var(--accent),#7c6df0);color:#fff;border:1px solid rgba(255,255,255,0.1);box-shadow:0 2px 12px var(--accent-glow);}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow);}
+    
+    /* MAIN */
+    .main{margin-left:var(--sidebar-w);padding-top:60px;min-height:100vh;}
+    .page-content{padding:28px;}
+    
+    /* METRIC CARDS */
+    .metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;transition:all 0.25s;}
+    .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity 0.25s;}
+    .metric-card:hover::before{opacity:1;}
+    .metric-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);}
+    .metric-card.green::before{background:linear-gradient(90deg,var(--green),#059669);}
+    .metric-card.purple::before{background:linear-gradient(90deg,#c084fc,var(--accent2));}
+    .metric-card.blue::before{background:linear-gradient(90deg,var(--sky),#0284c7);}
+    .metric-card.amber::before{background:linear-gradient(90deg,var(--amber),#d97706);}
+    .metric-icon{width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:15px;margin-bottom:12px;}
+    .metric-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:4px;}
+    .metric-value{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-1px;}
+    .metric-sub{font-size:10px;color:var(--text3);margin-top:4px;}
+    .trend-chip{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;margin-top:8px;}
+    
+    /* CHARTS */
+    .chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:24px;}
+    .chart-card h3{font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;letter-spacing:-0.2px;}
+    .charts-row{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:24px;}
+    .charts-row2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;}
+    .legend-item{display:flex;align-items:center;justify-content:space-between;font-size:12px;padding:4px 0;}
+    .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+    
+    /* TOPIC BREAKDOWN */
+    .breakdown-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:20px;}
+    .topic-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:all 0.25s;}
+    .topic-card:hover{border-color:rgba(108,99,255,0.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.3);}
+    .accent-arrays      {border-top:3px solid #6366f1;}
+    .accent-stacks      {border-top:3px solid #22c55e;}
+    .accent-queue       {border-top:3px solid #3b82f6;}
+    .accent-linkedlists {border-top:3px solid #a855f7;}
+    .accent-trees       {border-top:3px solid #eab308;}
+    .accent-graphs      {border-top:3px solid #ef4444;}
+    .score-bar-track{height:5px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:4px;}
+    .score-bar-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+    .badge-pct{font-size:10px;font-weight:700;padding:2px 8px;border-radius:100px;}
+    
+    /* TABLE */
+    .table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:24px;}
+    .table-card h3{font-size:14px;font-weight:700;color:var(--text);padding:18px 20px;border-bottom:1px solid var(--border);letter-spacing:-0.2px;}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:var(--surface2);}
+    thead th{padding:10px 16px;font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;text-align:left;}
+    tbody tr{border-top:1px solid var(--border);transition:background 0.15s;}
+    tbody tr:hover{background:var(--surface2);}
+    tbody td{padding:12px 16px;font-size:12px;color:var(--text2);}
+    tbody td:first-child{color:var(--text);font-weight:600;}
+    .topic-pill{display:inline-block;font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;}
+    
+    /* ACCESS DENIED */
+    .access-card{background:var(--surface);border:1px solid rgba(251,113,133,0.3);border-radius:var(--radius);padding:48px;text-align:center;max-width:480px;margin:40px auto;}
+    
+    /* SPINNER */
+    .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    
+    @media(max-width:1100px){.breakdown-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:900px){.metrics-grid,.charts-row,.charts-row2{grid-template-columns:1fr 1fr;}}
+    @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}.metrics-grid{grid-template-columns:1fr 1fr;}.breakdown-grid{grid-template-columns:1fr;}}
     </style>
 </head>
 <body class="bg-gray-100">
 
-<aside class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-[#0f1b3f] to-[#2a1b63] text-white shadow-xl z-50">
-    <div class="p-6 border-b border-indigo-700">
-        <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                <i class="fas fa-cube text-indigo-700 text-xl"></i>
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+          <div class="logo-icon"><i class="fas fa-cube"></i></div>
+          <div>
+            <div class="logo-text">StructuReality</div>
+            <div class="logo-sub">Admin Portal</div>
+          </div>
+        </div>
+        <nav class="sidebar-nav">
+          <div class="nav-section">Main</div>
+          <a href="index.html"    class="nav-link"><i class="fas fa-home"></i> Dashboard</a>
+          <a href="users.html"    class="nav-link"><i class="fas fa-users"></i> Users</a>
+          <a href="slides.html"   class="nav-link"><i class="fas fa-images"></i> App Settings</a>
+          <a href="lessons.html"  class="nav-link"><i class="fas fa-book"></i> Lessons</a>
+          <a href="quizzes.html"  class="nav-link"><i class="fas fa-question-circle"></i> Quizzes</a>
+          <div class="nav-section">Analytics</div>
+          <a href="analytics.html"         class="nav-link active"><i class="fas fa-chart-line"></i> Analytics</a>
+          <a href="scenarios.html"         class="nav-link"><i class="fas fa-vr-cardboard"></i> AR Scenarios</a>
+          <a href="unified-analytics.html" class="nav-link"><i class="fas fa-chart-bar"></i> Unified Analytics</a>
+        </nav>
+        <div class="sidebar-footer">
+          <div class="user-chip">
+            <div class="user-avatar" id="adminUserDisplay">A</div>
+            <div>
+              <div class="user-name" id="adminNameDisplay">Admin</div>
+              <div class="user-role" id="adminEmailDisplay">admin@admin.com</div>
             </div>
-            <div><h1 class="text-xl font-bold">StructuReality</h1><p class="text-xs text-indigo-300">Admin Portal</p></div>
+          </div>
         </div>
-    </div>
-    <nav class="mt-6 px-4">
-        <a href="index.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-home w-5"></i><span class="font-medium">Dashboard</span></a>
-        <a href="users.html"     class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-users w-5"></i><span class="font-medium">Users</span></a>
-        <a href="quizzes.html"   class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-question-circle w-5"></i><span class="font-medium">Quizzes</span></a>
-        <a href="analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg bg-indigo-700 text-white mb-2"><i class="fas fa-chart-line w-5"></i><span class="font-medium">Analytics</span></a>
-        <a href="scenarios.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2"><i class="fas fa-vr-cardboard w-5"></i><span class="font-medium">AR Scenarios</span></a>
-        <a href="slides.html"
-        class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-        <i class="fas fa-images w-5"></i>
-        <span class="font-medium">App Settings</span>
-    </a>
-        <a href="unified-analytics.html" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-indigo-200 hover:bg-indigo-700 mb-2">
-            <i class="fas fa-chart-line w-5"></i>
-            <span class="font-medium">User & Scenario Analytics</span>
-          </a>     </nav>
-</aside>
+      </aside>
 
-<nav class="fixed top-0 left-64 right-0 bg-white shadow-md z-40">
-    <div class="px-8 py-4 flex items-center justify-between">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-800">Analytics</h2>
-            <p class="text-sm text-gray-500">Platform performance insights</p>
+      <nav class="topbar">
+        <div class="topbar-left">
+          <h1>Analytics</h1>
+          <p>Platform performance insights</p>
         </div>
-        <div class="flex items-center space-x-4">
-            <button onclick="refreshAnalytics()" id="refreshBtn" class="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-sm font-medium">
-                <i class="fas fa-sync mr-2"></i>Refresh
-            </button>
-            <div class="flex items-center space-x-3 px-4 py-2 hover:bg-gray-100 rounded-lg transition cursor-pointer" onclick="window.location.href='profile.html'">
-                <div class="w-8 h-8 bg-indigo-200 rounded-full flex items-center justify-center"><i class="fas fa-user text-indigo-700 text-sm"></i></div>
+        <div class="topbar-right">
+          <button onclick="refreshAnalytics()" class="btn btn-ghost"><i class="fas fa-sync"></i> Refresh</button>
+          <button onclick="logout()" class="btn btn-ghost" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </nav>
+
+      <main class="main">
+        <div class="page-content">
+      
+          <!-- Access Denied -->
+          <div id="accessDenied" style="display:none;">
+            <div class="access-card">
+              <div style="width:56px;height:56px;background:rgba(251,113,133,0.15);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+                <i class="fas fa-lock" style="color:var(--rose);font-size:22px;"></i>
+              </div>
+              <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px;">Access Denied</div>
+              <p style="font-size:12px;color:var(--text3);margin-bottom:20px;">Only administrators can view analytics.</p>
+              <a href="index.html" class="btn btn-primary" style="text-decoration:none;justify-content:center;"><i class="fas fa-home"></i> Return to Dashboard</a>
+            </div>
+          </div>
+      
+          <!-- Loading -->
+          <div id="loadingState" style="text-align:center;padding:80px 20px;">
+            <div class="spinner" style="width:32px;height:32px;margin:0 auto 16px;"></div>
+            <p style="color:var(--text3);font-size:13px;">Loading analytics data…</p>
+          </div>
+      
+          <div id="analyticsContent" style="display:none;">
+      
+            <!-- Metric Cards -->
+            <div class="metrics-grid">
+              <div class="metric-card green">
+                <div class="metric-icon" style="background:rgba(52,211,153,0.15);color:var(--green);"><i class="fas fa-graduation-cap"></i></div>
+                <div class="metric-label">Completion Rate</div>
+                <div class="metric-value" id="completionRate">--%</div>
+                <div class="metric-sub">avg. lesson completion</div>
+                <div class="trend-chip" id="completionTrend" style="background:rgba(52,211,153,0.15);color:var(--green);">--</div>
+              </div>
+              <div class="metric-card purple">
+                <div class="metric-icon" style="background:rgba(167,139,250,0.15);color:var(--accent2);"><i class="fas fa-clock"></i></div>
+                <div class="metric-label">Avg. Time / User</div>
+                <div class="metric-value" id="avgTimePerUser">--</div>
+                <div class="metric-sub">total time / users</div>
+                <div class="trend-chip" id="sessionTrend" style="background:rgba(167,139,250,0.15);color:var(--accent2);">--</div>
+              </div>
+              <div class="metric-card blue">
+                <div class="metric-icon" style="background:rgba(56,189,248,0.15);color:var(--sky);"><i class="fas fa-hourglass-half"></i></div>
+                <div class="metric-label">Total Time Spent</div>
+                <div class="metric-value" id="totalTimeSpent">--</div>
+                <div class="metric-sub">all users combined</div>
+              </div>
+              <div class="metric-card amber">
+                <div class="metric-icon" style="background:rgba(251,191,36,0.15);color:var(--amber);"><i class="fas fa-star"></i></div>
+                <div class="metric-label">User Engagement</div>
+                <div class="metric-value" id="engagementScore">-/10</div>
+                <div class="metric-sub">engagement score</div>
+                <div class="trend-chip" id="engagementTrend" style="background:rgba(251,191,36,0.15);color:var(--amber);">--</div>
+              </div>
+            </div>
+      
+            <!-- Charts Row 1 -->
+            <div class="charts-row">
+              <div class="chart-card">
+                <h3>User Activity (Last 7 Days)</h3>
+                <canvas id="activityChart" height="90"></canvas>
+              </div>
+              <div class="chart-card">
+                <h3>Topic Popularity</h3>
+                <canvas id="topicChart" height="160"></canvas>
+                <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px;" id="topicLegend"></div>
+              </div>
+            </div>
+      
+            <!-- Charts Row 2 -->
+            <div class="charts-row2">
+              <div class="chart-card">
+                <h3>User Progress Distribution</h3>
+                <canvas id="progressChart" height="130"></canvas>
+              </div>
+              <div class="chart-card">
+                <h3>Streak Distribution</h3>
+                <canvas id="streakChart" height="130"></canvas>
+              </div>
+            </div>
+      
+            <!-- Topic Score Breakdown -->
+            <div class="table-card">
+              <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
                 <div>
-                    <p class="text-sm font-medium text-gray-800" id="adminUserDisplay">Admin</p>
-                    <p class="text-xs text-gray-500" id="adminEmailDisplay">admin@admin.com</p>
+                  <h3 style="font-size:14px;font-weight:700;color:var(--text);padding:0;border:none;margin:0;">Topic Score Breakdown</h3>
+                  <p style="font-size:11px;color:var(--text3);margin-top:2px;">Average scores per topic across all users</p>
                 </div>
-            </div>
-            <button onclick="logout()" class="p-2 hover:bg-gray-100 rounded-lg" title="Logout"><i class="fas fa-sign-out-alt text-gray-600"></i></button>
-        </div>
-    </div>
-</nav>
-
-<main class="ml-64 mt-20 p-8">
-    <div id="accessDenied" class="hidden">
-        <div class="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
-            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-lock text-red-600 text-3xl"></i></div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-2">Access Denied</h2>
-            <p class="text-gray-600 mb-6">Only administrators can view analytics.</p>
-            <a href="index.html" class="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"><i class="fas fa-home mr-2"></i>Return to Dashboard</a>
-        </div>
-    </div>
-
-    <div id="loadingState" class="text-center py-20">
-        <i class="fas fa-spinner fa-spin text-indigo-600 text-4xl mb-4"></i>
-        <p class="text-gray-600">Loading analytics data…</p>
-    </div>
-
-    <div id="analyticsContent" style="display:none;">
-
-        <!-- Key Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-green-500">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center"><i class="fas fa-graduation-cap text-green-600 text-xl"></i></div>
-                    <span id="completionTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
+                <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block;"></span>Concept Quiz</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span>AR Guided</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>AR Challenge</span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:10px;color:var(--text3);"><span style="width:8px;height:8px;border-radius:50%;background:#0ea5e9;display:inline-block;"></span>Code Score</span>
                 </div>
-                <h3 class="text-gray-500 text-sm font-medium">Completion Rate</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-1" id="completionRate">--%</p>
-                <p class="text-xs text-gray-400 mt-2">avg. lesson completion</p>
+              </div>
+              <div class="breakdown-grid" id="topicBreakdownGrid">
+                <p style="color:var(--text3);text-align:center;padding:40px;grid-column:1/-1;"><span class="spinner"></span></p>
+              </div>
             </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-purple-500">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center"><i class="fas fa-clock text-purple-600 text-xl"></i></div>
-                    <span id="sessionTrend" class="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full">--</span>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium">Avg. Time / User</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-1" id="avgTimePerUser">--</p>
-                <p class="text-xs text-gray-400 mt-2">total time / users</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-blue-500">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center"><i class="fas fa-hourglass-half text-blue-600 text-xl"></i></div>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium">Total Time Spent</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-1" id="totalTimeSpent">--</p>
-                <p class="text-xs text-gray-400 mt-2">all users combined</p>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover border-l-4 border-orange-500">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center"><i class="fas fa-star text-orange-600 text-xl"></i></div>
-                    <span id="engagementTrend" class="px-2 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">--</span>
-                </div>
-                <h3 class="text-gray-500 text-sm font-medium">User Engagement</h3>
-                <p class="text-3xl font-bold text-gray-800 mt-1" id="engagementScore">-/10</p>
-                <p class="text-xs text-gray-400 mt-2">engagement score</p>
-            </div>
-        </div>
-
-        <!-- Charts Row 1 -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-6">User Activity (Last 7 Days)</h3>
-                <canvas id="activityChart" height="80"></canvas>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-6">Topic Popularity</h3>
-                <canvas id="topicChart"></canvas>
-                <div class="mt-6 space-y-3" id="topicLegend"></div>
-            </div>
-        </div>
-
-        <!-- Charts Row 2 -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-6">User Progress Distribution</h3>
-                <canvas id="progressChart" height="120"></canvas>
-            </div>
-            <div class="bg-white rounded-xl shadow-sm p-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-6">Streak Distribution</h3>
-                <canvas id="streakChart" height="120"></canvas>
-            </div>
-        </div>
-
-        <!-- ══ TOPIC SCORE BREAKDOWN ══ -->
-        <div class="bg-white rounded-xl shadow-sm mb-8">
-            <div class="p-6 border-b border-gray-100">
-                <div class="flex flex-wrap items-start justify-between gap-4">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800">Topic Score Breakdown</h3>
-                        <p class="text-sm text-gray-500 mt-0.5">Average scores per topic across all users</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-gray-500">
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500 inline-block"></span>Concept Quiz</span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>AR Guided</span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>AR Challenge</span>
-                        <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-sky-500 inline-block"></span>Code Score</span>
-                    </div>
-                </div>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5" id="topicBreakdownGrid">
-                <p class="text-gray-400 col-span-3 text-center py-8"><i class="fas fa-spinner fa-spin mr-2"></i>Loading…</p>
-            </div>
-        </div>
-
-        <!-- Lesson Performance Table -->
-        <div class="bg-white rounded-xl shadow-sm mb-8">
-            <div class="p-6 border-b border-gray-100">
-                <h3 class="text-lg font-semibold text-gray-800">Lesson Performance</h3>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="text-left text-xs font-medium text-gray-500 uppercase bg-gray-50">
-                            <th class="px-6 py-4">Lesson Name</th>
-                            <th class="px-6 py-4">Topic</th>
-                            <th class="px-6 py-4">Completions</th>
-                            <th class="px-6 py-4">Avg. Score</th>
-                            <th class="px-6 py-4">Avg. Time</th>
-                            <th class="px-6 py-4">Rating</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100" id="lessonPerformanceTable">
-                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Loading…</td></tr>
-                    </tbody>
+      
+            <!-- Lesson Performance Table -->
+            <div class="table-card">
+              <h3>Lesson Performance</h3>
+              <div style="overflow-x:auto;">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Lesson Name</th>
+                      <th>Topic</th>
+                      <th>Completions</th>
+                      <th>Avg. Score</th>
+                      <th>Avg. Time</th>
+                      <th>Rating</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lessonPerformanceTable">
+                    <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px;">Loading…</td></tr>
+                  </tbody>
                 </table>
+              </div>
             </div>
+      
+          </div>
         </div>
-
-    </div>
-</main>
+      </main>
 
 <script>
 const API_URL = window.location.hostname === 'localhost'
@@ -343,13 +418,15 @@ function buildTopicBreakdown(allUsers, allQuizzes) {
             n++;
 
             // ── 1. Concept Quiz ──────────────────────────────────────
-            // True percentage: quizTotalCorrect / quizTotalQuestions
-            // Falls back to quizScore (running avg) if new fields not yet populated
-            if (t.quizTotalQuestions > 0) {
-                conceptSum += Math.round((t.quizTotalCorrect / t.quizTotalQuestions) * 100);
-            } else {
-                conceptSum += Math.min(100, t.quizScore || 0);
-            }
+// Average of all lessonQuizScores for this topic
+const quizScores = t.lessonQuizScores ? Object.values(t.lessonQuizScores).filter(s => s > 0) : [];
+if (quizScores.length > 0) {
+    const avg = quizScores.reduce((a, b) => a + b, 0) / quizScores.length;
+    conceptSum += Math.round(avg);
+} else {
+    // Fallback: use quizProgress field if lessonQuizScores is empty
+    conceptSum += Math.min(100, t.quizProgress || 0);
+}
 
             // ── 2. AR Guided ─────────────────────────────────────────
             // % of guided AR lessons finished out of total for that topic
@@ -394,46 +471,41 @@ function buildTopicBreakdown(allUsers, allQuizzes) {
 function renderTopicBreakdown(breakdown) {
     const grid = document.getElementById('topicBreakdownGrid');
     let html = '';
-
     ALL_TOPICS.forEach(topic => {
         const d = breakdown[topic.key] || { conceptQuizPct:0, arGuidedPct:0, arChallengePct:0, codePct:0, userCount:0 };
         const overall = Math.round((d.conceptQuizPct + d.arGuidedPct + d.arChallengePct + d.codePct) / 4);
-        const badgeBg = overall >= 70 ? '#dcfce7' : overall >= 40 ? '#fef9c3' : '#fee2e2';
-        const badgeFg = overall >= 70 ? '#166534' : overall >= 40 ? '#92400e' : '#991b1b';
-
+        const badgeBg = overall >= 70 ? 'rgba(52,211,153,0.15)' : overall >= 40 ? 'rgba(251,191,36,0.15)' : 'rgba(251,113,133,0.15)';
+        const badgeFg = overall >= 70 ? 'var(--green)' : overall >= 40 ? 'var(--amber)' : 'var(--rose)';
         html += `
         <div class="topic-card ${topic.accentClass}">
-            <div class="px-5 pt-4 pb-3 flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                    <i class="fas ${topic.icon} text-sm" style="color:${topic.color}"></i>
-                    <span class="font-semibold text-gray-800 text-sm">${topic.label}</span>
-                    ${d.totalQuizzes > 0 ? `<span class="text-xs text-gray-400">(${d.totalQuizzes} Q)</span>` : ''}
+            <div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <i class="fas ${topic.icon}" style="color:${topic.color};font-size:13px;"></i>
+                    <span style="font-weight:700;color:var(--text);font-size:13px;">${topic.label}</span>
+                    ${d.totalQuizzes > 0 ? `<span style="font-size:10px;color:var(--text3);">(${d.totalQuizzes} Q)</span>` : ''}
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-gray-400">${d.userCount} user${d.userCount !== 1 ? 's' : ''}</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="font-size:10px;color:var(--text3);">${d.userCount} user${d.userCount !== 1 ? 's' : ''}</span>
                     <span class="badge-pct" style="background:${badgeBg};color:${badgeFg}">${overall}%</span>
                 </div>
             </div>
-            <div class="px-5 pb-5 space-y-3">
+            <div style="padding:0 16px 16px;display:flex;flex-direction:column;gap:10px;">
                 ${SCORE_ROWS.map(row => {
                     const pct = d[row.key] || 0;
                     return `
                     <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="flex items-center gap-1.5 text-xs text-gray-600 font-medium">
-                                <span>${row.icon}</span>${row.label}
-                            </span>
-                            <span class="text-xs font-bold tabular-nums" style="color:${row.color}">${pct}%</span>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                            <span style="font-size:11px;color:var(--text2);font-weight:500;">${row.icon} ${row.label}</span>
+                            <span style="font-size:11px;font-weight:700;color:${row.color};">${pct}%</span>
                         </div>
-                        <div class="score-bar-track" style="background:${row.track}">
-                            <div class="score-bar-fill" style="width:${pct}%;background:${row.color}"></div>
+                        <div class="score-bar-track">
+                            <div class="score-bar-fill" style="width:${pct}%;background:${row.color};"></div>
                         </div>
                     </div>`;
                 }).join('')}
             </div>
         </div>`;
     });
-
     grid.innerHTML = html;
 }
 
@@ -447,7 +519,10 @@ function updateActivityChart(d) {
             { label: "Active Users",      data: d.activeUsers,      borderColor: "#6366f1", backgroundColor: "rgba(99,102,241,0.1)",  tension: 0.4, fill: true, borderWidth: 2 },
             { label: "Lessons Completed", data: d.lessonsCompleted, borderColor: "#10b981", backgroundColor: "rgba(16,185,129,0.1)", tension: 0.4, fill: true, borderWidth: 2 }
         ]},
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: "bottom" } }, scales: { y: { beginAtZero: true, grid: { color: "rgba(0,0,0,0.05)" } }, x: { grid: { display: false } } } }
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: "bottom" } },scales: {
+  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#b0b8cc' } },
+  x: { grid: { display: false }, ticks: { color: '#b0b8cc' } }
+}}
     });
 }
 
@@ -482,7 +557,10 @@ function updateProgressChart(d) {
             backgroundColor: ["rgba(239,68,68,.8)","rgba(251,146,60,.8)","rgba(234,179,8,.8)","rgba(34,197,94,.8)","rgba(16,185,129,.8)"],
             borderRadius: 6, borderWidth: 0
         }]},
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+        options: { responsive: true, maintainAspectRatio: true,plugins: { legend: { display: true, position: 'bottom', labels: { color: '#b0b8cc' } } }, scales: {
+  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#b0b8cc' } },
+  x: { grid: { display: false }, ticks: { color: '#b0b8cc' } }
+} }
     });
 }
 
@@ -495,25 +573,32 @@ function updateStreakChart(d) {
             label: "Users", data: [d['1-3'],d['4-7'],d['8-14'],d['15-30'],d['30+']],
             backgroundColor: "rgba(168,85,247,.8)", borderRadius: 6, borderWidth: 0
         }]},
-        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: { grid: { display: false } } } }
+        options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { display: true, position: 'bottom', labels: { color: '#b0b8cc' } } }, scales: {
+  y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#b0b8cc' } },
+  x: { grid: { display: false }, ticks: { color: '#b0b8cc' } }
+} }
     });
 }
 
 function updateLessonPerformanceTable(lessonData) {
     const tbody = document.getElementById('lessonPerformanceTable');
     if (!lessonData || !lessonData.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">No data available</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:24px;">No data available</td></tr>';
         return;
     }
-    tbody.innerHTML = lessonData.map(l => `
-        <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 font-medium text-gray-800">${l.name}</td>
-            <td class="px-6 py-4"><span class="px-3 py-1 bg-${l.color}-100 text-${l.color}-700 rounded-full text-xs font-semibold">${l.topic}</span></td>
-            <td class="px-6 py-4 text-gray-700">${l.completions}</td>
-            <td class="px-6 py-4 font-semibold text-gray-800">${l.avgScore}</td>
-            <td class="px-6 py-4 text-gray-700">${l.avgTime}</td>
-            <td class="px-6 py-4"><i class="fas fa-star text-yellow-400 text-sm mr-1"></i><span class="font-medium text-gray-800">${l.rating}</span></td>
-        </tr>`).join('');
+    const colorMap = { indigo:'#6366f1', blue:'#3b82f6', green:'#22c55e', purple:'#a855f7', yellow:'#eab308', red:'#ef4444', gray:'#6a7389' };
+    tbody.innerHTML = lessonData.map(l => {
+        const c = colorMap[l.color] || colorMap.gray;
+        return `
+        <tr>
+            <td>${l.name}</td>
+            <td><span class="topic-pill" style="background:${c}20;color:${c};">${l.topic}</span></td>
+            <td>${l.completions}</td>
+            <td style="font-weight:700;color:var(--text);">${l.avgScore}</td>
+            <td>${l.avgTime}</td>
+            <td><i class="fas fa-star" style="color:var(--amber);font-size:11px;margin-right:4px;"></i><span style="font-weight:600;color:var(--text);">${l.rating}</span></td>
+        </tr>`;
+    }).join('');
 }
 
 window.addEventListener('load', () => {

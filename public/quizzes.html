@@ -437,12 +437,16 @@ function renderAll() {
     Object.values(byTopic).forEach(arr => arr.sort((a, b) => a.order - b.order));
 
     const quizByLesson = {};
-    quizzes.forEach(q => {
-        if (q.lessonTitle) {
-            if (!quizByLesson[q.lessonTitle]) quizByLesson[q.lessonTitle] = [];
-            quizByLesson[q.lessonTitle].push(q);
-        }
-    });
+quizzes.forEach(q => {
+    const key = q.lessonTitle && q.lessonTitle.trim() ? q.lessonTitle.trim() : null;
+    if (key) {
+        if (!quizByLesson[key]) quizByLesson[key] = [];
+        quizByLesson[key].push(q);
+    } else {
+        // Fallback: quiz has no lessonTitle — log it so you can see what's happening
+        console.warn('⚠️ Quiz missing lessonTitle:', q._id, q.topicName, q.questionText?.substring(0, 40));
+    }
+});
 
     const palette = {
   Arrays:      { tc:'#6c63ff', icon:'fa-layer-group' },

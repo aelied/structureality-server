@@ -3050,12 +3050,29 @@ app.get('/api/analytics', async (req, res) => {
             }
         });
 
-        lessons.slice(0, 10).forEach(lesson => {
-            const topicStat = topicStats[lesson.topicName];
-            if (topicStat) {
-                const avgScore = topicStat.users > 0
-                    ? ((topicStat.totalScore / topicStat.users)).toFixed(1)
-                    : 0;
+        // Build per-topic quiz score averages from lessonQuizScores
+const topicQuizAvg = {};
+users.forEach(user => {
+    if (!user.progress) return;
+    Object.entries(user.progress).forEach(([topicName, topic]) => {
+        if (!topicQuizAvg[topicName]) topicQuizAvg[topicName] = { sum: 0, count: 0 };
+        const scores = Object.values(topic.lessonQuizScores || {}).filter(s => s > 0);
+        if (scores.length > 0) {
+            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+            topicQuizAvg[topicName].sum += avg;
+            topicQuizAvg[topicName].count++;
+        }
+    });
+});
+
+lessons.slice(0, 10).forEach(lesson => {
+    const topicStat = topicStats[lesson.topicName];
+    if (topicStat) {
+        // Use quiz score average instead of old totalScore
+        const quizData = topicQuizAvg[lesson.topicName];
+        const avgScore = quizData && quizData.count > 0
+            ? (quizData.sum / quizData.count).toFixed(1)
+            : 0;
 
                 const avgTimeSeconds = topicStat.users > 0
                     ? (topicStat.totalTime / topicStat.users)

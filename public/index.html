@@ -112,6 +112,24 @@
       .activity-text{font-size:12px;color:var(--text2);line-height:1.5;}
       .activity-text strong{color:var(--text);font-weight:600;}
       .activity-time{font-size:10px;color:var(--text3);margin-top:2px;}
+
+      /* LEADERBOARD */
+.lb-period-btns{display:flex;gap:6px;margin-bottom:0;}
+.lb-period-btn{font-size:11px;font-weight:600;padding:4px 12px;border-radius:100px;border:1px solid var(--border2);background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;}
+.lb-period-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--border);}
+.lb-row:first-child{border-top:none;}
+.lb-rank{font-size:13px;font-weight:700;min-width:28px;text-align:center;}
+.lb-info{flex:1;min-width:0;}
+.lb-name{font-size:12px;font-weight:600;color:var(--text);}
+.lb-meta{font-size:10px;color:var(--text3);margin-top:2px;}
+.lb-bar-wrap{width:80px;}
+.lb-bar-bg{height:4px;background:var(--surface3);border-radius:2px;overflow:hidden;}
+.lb-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));}
+.lb-xp{text-align:right;}
+.lb-xp-val{font-size:13px;font-weight:700;color:var(--accent2);}
+.lb-xp-lbl{font-size:9px;color:var(--text3);}
+.lb-me .lb-name::after{content:'You';font-size:9px;background:var(--accent);color:#fff;border-radius:4px;padding:1px 5px;margin-left:6px;font-weight:700;}
   
       /* SPINNER / SKELETON */
       .spinner{width:18px;height:18px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block;}
@@ -218,6 +236,20 @@
             <span class="panel-title">Recent Activity</span>
           </div>
           <div class="panel-body" id="recentActivity">
+            <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:16px;">
+          <div class="panel-header">
+            <span class="panel-title">XP Leaderboard</span>
+            <div class="lb-period-btns">
+              <button class="lb-period-btn active" onclick="setLBPeriod('all',this)">All time</button>
+              <button class="lb-period-btn" onclick="setLBPeriod('month',this)">Month</button>
+              <button class="lb-period-btn" onclick="setLBPeriod('week',this)">Week</button>
+            </div>
+          </div>
+          <div class="panel-body" id="leaderboardPanel">
             <div style="text-align:center;padding:20px;"><div class="spinner"></div></div>
           </div>
         </div>
@@ -363,7 +395,52 @@
         document.getElementById('sidebarAvatar').textContent   = (user.name||user.username||'A')[0].toUpperCase();
         document.getElementById('sidebarUserRole').textContent = user.role==='instructor'?'Instructor':'Administrator';
         loadDashboardData();
+        fetchLeaderboard();
       });
+
+      var _lbPeriod = 'all';
+
+function setLBPeriod(period, btn) {
+  _lbPeriod = period;
+  document.querySelectorAll('.lb-period-btn').forEach(function(b){ b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
+  fetchLeaderboard();
+}
+
+async function fetchLeaderboard() {
+  const c = document.getElementById('leaderboardPanel');
+  c.innerHTML = '<div style="text-align:center;padding:20px;"><div class="spinner"></div></div>';
+  try {
+    const res  = await fetch(`${API_URL}/leaderboard?limit=10&period=${_lbPeriod}`);
+    const data = await res.json();
+    if (!data.success || !data.leaderboard.length) {
+      c.innerHTML = '<p style="color:var(--text3);font-size:12px;text-align:center;">No data yet</p>';
+      return;
+    }
+    const medals = ['🥇','🥈','🥉'];
+    const maxXP  = data.leaderboard[0].xp || 1;
+    c.innerHTML = data.leaderboard.map((u, i) => {
+      const pct  = Math.round((u.xp / maxXP) * 100);
+      const rank = i < 3 ? medals[i] : `#${i+1}`;
+      return `<div class="lb-row ${u.username === (window._adminUsername||'') ? 'lb-me' : ''}">
+        <div class="lb-rank">${rank}</div>
+        <div class="lb-info">
+          <div class="lb-name">${u.name || u.username}</div>
+          <div class="lb-meta">${u.lessons} lessons · ${u.challenges} challenges · 🔥${u.streak}</div>
+        </div>
+        <div class="lb-bar-wrap">
+          <div class="lb-bar-bg"><div class="lb-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="lb-xp">
+          <div class="lb-xp-val">${u.xp.toLocaleString()}</div>
+          <div class="lb-xp-lbl">XP</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    c.innerHTML = '<p style="color:var(--rose);font-size:12px;text-align:center;">Failed to load leaderboard</p>';
+  }
+}
     </script>
     </body>
 

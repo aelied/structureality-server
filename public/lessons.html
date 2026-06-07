@@ -807,11 +807,7 @@ input,select,textarea{font-family:inherit;outline:none;}
         <option value="Trees">Trees</option>
         <option value="Graphs">Graphs</option>
       </select>
-      <select class="filter-select" id="diffFilter" onchange="filterLessons()">
-        <option value="all">All Levels</option>
-        <option value="beginner">Beginner</option>
-        <option value="intermediate">Intermediate</option>
-      </select>
+     
     </div>
 
     <!-- Lessons grid -->
@@ -1229,12 +1225,10 @@ function displayLessons(lessons) {
 function filterLessons() {
   const q=document.getElementById('searchInput').value.toLowerCase();
   const t=document.getElementById('topicFilter').value;
-  const d=document.getElementById('diffFilter').value;
   displayLessons(allLessons.filter(l=>{
     const ms=l.title.toLowerCase().includes(q)||l.description.toLowerCase().includes(q);
     const mt=t==='all'||l.topicName===t;
-    const md=d==='all'||(l.difficultyLevel||'beginner')===d;
-    return ms&&mt&&md;
+    return ms&&mt;
   }));
 }
 
