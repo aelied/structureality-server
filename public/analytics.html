@@ -13,6 +13,11 @@
       --radius:14px; --radius-sm:8px; --sidebar-w:240px;
       --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
       --shadow:0 4px 24px rgba(0,0,0,0.4);
+      [data-theme="light"] {
+  --bg:#f4f5f9; --surface:#ffffff; --surface2:#f0f1f6; --surface3:#e4e6ee;
+  --border:rgba(0,0,0,0.08); --border2:rgba(0,0,0,0.13);
+  --text:#111827; --text2:#374151; --text3:#6b7280;
+}
     }
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;font-size:14px;line-height:1.6;}
@@ -112,7 +117,8 @@
     
     @media(max-width:1100px){.breakdown-grid{grid-template-columns:repeat(2,1fr);}}
     @media(max-width:900px){.metrics-grid,.charts-row,.charts-row2{grid-template-columns:1fr 1fr;}}
-    @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}.metrics-grid{grid-template-columns:1fr 1fr;}.breakdown-grid{grid-template-columns:1fr;}}
+    @media(max-width:600px){:root{--sidebar-w:0px;}.sidebar{display:none;}.topbar{left:0;}.metrics-grid{grid-template-columns:1fr 1fr;}.breakdown-grid{grid-template-columns:1fr;}
+}
     </style>
 </head>
 <body class="bg-gray-100">
@@ -610,6 +616,10 @@ function updateLessonPerformanceTable(lessonData) {
 }
 
 window.addEventListener('load', () => {
+    const savedTheme = localStorage.getItem('adminTheme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
+
     const user = checkAuth();
     if (!user) return;
     document.getElementById('adminUserDisplay').textContent  = (user.name || user.username || 'A')[0].toUpperCase();
@@ -620,9 +630,6 @@ document.getElementById('adminEmailDisplay').textContent = user.role === 'instru
         document.getElementById('loadingState').style.display = 'none';
         document.getElementById('refreshBtn').style.display   = 'none';
     } else {
-        const savedTheme = localStorage.getItem('adminTheme') || 'dark';
-document.documentElement.setAttribute('data-theme', savedTheme);
-document.getElementById('themeBtn').textContent = savedTheme === 'light' ? '🌙' : '☀️';
         loadAnalytics(user.username);
     }
 });
