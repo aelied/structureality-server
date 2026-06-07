@@ -511,7 +511,7 @@ html += `
   <div>`;
 
     filtered.forEach((lesson, idx) => {
-          const quizzesForLesson = quizByLesson[lesson.title] || [];
+          const quizzesForLesson = quizByLesson[lesson.title.trim()] || [];
           const hasQuiz = quizzesForLesson.length > 0;
           const escapedTitle = lesson.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
           const questionCount = quizzesForLesson.length;
