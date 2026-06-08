@@ -1325,14 +1325,16 @@ function openAddModalForTopic(topic) {
   previewRefresh();
 }
 
-function filterLessons() {
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  const t=document.getElementById('topicFilter').value;
-  displayLessons(allLessons.filter(l=>{
-    const ms=l.title.toLowerCase().includes(q)||l.description.toLowerCase().includes(q);
-    const mt=t==='all'||l.topicName===t;
-    return ms&&mt;
-  }));
+async function loadLessons() {
+  document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
+  try {
+    const r = await fetch(`${API_URL}/lessons`);
+    const d = await r.json();
+    if (d.success) { allLessons = d.lessons||[]; updateStats(); displayTopics(); }
+    else showToast('Failed to load lessons','error');
+  } catch(e) {
+    document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><i class="fas fa-wifi-slash"></i><p>Cannot reach the server</p></div>';
+  }
 }
 
 // ═══════════════════════════════════════════
