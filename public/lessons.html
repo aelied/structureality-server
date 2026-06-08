@@ -1148,16 +1148,16 @@ function logout() { localStorage.removeItem('adminUser'); window.location.href='
 // ═══════════════════════════════════════════
 //  LOAD LESSONS
 // ═══════════════════════════════════════════
-async function loadLessons() {
-  document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><div class="spinner"></div></div>';
-  try {
-    const r = await fetch(`${API_URL}/lessons`);
-    const d = await r.json();
-    if (d.success) { allLessons = d.lessons||[]; updateStats(); displayLessons(allLessons); }
-    else showToast('Failed to load lessons','error');
-  } catch(e) {
-    document.getElementById('lessonsGrid').innerHTML = '<div class="empty-state"><i class="fas fa-wifi-slash"></i><p>Cannot reach the server</p></div>';
-  }
+function filterLessons() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const t = document.getElementById('topicFilter').value;
+  if (!q && t === 'all') { displayTopics(); return; }
+  // when searching/filtering, show flat lesson cards
+  displayLessons(allLessons.filter(l => {
+    const ms = l.title.toLowerCase().includes(q) || l.description.toLowerCase().includes(q);
+    const mt = t === 'all' || l.topicName === t;
+    return ms && mt;
+  }));
 }
 
 function updateStats() {
@@ -1185,6 +1185,7 @@ function getBannerClass(topic) {
 
 function displayLessons(lessons) {
   const g = document.getElementById('lessonsGrid');
+  g.style.display = 'grid';
   if(!lessons.length){
     g.innerHTML='<div class="empty-state"><i class="fas fa-book-open"></i><p>No lessons found. Create your first lesson!</p></div>';
     return;
@@ -1220,6 +1221,108 @@ function displayLessons(lessons) {
       </div>
     </div>`;
   }).join('');
+}
+
+// Topic palette
+const TOPIC_PALETTE = {
+  Arrays:      { color:'#6c63ff', icon:'fa-layer-group', banner:'banner-arrays' },
+  Queues:      { color:'#38bdf8', icon:'fa-stream',      banner:'banner-queues' },
+  Queue:       { color:'#38bdf8', icon:'fa-stream',      banner:'banner-queues' },
+  Stacks:      { color:'#34d399', icon:'fa-layer-group', banner:'banner-stacks' },
+  LinkedLists: { color:'#c084fc', icon:'fa-link',        banner:'banner-linkedlists' },
+  Trees:       { color:'#fbbf24', icon:'fa-project-diagram', banner:'banner-trees' },
+  Graphs:      { color:'#fb7185', icon:'fa-sitemap',     banner:'banner-graphs' },
+};
+
+let expandedTopic = null;
+
+function displayTopics() {
+  const g = document.getElementById('lessonsGrid');
+  // group lessons by topic
+  const byTopic = {};
+  allLessons.forEach(l => {
+    if (!byTopic[l.topicName]) byTopic[l.topicName] = [];
+    byTopic[l.topicName].push(l);
+  });
+
+  if (!Object.keys(byTopic).length) {
+    g.innerHTML = '<div class="empty-state"><i class="fas fa-book-open"></i><p>No lessons found.</p></div>';
+    return;
+  }
+
+  // Render topic rows (full width), not a grid
+  g.style.display = 'block';
+  g.innerHTML = Object.entries(byTopic).map(([topic, lessons]) => {
+    const c = TOPIC_PALETTE[topic] || { color:'#6a7389', icon:'fa-book', banner:'banner-default' };
+    const isOpen = expandedTopic === topic;
+    const lessonsSorted = [...lessons].sort((a,b) => a.order - b.order);
+
+    const lessonsHtml = lessonsSorted.map(l => {
+      const clean = (l.content||'').replace(/\[IMAGE[^\]]+\]/gi,'[image]').replace(/\[CUSTOMBOX[\s\S]*?\[\/CUSTOMBOX\]/gi,'[box]').replace(/\[CHIP[^\]]+\]/gi,'[chip]');
+      const preview = clean.substring(0,70)+(clean.length>70?'…':'');
+      const hasBox  = /\[CUSTOMBOX/i.test(l.content||'');
+      const hasChip = /\[CHIP/i.test(l.content||'');
+      const imgCnt  = ((l.content||'').match(/\[IMAGE/gi)||[]).length;
+      const diff    = l.difficultyLevel||'beginner';
+      return `
+      <div class="lesson-card" style="margin-bottom:0;">
+        <div class="lesson-card-banner ${c.banner}"></div>
+        <div class="lesson-card-body">
+          <div class="lesson-card-tags">
+            <span class="tag ${diff==='beginner'?'tag-beginner':'tag-intermediate'}">${diff==='beginner'?'Beginner':'Intermediate'}</span>
+            ${hasBox?'<span class="tag tag-custom">Custom Box</span>':''}
+            ${hasChip?'<span class="tag tag-image">Chip</span>':''}
+            ${imgCnt>0?`<span class="tag tag-image">🖼 ${imgCnt}</span>`:''}
+          </div>
+          <div class="lesson-card-title">${escHtml(l.title)}</div>
+          <div class="lesson-card-desc">${escHtml(l.description)}</div>
+          <div class="lesson-card-preview">${escHtml(preview)||'No content yet'}</div>
+          <div class="lesson-card-footer">
+            <span class="lesson-card-order"># ${l.order}</span>
+            <div class="lesson-card-actions">
+              <button class="icon-btn icon-btn-edit" onclick="event.stopPropagation();openEditModal('${l._id}')" title="Edit"><i class="fas fa-edit"></i></button>
+              <button class="icon-btn icon-btn-del" onclick="event.stopPropagation();deleteLesson('${l._id}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;">
+      <!-- Topic header row — clickable -->
+      <div onclick="toggleTopic('${topic}')" style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background=''">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:40px;height:40px;border-radius:10px;background:${c.color}20;display:flex;align-items:center;justify-content:center;">
+            <i class="fas ${c.icon}" style="color:${c.color};font-size:16px;"></i>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);">${topic}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:2px;">${lessons.length} lesson${lessons.length!==1?'s':''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button onclick="event.stopPropagation();openAddModalForTopic('${topic}')" class="btn btn-primary" style="padding:6px 12px;font-size:11px;"><i class="fas fa-plus"></i> New Lesson</button>
+          <i class="fas fa-chevron-${isOpen?'up':'down'}" style="color:var(--text3);font-size:13px;transition:transform 0.2s;"></i>
+        </div>
+      </div>
+      <!-- Expandable lessons grid -->
+      <div id="topic-panel-${topic.replace(/\s/g,'_')}" style="display:${isOpen?'grid':'none'};grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;padding:${isOpen?'16px':'0'};border-top:${isOpen?'1px solid var(--border)':'none'};">
+        ${lessonsHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTopic(topic) {
+  expandedTopic = expandedTopic === topic ? null : topic;
+  displayTopics();
+}
+
+function openAddModalForTopic(topic) {
+  openAddModal();
+  document.getElementById('editorTopic').value = topic;
+  previewRefresh();
 }
 
 function filterLessons() {
