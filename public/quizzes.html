@@ -107,6 +107,15 @@
           .quiz-status-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:100px;}
           .quiz-status-has{background:rgba(52,211,153,0.15);color:var(--green);}
           .quiz-status-no{background:rgba(251,191,36,0.15);color:var(--amber);}
+
+          /* CONFIRM MODAL */
+.confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:300;display:none;align-items:center;justify-content:center;}
+.confirm-overlay.active{display:flex;}
+.confirm-box{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 28px 22px;max-width:420px;width:100%;box-shadow:var(--shadow);text-align:center;}
+.confirm-icon{width:52px;height:52px;border-radius:50%;background:rgba(108,99,255,0.15);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:22px;}
+.confirm-title{font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.confirm-msg{font-size:12px;color:var(--text3);line-height:1.6;margin-bottom:20px;}
+.confirm-actions{display:flex;gap:10px;justify-content:center;}
       
           /* QUIZ QUESTION CARDS inside lesson row */
           .quiz-questions-wrap{margin:10px 0 4px 36px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;display:flex;flex-direction:column;gap:10px;}
@@ -815,9 +824,14 @@ if (questionSections.length > MAX_QUESTIONS) {
     }
 
     if (successCount > 0) {
-        closeAddModal();
-        await loadAll();
-    }
+    const lesson = document.getElementById('addLesson').value;
+    closeAddModal();
+    await showConfirm(
+        '✅ Quiz Created!',
+        `${successCount} question${successCount !== 1 ? 's' : ''} added to "${lesson}" successfully.`
+    );
+    await loadAll();
+}
 }
 
 // ── Edit modal ─────────────────────────────────────────────────
@@ -993,6 +1007,29 @@ function toggleTheme() {
   document.getElementById('themeBtn').textContent = isLight ? '☀️' : '🌙';
   localStorage.setItem('adminTheme', isLight ? 'dark' : 'light');
 }
+// ── Confirm dialog ─────────────────────────────────────────────
+let confirmResolve = null;
+function showConfirm(title, msg) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmModal').classList.add('active');
+  return new Promise(res => { confirmResolve = (val) => {
+    document.getElementById('confirmModal').classList.remove('active');
+    res(val);
+  };});
+}
 </script>
+<!-- CONFIRM MODAL -->
+<div id="confirmModal" class="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">📋</div>
+    <div class="confirm-title" id="confirmTitle">Create Quiz?</div>
+    <div class="confirm-msg" id="confirmMsg">Are you sure you want to create this quiz?</div>
+    <div class="confirm-actions">
+      <button class="btn-cancel" onclick="confirmResolve(false)">Cancel</button>
+      <button class="btn-submit" onclick="confirmResolve(true)">Yes, Create</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
