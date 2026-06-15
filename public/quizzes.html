@@ -450,13 +450,13 @@ function renderAll() {
 
   const quizByLesson = {};
   quizzes.forEach(q => {
-    const key = q.lessonTitle && q.lessonTitle.trim() ? q.lessonTitle.trim() : null;
-    if (key) {
+    const raw = (q.lessonTitle || '').replace(/\s+/g, ' ').trim();
+    if (raw) {
+      const key = raw.toLowerCase();
       if (!quizByLesson[key]) quizByLesson[key] = [];
       quizByLesson[key].push(q);
     }
   });
-
   const palette = {
     Arrays:      { tc:'#6c63ff', icon:'fa-layer-group' },
     Queue:       { tc:'#38bdf8', icon:'fa-stream'      },
@@ -497,8 +497,8 @@ function renderAll() {
     // Build lesson rows HTML
     let lessonsHtml = '';
     allFiltered.forEach((lesson, idx) => {
-      const quizzesForLesson = quizByLesson[lesson.title.trim()] || [];
-      const hasQuiz = quizzesForLesson.length > 0;
+      const quizzesForLesson = quizByLesson[(lesson.title || '').replace(/\s+/g, ' ').trim().toLowerCase()] || [];
+            const hasQuiz = quizzesForLesson.length > 0;
       const escapedTitle = lesson.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       const questionCount = quizzesForLesson.length;
 
