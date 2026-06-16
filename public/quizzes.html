@@ -587,8 +587,7 @@ function renderAll() {
         <div style="display:flex;align-items:center;gap:12px;">
           <div class="coverage-bar-bg"><div class="coverage-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':c.tc};"></div></div>
           <span style="font-size:12px;font-weight:700;color:var(--text2);min-width:36px;">${pct}%</span>
-          <button onclick="event.stopPropagation();openAddModal('${topic}')" class="btn btn-primary" style="padding:6px 12px;font-size:11px;"><i class="fas fa-plus"></i> Add Quiz</button>
-          <i class="fas fa-chevron-${isOpen?'up':'down'}" style="color:var(--text3);font-size:13px;"></i>
+<button onclick="event.stopPropagation();onTopicAddQuiz('${topic}')" class="btn btn-primary" style="padding:6px 12px;font-size:11px;"><i class="fas fa-plus"></i> Add Quiz</button>          <i class="fas fa-chevron-${isOpen?'up':'down'}" style="color:var(--text3);font-size:13px;"></i>
         </div>
       </div>
       <!-- Expandable lessons panel -->
@@ -616,6 +615,50 @@ function toggleLesson(key) {
   renderAll();
 }
 
+function onTopicAddQuiz(topic) {
+  const normalize = s => (s||'').replace(/\s+/g,' ').trim().toLowerCase();
+
+  // Find lessons for this topic sorted by order
+  const topicLessons = lessons
+    .filter(l => l.topicName === topic)
+    .sort((a, b) => a.order - b.order);
+
+  // Count existing questions per lesson
+  const quizByLesson = {};
+  quizzes.forEach(q => {
+    const key = normalize(q.lessonTitle || '');
+    if (key) {
+      if (!quizByLesson[key]) quizByLesson[key] = [];
+      quizByLesson[key].push(q);
+    }
+  });
+
+  // Priority 1: first lesson with NO questions at all
+  const emptyLesson = topicLessons.find(l => !quizByLesson[normalize(l.title)]);
+  if (emptyLesson) {
+    openAddModal(topic, emptyLesson.title);
+    return;
+  }
+
+  // Priority 2: first lesson that still has slots remaining
+  const incompleteLesson = topicLessons.find(l => (quizByLesson[normalize(l.title)]||[]).length < MAX_QUESTIONS);
+  if (incompleteLesson) {
+    // Has existing questions + slots — show them + new slot
+    openAddModal(topic, incompleteLesson.title);
+    return;
+  }
+
+  // Priority 3: all lessons full — open edit modal for first lesson
+  const firstWithQuiz = topicLessons.find(l => (quizByLesson[normalize(l.title)]||[]).length > 0);
+  if (firstWithQuiz) {
+    const firstQuiz = quizzes.find(q => normalize(q.lessonTitle) === normalize(firstWithQuiz.title));
+    if (firstQuiz) openEditModal(firstQuiz._id);
+    return;
+  }
+
+  // Fallback: blank modal
+  openAddModal(topic);
+}
 // ── Lesson picker ──────────────────────────────────────────
 // ✅ FIXED: Added debug logging to find the issue
 function populateLessonPicker(selectId, topicSelectId, prefill = '') {
