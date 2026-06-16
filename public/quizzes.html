@@ -517,9 +517,12 @@ function renderAll() {
               ? `<span class="quiz-status-badge quiz-status-has">✓ ${questionCount}/${MAX_QUESTIONS} Q${questionCount!==1?'s':''}</span>`
               : `<span class="quiz-status-badge quiz-status-no">⚠ No quiz</span>`
             }
-            <button onclick="openAddModal('${topic}','${escapedTitle}')" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
-              ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
-            </button>
+            <button onclick="${hasQuiz
+  ? `openEditModal('${quizzesForLesson[0]._id}')`
+  : `openAddModal('${topic}','${escapedTitle}')`
+}" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
+  ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
+</button>
           </div>
         </div>
         ${hasQuiz ? `
