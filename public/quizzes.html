@@ -1225,7 +1225,12 @@ if (questionSections.length > MAX_QUESTIONS) {
     }
 
     if (successCount > 0) {
+        const lessonName = document.getElementById('editLessonTitle').value;
         closeEditModal();
+        await showConfirm(
+            '✅ Quiz Updated!',
+            `${successCount} question${successCount !== 1 ? 's' : ''} in "${lessonName}" saved successfully.`
+        );
         await loadAll();
     }
 }
@@ -1280,8 +1285,7 @@ function showConfirm(title, msg) {
     <div class="confirm-title" id="confirmTitle">Create Quiz?</div>
     <div class="confirm-msg" id="confirmMsg">Are you sure you want to create this quiz?</div>
     <div class="confirm-actions">
-      <button class="btn-cancel" onclick="confirmResolve(false)">Cancel</button>
-      <button class="btn-submit" onclick="confirmResolve(true)">Yes, Create</button>
+      <button class="btn-submit" id="confirmOkBtn" onclick="confirmResolve(true)">OK</button>
     </div>
   </div>
 </div>
