@@ -731,10 +731,10 @@ else    { b2.textContent = 'Button 2'; b2.className = 'preview-btn-empty'; }
       try {
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
         const data = await res.json();
-        if (data.success && data.config?.scenarios) {
-          const ids = data.config.scenarios[ds] || [];
-          state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
-        } else { state[ds].activeIds = getDefaults(ds); }
+        if (data.success && data.scenarios) {
+  const ids = data.scenarios[ds] || [];
+  state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
+} else { state[ds].activeIds = getDefaults(ds); }
         document.getElementById('apiDot').style.background = 'var(--green)';
 document.getElementById('apiStatus').textContent = 'connected';
         addLog(`[${ds}] Loaded — active: [${state[ds].activeIds.join(', ')}]`, 'success');
@@ -1076,12 +1076,12 @@ document.getElementById('apiStatus').textContent = 'offline';
       try {
         const res  = await fetch(`${SERVER_URL}/api/scenarios/config`);
         const data = await res.json();
-        if (data.success && data.config?.scenarios) {
-          ALL_DS.forEach(ds => {
-            const ids = data.config.scenarios[ds] || [];
-            state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
-          });
-        } else { ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); }); }
+        if (data.success && data.scenarios) {
+  ALL_DS.forEach(ds => {
+    const ids = data.scenarios[ds] || [];
+    state[ds].activeIds = ids.filter(id => SCENARIOS[ds].some(s => s.id === id));
+  });
+} else { ALL_DS.forEach(ds => { state[ds].activeIds = getDefaults(ds); }); }
         document.getElementById('apiStatus').textContent = 'connected';
         document.getElementById('apiStatus').className   = 'font-medium text-green-500';
         addLog('All configs loaded from server.', 'success');
