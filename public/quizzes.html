@@ -790,6 +790,100 @@ function removeEditQuestion(index) {
     }
 }
 
+function refreshAddModalQuestions(lessonTitle) {
+    const normalize  = s => (s||'').replace(/\s+/g,' ').trim().toLowerCase();
+    const container  = document.getElementById('questionsContainer');
+    const existing   = lessonTitle
+        ? quizzes.filter(q => normalize(q.lessonTitle) === normalize(lessonTitle))
+        : [];
+    const remaining  = MAX_QUESTIONS - existing.length;
+
+    let html = '';
+
+    // ── Read-only existing questions ──────────────────────────
+    if (existing.length > 0) {
+        html += `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;">
+            <i class="fas fa-lock" style="margin-right:5px;color:var(--accent2);"></i>
+            Existing Questions (${existing.length}/${MAX_QUESTIONS}) — read only
+          </div>
+          ${existing.map((q, i) => `
+          <div style="background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:8px;opacity:0.75;">
+            <p style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:rgba(108,99,255,0.15);color:var(--accent2);border-radius:50%;font-size:10px;font-weight:800;margin-right:6px;">${i+1}</span>
+              ${q.questionText}
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+              ${(q.answerOptions||[]).map((opt,oi) => `
+              <div class="answer-opt ${oi===q.correctAnswerIndex?'correct':'wrong'}">
+                <span style="font-weight:700;font-size:10px;">${String.fromCharCode(65+oi)}.</span>
+                <span>${opt}</span>
+                ${oi===q.correctAnswerIndex?'<i class="fas fa-check" style="margin-left:auto;font-size:9px;"></i>':''}
+              </div>`).join('')}
+            </div>
+            <p style="font-size:10px;color:var(--text3);font-style:italic;background:rgba(108,99,255,0.06);padding:5px 8px;border-radius:6px;">💡 ${q.explanation||''}</p>
+          </div>`).join('')}
+        </div>`;
+    }
+
+    // ── New question slot ──────────────────────────────────────
+    if (remaining > 0) {
+        html += `
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:10px;${existing.length?'border-top:1px solid var(--border);padding-top:14px;':''}">
+          <i class="fas fa-plus-circle" style="margin-right:5px;color:var(--green);"></i>
+          New Question${existing.length ? ` — ${remaining} slot${remaining!==1?'s':''} remaining` : ''}
+        </div>
+        <div class="question-section" data-question-index="0">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span class="question-section-title">Question ${existing.length + 1}</span>
+            <button type="button" onclick="removeQuestion(0)" class="btn-remove-q" style="display:none;"><i class="fas fa-trash" style="margin-right:4px;"></i>Remove</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Question Text *</label>
+            <textarea class="addQuestion form-textarea" rows="2" placeholder="Enter the quiz question…" required></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Answer Options — tick the correct one *</label>
+            <div class="addAnswers">
+              <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="0" required/><input type="text" placeholder="Option A" required class="form-input"/></div>
+              <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="1"/><input type="text" placeholder="Option B" required class="form-input"/></div>
+              <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="2"/><input type="text" placeholder="Option C" required class="form-input"/></div>
+              <div class="answer-option"><input type="radio" name="correct0" class="addCorrect" value="3"/><input type="text" placeholder="Option D" required class="form-input"/></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Explanation *</label>
+            <textarea class="addExplanation form-textarea" rows="2" placeholder="Explain why the answer is correct…" required></textarea>
+          </div>
+        </div>`;
+    } else {
+        html += `
+        <div style="text-align:center;padding:20px;background:var(--surface2);border:1px dashed var(--border2);border-radius:var(--radius-sm);color:var(--text3);">
+          <i class="fas fa-check-circle" style="color:var(--green);font-size:22px;display:block;margin-bottom:8px;"></i>
+          <p style="font-size:13px;font-weight:600;color:var(--text);">This lesson is full (${MAX_QUESTIONS}/${MAX_QUESTIONS} questions)</p>
+          <p style="font-size:11px;margin-top:4px;">Use the <strong>Edit Quiz</strong> button to modify existing questions.</p>
+        </div>`;
+    }
+
+    container.innerHTML = html;
+
+    // Update add/submit button visibility
+    const addMoreBtn = document.querySelector('#addModal .add-more-btn');
+    const submitBtn  = document.querySelector('#addModal .btn-submit');
+    if (remaining <= 0) {
+        if (addMoreBtn) addMoreBtn.style.display = 'none';
+        if (submitBtn)  submitBtn.style.display  = 'none';
+    } else {
+        if (addMoreBtn) addMoreBtn.style.display = '';
+        if (submitBtn)  submitBtn.style.display  = '';
+    }
+
+    // Reset question counter
+    questionCount = 1;
+    window._existingQuestionCount = existing.length;
+}
+
 // ── Add modal ──────────────────────────────────────────────────
 function openAddModal(prefillTopic = '', prefillLesson = '') {
     document.getElementById('addForm').reset();
@@ -896,8 +990,25 @@ function openAddModal(prefillTopic = '', prefillLesson = '') {
         document.getElementById('addTopic').value = prefillTopic;
         populateLessonPicker('addLesson', 'addTopic', prefillLesson);
     }
-}
 
+    // Refresh existing questions when lesson changes
+    document.getElementById('addLesson').onchange = function() {
+        const selectedLesson = this.value;
+        const selectedTopic  = document.getElementById('addTopic').value;
+        refreshAddModalQuestions(selectedLesson);
+    };
+
+    // Also refresh when topic changes (after lesson picker repopulates)
+    const origPopulate = document.getElementById('addTopic').onchange;
+    document.getElementById('addTopic').onchange = function() {
+        populateLessonPicker('addLesson', 'addTopic');
+        // Small delay so lesson picker repopulates first
+        setTimeout(() => {
+            const selectedLesson = document.getElementById('addLesson').value;
+            refreshAddModalQuestions(selectedLesson);
+        }, 50);
+    };
+}
 function closeAddModal() { document.getElementById('addModal').classList.remove('active'); }
 
 async function submitAdd(e) {
