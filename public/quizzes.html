@@ -488,7 +488,7 @@ function renderAll() {
     if (!allFiltered.length) continue;
     anyVisible = true;
 
-    const covered = allFiltered.filter(l => (quizByLesson[l.title]||[]).length > 0).length;
+    const covered = allFiltered.filter(l => (quizByLesson[(l.title||'').replace(/\s+/g,' ').trim().toLowerCase()]||[]).length > 0).length;
     const pct     = allFiltered.length ? Math.round(covered / allFiltered.length * 100) : 0;
     const c = palette[topic] || { tc:'#6a7389', icon:'fa-book' };
     const isOpen = hasFilters || expandedQuizTopic === topic;
@@ -841,8 +841,8 @@ function openEditModal(quizId) {
     if (!clickedQuiz) return;
     
     // Find all questions for this lesson
-    const allQuestionsForQuiz = quizzes.filter(q => q.lessonTitle === clickedQuiz.lessonTitle);
-    
+    const normalize = s => (s||'').replace(/\s+/g,' ').trim().toLowerCase();
+const allQuestionsForQuiz = quizzes.filter(q => normalize(q.lessonTitle) === normalize(clickedQuiz.lessonTitle));    
     const container = document.getElementById('editQuestionsContainer');
     container.innerHTML = '';
     
