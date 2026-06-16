@@ -385,6 +385,7 @@ const API = window.location.hostname === 'localhost'
 let lessons = [];
 let quizzes = [];
 let expandedQuizTopic = null;
+let expandedLesson = null;
 const MIN_QUESTIONS = 5;
 const MAX_QUESTIONS = 15;
 const MAX_QUIZZES_PER_TOPIC = 3;
@@ -497,14 +498,19 @@ function renderAll() {
     // Build lesson rows HTML
     let lessonsHtml = '';
     allFiltered.forEach((lesson, idx) => {
-      const quizzesForLesson = quizByLesson[(lesson.title || '').replace(/\s+/g, ' ').trim().toLowerCase()] || [];
-            const hasQuiz = quizzesForLesson.length > 0;
+      const key = (lesson.title || '').replace(/\s+/g, ' ').trim().toLowerCase();
+      const quizzesForLesson = quizByLesson[key] || [];
+      const hasQuiz = quizzesForLesson.length > 0;
       const escapedTitle = lesson.title.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      const escapedKey   = key.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
       const questionCount = quizzesForLesson.length;
+      const lessonPanelId = 'lpanel-' + key.replace(/[^a-z0-9]/g,'_');
+      const isLessonOpen  = expandedLesson === key;
 
       lessonsHtml += `
-      <div class="lesson-row ${hasQuiz?'has-quiz':'no-quiz'}">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="lesson-row ${hasQuiz?'has-quiz':'no-quiz'}" style="padding:0;">
+        <!-- Lesson header row — clickable -->
+        <div onclick="toggleLesson('${escapedKey}')" style="display:flex;align-items:center;justify-content:space-between;padding:13px 20px;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background=''">
           <div style="display:flex;align-items:center;gap:10px;">
             <div class="lesson-num ${hasQuiz?'has':'no'}">${idx+1}</div>
             <div>
@@ -517,37 +523,50 @@ function renderAll() {
               ? `<span class="quiz-status-badge quiz-status-has">✓ ${questionCount}/${MAX_QUESTIONS} Q${questionCount!==1?'s':''}</span>`
               : `<span class="quiz-status-badge quiz-status-no">⚠ No quiz</span>`
             }
-            <button onclick="${hasQuiz
-  ? `openEditModal('${quizzesForLesson[0]._id}')`
-  : `openAddModal('${topic}','${escapedTitle}')`
-}" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
-  ${hasQuiz ? '+ Add Q' : 'Create Quiz'}
-</button>
+            <button onclick="event.stopPropagation();${hasQuiz ? `openEditModal('${quizzesForLesson[0]._id}')` : `openAddModal('${topic}','${escapedTitle}')`}" class="btn btn-ghost" style="padding:5px 10px;font-size:11px;">
+              ${hasQuiz ? '<i class="fas fa-edit" style="margin-right:4px;font-size:10px;"></i>Edit Quiz' : '<i class="fas fa-plus" style="margin-right:4px;font-size:10px;"></i>Create Quiz'}
+            </button>
+            ${hasQuiz ? `<i class="fas fa-chevron-${isLessonOpen?'up':'down'}" style="color:var(--text3);font-size:11px;margin-left:2px;"></i>` : ''}
           </div>
         </div>
+
+        <!-- Collapsible questions panel -->
         ${hasQuiz ? `
-        <div class="quiz-questions-wrap">
-          ${quizzesForLesson.map((quiz, qIdx) => `
-          <div class="quiz-q-item">
-            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-              <div style="flex:1;">
-                <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px;"><strong>Q${qIdx+1}:</strong> ${quiz.questionText}</p>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px;">
-                  ${(quiz.answerOptions||[]).map((opt,oi)=>`
-                  <div class="answer-opt ${oi===quiz.correctAnswerIndex?'correct':'wrong'}">
-                    <span style="font-weight:700;font-size:10px;">${String.fromCharCode(65+oi)}.</span>
-                    <span>${opt}</span>
-                    ${oi===quiz.correctAnswerIndex?'<i class="fas fa-check" style="margin-left:auto;font-size:9px;"></i>':''}
-                  </div>`).join('')}
+        <div id="${lessonPanelId}" style="display:${isLessonOpen?'block':'none'};border-top:1px solid var(--border);background:var(--surface2);">
+          <!-- Mini action bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 20px 6px;border-bottom:1px solid var(--border);">
+            <span style="font-size:11px;font-weight:600;color:var(--text3);">${questionCount} question${questionCount!==1?'s':''} · ${MAX_QUESTIONS - questionCount} slot${MAX_QUESTIONS-questionCount!==1?'s':''} remaining</span>
+            <button onclick="openEditModal('${quizzesForLesson[0]._id}')" style="font-size:11px;font-weight:600;color:var(--accent2);background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.2);border-radius:6px;padding:4px 10px;cursor:pointer;">
+              <i class="fas fa-plus" style="margin-right:4px;"></i>Add / Edit Questions
+            </button>
+          </div>
+          <!-- Question cards -->
+          <div style="padding:10px 20px;display:flex;flex-direction:column;gap:8px;">
+            ${quizzesForLesson.map((quiz, qIdx) => `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                <div style="flex:1;">
+                  <p style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:rgba(108,99,255,0.15);color:var(--accent2);border-radius:50%;font-size:10px;font-weight:800;margin-right:6px;">${qIdx+1}</span>
+                    ${quiz.questionText}
+                  </p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px;">
+                    ${(quiz.answerOptions||[]).map((opt,oi)=>`
+                    <div class="answer-opt ${oi===quiz.correctAnswerIndex?'correct':'wrong'}">
+                      <span style="font-weight:700;font-size:10px;">${String.fromCharCode(65+oi)}.</span>
+                      <span>${opt}</span>
+                      ${oi===quiz.correctAnswerIndex?'<i class="fas fa-check" style="margin-left:auto;font-size:9px;"></i>':''}
+                    </div>`).join('')}
+                  </div>
+                  <p style="font-size:10px;color:var(--text3);font-style:italic;background:rgba(108,99,255,0.06);padding:5px 8px;border-radius:6px;">💡 ${quiz.explanation||''}</p>
                 </div>
-                <p style="font-size:10px;color:var(--text3);font-style:italic;">💡 ${quiz.explanation||''}</p>
+                <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+                  <button onclick="openEditModal('${quiz._id}')" style="width:28px;height:28px;background:rgba(108,99,255,0.12);color:var(--accent2);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;" title="Edit"><i class="fas fa-edit"></i></button>
+                  <button onclick="deleteQuestion('${quiz._id}')" style="width:28px;height:28px;background:rgba(251,113,133,0.12);color:var(--rose);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;" title="Delete"><i class="fas fa-trash"></i></button>
+                </div>
               </div>
-              <div style="display:flex;gap:6px;flex-shrink:0;">
-                <button onclick="openEditModal('${quiz._id}')" style="width:28px;height:28px;background:rgba(108,99,255,0.12);color:var(--accent2);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-edit"></i></button>
-                <button onclick="deleteQuestion('${quiz._id}')" style="width:28px;height:28px;background:rgba(251,113,133,0.12);color:var(--rose);border-radius:6px;font-size:11px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-trash"></i></button>
-              </div>
-            </div>
-          </div>`).join('')}
+            </div>`).join('')}
+          </div>
         </div>` : ''}
       </div>`;
     });
@@ -588,6 +607,12 @@ function renderAll() {
 
 function toggleQuizTopic(topic) {
   expandedQuizTopic = expandedQuizTopic === topic ? null : topic;
+  expandedLesson = null; // collapse any open lesson when switching topic
+  renderAll();
+}
+
+function toggleLesson(key) {
+  expandedLesson = expandedLesson === key ? null : key;
   renderAll();
 }
 
